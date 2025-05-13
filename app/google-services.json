@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "20925324301",
+    "firebase_url": "https://african-shipping-default-rtdb.firebaseio.com",
+    "project_id": "african-shipping",
+    "storage_bucket": "african-shipping.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20925324301:android:33de480b8299b5a743c944",
+        "android_client_info": {
+          "package_name": "com.example.africanshipping25"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAj0p3C9PmZKMRZkvK7YgCgx7I9ZlXhBA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20925324301:android:cc2ddb43e94efa9443c944",
+        "android_client_info": {
+          "package_name": "com.example.africanshippingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAj0p3C9PmZKMRZkvK7YgCgx7I9ZlXhBA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
