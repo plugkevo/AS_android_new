@@ -8,12 +8,14 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
 
     private lateinit var firestore: FirebaseFirestore
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +33,7 @@ class HomeFragment : Fragment() {
 
         // Example: Assuming you have a button in your HomeFragment layout
         // that triggers the display of the create shipment dialog
-        val showCreateDialogButton = view.findViewById<Button>(R.id.fab_new_shipment)
+        val showCreateDialogButton = view.findViewById<CardView>(R.id.card_create_shipment)
         showCreateDialogButton?.setOnClickListener {
             showCreateShipmentDialog()
         }
@@ -52,6 +54,7 @@ class HomeFragment : Fragment() {
         val weightEditText = dialogView.findViewById<EditText>(R.id.et_weight)
         val createButton = dialogView.findViewById<Button>(R.id.btn_create)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
+
 
         createButton.setOnClickListener {
             val name = nameEditText.text.toString().trim()

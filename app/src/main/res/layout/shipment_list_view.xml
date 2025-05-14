@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.cardview.widget.CardView
@@ -17,9 +17,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:gravity="center_vertical">
 
             <ImageView
+                android:id="@+id/imgPackage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/ic_package"
@@ -34,6 +36,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/txtShipmentName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="SHP12345678"
@@ -42,6 +45,7 @@
                     android:textColor="#212121" />
 
                 <TextView
+                    android:id="@+id/txtLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New York to Los Angeles"
@@ -49,6 +53,7 @@
                     android:textColor="#757575" />
 
                 <TextView
+                    android:id="@+id/txtStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="In Transit"
@@ -57,11 +62,25 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/txtDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="May 12"
                 android:textSize="14sp"
-                android:textColor="#757575" />
+                android:textColor="#757575"
+                android:layout_marginStart="8dp"/>
+
+            <ImageView
+                android:id="@+id/btnUpdate"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_more_vert"
+                android:contentDescription="Update Shipment"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginStart="16dp"/>
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
