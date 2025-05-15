@@ -7,5 +7,21 @@
     <color name="colorAccent">#29B6F6</color>
     <color name="colorDarkBlue">#0D47A1</color>
     <color name="colorLightBlue">#29B6F6</color>
-    <color name="colorTextSecondary">#78909C</color>
+
+    <!-- Base colors -->
+    <color name="dark_blue">#1A237E</color>
+    <color name="medium_blue">#3949AB</color>
+    <color name="light_blue">#BBDEFB</color>
+    <color name="colorTextSecondary">#757575</color>
+
+
+    <!-- Theme colors -->
+    <color name="primary">@color/medium_blue</color>
+    <color name="primary_dark">@color/dark_blue</color>
+    <color name="primary_light">@color/light_blue</color>
+    <color name="accent">@color/medium_blue</color>
+    <color name="background">@color/white</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_on_primary">@color/white</color>
 </resources>

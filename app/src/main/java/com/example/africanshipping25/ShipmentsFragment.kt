@@ -1,6 +1,7 @@
 package com.example.africanshipping25
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -18,9 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.*
 
-class ShipmentsFragment : Fragment(), OnShipmentUpdateListener {
+class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.OnShipmentItemClickListener {
 
     private lateinit var rvAllShipments: RecyclerView
     private lateinit var etSearch: EditText
@@ -29,6 +29,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener {
     private val allShipmentsList = mutableListOf<Shipment>()
     private val filteredShipmentsList = mutableListOf<Shipment>()
     private val firestore = FirebaseFirestore.getInstance()
+
     private val statusOptions = arrayOf("Active", "In Transit", "Delivered", "Processing")
 
     override fun onCreateView(
@@ -47,7 +48,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener {
         chipGroup = view.findViewById(R.id.chip_group)
 
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
-        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this)
+        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this) // Pass 'this' as the itemClickListener
         rvAllShipments.adapter = shipmentAdapter
 
         fetchShipments()
@@ -145,6 +146,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener {
         val updateButton = dialogView.findViewById<Button>(R.id.btn_update)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
+
         // Populate the spinner
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, statusOptions)
         statusSpinner.adapter = adapter
@@ -199,5 +201,17 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener {
         cancelButton.setOnClickListener {
             dialog.dismiss()
         }
+    }
+
+    override fun onShipmentItemClick(shipment: Shipment) {
+        // Handle item click to navigate to another activity
+        val intent = Intent(requireContext(), ViewShipment::class.java)
+        intent.putExtra("shipmentId", shipment.id) // It's a good practice to pass the ID
+        intent.putExtra("shipmentName", shipment.name)
+        intent.putExtra("shipmentOrigin", shipment.origin)
+        intent.putExtra("shipmentDestination", shipment.destination)
+        intent.putExtra("shipmentStatus", shipment.status)
+        intent.putExtra("shipmentDate", shipment.date)
+        startActivity(intent)
     }
 }

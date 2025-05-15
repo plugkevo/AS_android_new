@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Goods Name Options for both Truck and Store -->
+    <string-array name="goods_name_options">
+        <item>Electronics</item>
+        <item>Clothing</item>
+        <item>Food</item>
+        <item>Furniture</item>
+        <item>Toys</item>
+    </string-array>
+
+    <!-- Store Location Options -->
+    <string-array name="store_location_options">
+        <item>Main Warehouse</item>
+        <item>North Branch</item>
+        <item>South Branch</item>
+    </string-array>
+</resources>

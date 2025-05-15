@@ -1,14 +1,11 @@
 package com.example.africanshipping25
 
-import android.app.AlertDialog
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 
 interface OnShipmentUpdateListener {
@@ -17,9 +14,14 @@ interface OnShipmentUpdateListener {
 
 class ShipmentAdapter(
     private val shipmentList: MutableList<Shipment>,
-    private val updateListener: OnShipmentUpdateListener
+    private val updateListener: OnShipmentUpdateListener,
+    private val itemClickListener: OnShipmentItemClickListener // Add a listener for item clicks
 ) :
     RecyclerView.Adapter<ShipmentAdapter.ShipmentViewHolder>() {
+
+    interface OnShipmentItemClickListener {
+        fun onShipmentItemClick(shipment: Shipment)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShipmentViewHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -31,11 +33,15 @@ class ShipmentAdapter(
         val currentShipment = shipmentList[position]
         holder.tvName.text = currentShipment.name
         holder.tvOriginDestination.text = "${currentShipment.origin} to ${currentShipment.destination}"
-        holder.tvStatus.text = currentShipment.status ?: "Pending" // Assuming you've added status
-        holder.tvDate.text = currentShipment.date ?: "N/A"     // Assuming you've added date
+        holder.tvStatus.text = currentShipment.status ?: "Pending"
+        holder.tvDate.text = currentShipment.date ?: "N/A"
 
         holder.btnUpdate.setOnClickListener {
             updateListener.onUpdateShipment(currentShipment)
+        }
+
+        holder.itemView.setOnClickListener {
+            itemClickListener.onShipmentItemClick(currentShipment)
         }
     }
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--suppress ALL -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/enterTruckGoods"
+        android:icon="@drawable/ic_truck_delivery"
+        android:title="Enter Truck" />
+    <item
+        android:id="@+id/viewTruckGoods"
+        android:icon="@drawable/ic_truck_view"
+        android:title="View Truck" />
+    <item
+        android:id="@+id/enterStoreGoods"
+        android:icon="@drawable/ic_warehouse"
+        android:title="Enter Store" />
+    <item
+        android:id="@+id/viewStoreGoods"
+        android:icon="@drawable/ic_truck_view"
+        android:title="View Store" />
+</menu>
