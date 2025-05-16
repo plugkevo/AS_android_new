@@ -47,9 +47,14 @@ class ViewShipment : AppCompatActivity() {
                     return@setOnItemSelectedListener false
                 }
                 R.id.viewTruckGoods -> {
+                    currentShipmentId?.let {
                     // Load your view truck goods fragment without passing shipmentId initially
-                    loadFragment(view_truck_goods())
-                    return@setOnItemSelectedListener true
+                        loadFragment(view_truck_goods.newInstance(it))
+
+                        return@setOnItemSelectedListener true
+                    }
+                    Toast.makeText(this, "No Shipment selected.", Toast.LENGTH_SHORT).show()
+                    return@setOnItemSelectedListener false
                 }
                 R.id.enterStoreGoods -> {
                     currentShipmentId?.let {
