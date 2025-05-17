@@ -82,8 +82,8 @@ class enter_store_goods : Fragment() {
 
         val itemData = hashMapOf(
             "name" to goodsName,
-            "location" to storeLocation,
-            "quantity" to quantity
+            "storeLocation" to storeLocation, // Changed "location" to "storeLocation"
+            "goodsNumber" to quantity
         )
 
         firestore.collection("shipments")
@@ -109,6 +109,7 @@ class enter_store_goods : Fragment() {
                 Log.e("FirestoreError", "Error adding store goods for shipment $shipmentId", e)
             }
     }
+
 
     companion object {
         fun newInstance(shipmentId: String): enter_store_goods {
