@@ -27,7 +27,7 @@ class enter_truck_goods : Fragment() {
     private lateinit var addButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
-    private val goodsOptions = arrayOf("Electronics", "Clothing", "Food Items", "Books", "Furniture", "Other")
+    private val goodsOptions = arrayOf("Box","Electronics", "Toiletries", "Books", "Furniture", "Other")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

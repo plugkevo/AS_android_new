@@ -45,12 +45,12 @@ class enter_store_goods : Fragment() {
         saveButton = view.findViewById(R.id.saveButton)
 
         // Options for the goods name spinner
-        val goodsOptions = arrayOf("Electronics", "Clothing", "Food Items", "Books", "Furniture", "Other")
+        val goodsOptions = arrayOf("Box","Electronics", "Toiletries", "Books", "Furniture", "Other")
         val goodsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, goodsOptions)
         goodsNameSpinner.adapter = goodsAdapter
 
         // Options for the store location spinner
-        val storeLocations = arrayOf("Nairobi Warehouse", "Mombasa Branch", "Kisumu Depot", "Online Store")
+        val storeLocations = arrayOf("Store A", "Store B", "Store C")
         val locationAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, storeLocations)
         storeLocationSpinner.adapter = locationAdapter
 

@@ -28,7 +28,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/logo_placeholder"
+                    android:src="@drawable/as_logo"
                     android:contentDescription="Company Logo" />
 
                 <TextView
@@ -51,7 +51,8 @@
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="16dp"
                     android:src="@drawable/ic_profile"
-                    android:contentDescription="Profile" />
+                    android:contentDescription="Profile"
+                    app:tint="@color/white" />
 
                 <ImageView
                     android:id="@+id/iv_notifications"
@@ -61,7 +62,8 @@
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="16dp"
                     android:src="@drawable/ic_notifications"
-                    android:contentDescription="Notifications" />
+                    android:contentDescription="Notifications"
+                    app:tint="@color/white" />
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -80,7 +82,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@android:color/white"
-        app:itemIconTint="@color/black"
+        app:itemIconTint="@color/dark_blue"
         app:itemTextColor="@drawable/bottom_nav_colors"
         app:menu="@menu/bottom_navigation_menu" />
 

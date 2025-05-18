@@ -54,8 +54,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Track"
+                android:backgroundTint="@color/dark_blue"
                 android:textColor="@android:color/white"
-                android:background="@drawable/button_primary"
                 android:padding="12dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>

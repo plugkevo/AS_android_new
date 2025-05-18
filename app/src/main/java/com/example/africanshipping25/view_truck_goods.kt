@@ -120,7 +120,7 @@ class view_truck_goods : Fragment() {
 
         // Set the data
         goodsNumberEditText.setText(truckGood.goodsNumber)
-        val goodsNameOptions = arrayOf("Electronics", "Clothing", "Food Items", "Books", "Furniture", "Other") // Your options
+        val goodsNameOptions = arrayOf("Box","Electronics", "Toiletries", "Books", "Furniture", "Other") // Your options
         var selectedGoodsName = truckGood.name // Track selected
 
         goodsNameTextView.setOnClickListener {

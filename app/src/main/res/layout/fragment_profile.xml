@@ -313,11 +313,11 @@
                 android:id="@+id/btn_logout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Logout"
-                android:textColor="@android:color/white"
-                android:background="@drawable/button_primary"
+                android:layout_marginTop="16dp"
                 android:padding="12dp"
-                android:layout_marginTop="16dp" />
+                android:backgroundTint="@color/dark_blue"
+                android:text="Logout"
+                android:textColor="@android:color/white" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
