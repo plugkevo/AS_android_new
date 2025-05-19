@@ -8,9 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-interface OnShipmentUpdateListener {
-    fun onUpdateShipment(shipment: Shipment)
-}
+
 
 class ShipmentAdapter(
     private val shipmentList: MutableList<Shipment>,

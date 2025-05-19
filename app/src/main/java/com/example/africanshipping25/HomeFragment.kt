@@ -1,6 +1,7 @@
 package com.example.africanshipping25
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -36,6 +37,12 @@ class HomeFragment : Fragment() {
         val showCreateDialogButton = view.findViewById<CardView>(R.id.card_create_shipment)
         showCreateDialogButton?.setOnClickListener {
             showCreateShipmentDialog()
+        }
+
+        val mapsbtn = view.findViewById<CardView>(R.id.card_track_shipment)
+        mapsbtn.setOnClickListener {
+            val intent= Intent(requireContext(), MapsActivity::class.java)
+            startActivity(intent)
         }
 
         // Initialize other home screen UI elements and listeners here

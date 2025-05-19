@@ -8,6 +8,8 @@ data class Shipment(
     var weight: Double = 0.0,
     var details: String ="",
     var status: String="",
-    var date:String= ""
+    var date:String= "",
+    var latitude: Double? = null,
+    var longitude: Double? = null
     // Add more fields as needed (e.g., status, tracking number, etc.)
 )

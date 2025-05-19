@@ -20,6 +20,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.firestore.FirebaseFirestore
 
+interface OnShipmentUpdateListener {
+    fun onUpdateShipment(shipment: Shipment)
+}
+
 class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.OnShipmentItemClickListener {
 
     private lateinit var rvAllShipments: RecyclerView
@@ -142,10 +146,11 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
         val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
         val detailsEditText = dialogView.findViewById<EditText>(R.id.et_details)
+        val latitudeEditText = dialogView.findViewById<EditText>(R.id.et_latitude) // Get latitude EditText
+        val longitudeEditText = dialogView.findViewById<EditText>(R.id.et_longitude) // Get longitude EditText
         val statusSpinner = dialogView.findViewById<Spinner>(R.id.spinner_status)
         val updateButton = dialogView.findViewById<Button>(R.id.btn_update)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
-
 
         // Populate the spinner
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, statusOptions)
@@ -164,6 +169,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         originEditText.setText(shipment.origin)
         destinationEditText.setText(shipment.destination)
         detailsEditText.setText(shipment.details)
+        shipment.latitude?.let { latitudeEditText.setText(it.toString()) }
+        shipment.longitude?.let { longitudeEditText.setText(it.toString()) }
 
         updateButton.setOnClickListener {
             val updatedName = nameEditText.text.toString().trim()
@@ -171,6 +178,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             val updatedDestination = destinationEditText.text.toString().trim()
             val updatedDetails = detailsEditText.text.toString().trim()
             val updatedStatus = statusSpinner.selectedItem.toString() // Get selected status
+            val updatedLatitude = latitudeEditText.text.toString().toDoubleOrNull()
+            val updatedLongitude = longitudeEditText.text.toString().toDoubleOrNull()
 
             if (updatedName.isEmpty() || updatedOrigin.isEmpty() || updatedDestination.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill in all the name, origin, and destination", Toast.LENGTH_SHORT).show()
@@ -182,7 +191,9 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                 "origin" to updatedOrigin,
                 "destination" to updatedDestination,
                 "details" to updatedDetails,
-                "status" to updatedStatus
+                "status" to updatedStatus,
+                "latitude" to updatedLatitude,
+                "longitude" to updatedLongitude
                 // Add other fields you want to update
             )
 
@@ -212,6 +223,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         intent.putExtra("shipmentDestination", shipment.destination)
         intent.putExtra("shipmentStatus", shipment.status)
         intent.putExtra("shipmentDate", shipment.date)
+        shipment.latitude?.let { intent.putExtra("shipmentLatitude", it) }
+        shipment.longitude?.let { intent.putExtra("shipmentLongitude", it) }
         startActivity(intent)
     }
 }
