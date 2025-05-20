@@ -1,6 +1,8 @@
 package com.example.africanshipping25
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObjects
+import java.util.Locale // Import for case-insensitive search
 
 // Data class to represent a truck good item
 data class TruckGood(var goodsNumber: String? = null, var name: String? = null) // Add name
@@ -27,6 +30,9 @@ class view_truck_goods : Fragment() {
     private lateinit var truckGoodsAdapter: TruckGoodsAdapter
     private lateinit var db: FirebaseFirestore
     private var currentShipmentId: String? = null
+    private lateinit var searchEditText: EditText // Declare search EditText
+
+    private var allTruckGoods: List<TruckGood> = listOf() // Store all fetched data
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +60,7 @@ class view_truck_goods : Fragment() {
         // Initialize UI elements
         truckInventoryRecyclerView = view.findViewById(R.id.truckInventoryRecyclerView)
         emptyView = view.findViewById(R.id.emptyView)
+        searchEditText = view.findViewById(R.id.searchEditText) // Initialize search EditText
 
         // Set layout manager for the RecyclerView
         truckInventoryRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -67,6 +74,21 @@ class view_truck_goods : Fragment() {
 
         // Load data from Firestore
         loadTruckInventory()
+
+        // Add TextWatcher to the search bar
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Not needed for this functionality
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Not needed for this functionality
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                filterTruckGoods(s.toString())
+            }
+        })
     }
 
     private fun loadTruckInventory() {
@@ -96,12 +118,41 @@ class view_truck_goods : Fragment() {
         if (querySnapshot.isEmpty) {
             emptyView.visibility = View.VISIBLE
             truckInventoryRecyclerView.visibility = View.GONE
+            allTruckGoods = listOf() // Clear the allTruckGoods list
+            truckGoodsAdapter.updateData(mutableListOf()) // Clear adapter as well
         } else {
             emptyView.visibility = View.GONE
             truckInventoryRecyclerView.visibility = View.VISIBLE
             // Convert the QuerySnapshot to a List of TruckGood objects using toObjects()
             val truckGoodsList = querySnapshot.toObjects<TruckGood>()
-            truckGoodsAdapter.updateData(truckGoodsList) // Update the adapter with the new data
+            allTruckGoods = truckGoodsList // Store the full list
+            truckGoodsAdapter.updateData(truckGoodsList.toMutableList()) // Update the adapter with the new data
+        }
+    }
+
+    private fun filterTruckGoods(query: String) {
+        val filteredList = if (query.isBlank()) {
+            allTruckGoods // If query is empty, show all items
+        } else {
+            val lowerCaseQuery = query.lowercase(Locale.getDefault())
+            allTruckGoods.filter { truckGood ->
+                truckGood.name?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true ||
+                        truckGood.goodsNumber?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
+            }
+        }
+        truckGoodsAdapter.updateData(filteredList.toMutableList()) // Update adapter with filtered list
+        if (filteredList.isEmpty() && !query.isBlank()) {
+            emptyView.text = "No matching items found."
+            emptyView.visibility = View.VISIBLE
+            truckInventoryRecyclerView.visibility = View.GONE
+        } else if (filteredList.isEmpty() && query.isBlank()) {
+            emptyView.text = "No items in truck inventory" // Original empty message
+            emptyView.visibility = View.VISIBLE
+            truckInventoryRecyclerView.visibility = View.GONE
+        }
+        else {
+            emptyView.visibility = View.GONE
+            truckInventoryRecyclerView.visibility = View.VISIBLE
         }
     }
 
@@ -113,7 +164,7 @@ class view_truck_goods : Fragment() {
         val dialog = dialogBuilder.create()
 
         // Initialize views in the dialog
-        val goodsNameTextView = dialogView.findViewById<TextView>(R.id.detailGoodsNameTextView) // Changed to TextView
+        val goodsNameTextView = dialogView.findViewById<TextView>(R.id.detailGoodsNameTextView)
         val goodsNumberEditText = dialogView.findViewById<EditText>(R.id.detailGoodsNumberTextView)
         val updateButton = dialogView.findViewById<Button>(R.id.detailUpdateButton)
         val closeButton = dialogView.findViewById<Button>(R.id.detailCloseButton)
@@ -219,4 +270,3 @@ class view_truck_goods : Fragment() {
         }
     }
 }
-

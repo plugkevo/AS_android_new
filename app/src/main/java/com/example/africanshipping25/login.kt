@@ -28,7 +28,27 @@ class login : AppCompatActivity() {
         // Initialize Firebase Auth
         auth = Firebase.auth
 
-        // Initialize UI elements
+        // --- IMPORTANT: Check for existing user session here ---
+        // This check should happen BEFORE initializing and setting up UI elements related to manual login.
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            // User is already signed in
+            Log.d(TAG, "User already signed in: ${currentUser.uid}")
+            // Check if email is verified, as you do in loginUser()
+            if (currentUser.isEmailVerified) {
+                // Email is verified, navigate to the main activity
+                navigateToMainActivity()
+            } else {
+                // User is signed in but email not verified.
+                // You might want to show a message or a dedicated screen for verification.
+                Toast.makeText(baseContext, "Email not verified. Please check your inbox.", Toast.LENGTH_LONG).show()
+                // You could offer to resend verification here if appropriate
+            }
+            return // Exit onCreate as we're navigating away
+        }
+        // --- END IMPORTANT CHECK ---
+
+        // Initialize UI elements (only if no user is signed in, otherwise they're skipped)
         etEmail = findViewById(R.id.et_email)
         etPassword = findViewById(R.id.et_password)
         btnLogin = findViewById(R.id.btn_login)
@@ -42,9 +62,9 @@ class login : AppCompatActivity() {
 
         // Set up the "Forgot Password?" TextView click listener
         tvForgotPassword.setOnClickListener {
-            // Implement forgot password functionality here
             Toast.makeText(this, "Forgot Password clicked", Toast.LENGTH_SHORT).show()
             // You would typically navigate to a reset password activity
+            // startActivity(Intent(this, ForgotPasswordActivity::class.java))
         }
 
         // Set up the "Sign Up" TextView click listener
@@ -52,9 +72,6 @@ class login : AppCompatActivity() {
             startActivity(Intent(this, sign_up::class.java))
             finish() // Optionally finish the login activity
         }
-
-        // You would also handle the Google Login button here.
-        // For Google Login, you'll need to integrate the Google Sign-In SDK and Firebase Authentication.
     }
 
     private fun loginUser() {
@@ -74,9 +91,6 @@ class login : AppCompatActivity() {
             return
         }
 
-        // Sign in with email and password
-        // In your LoginActivity's loginUser() function:
-
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
@@ -85,8 +99,7 @@ class login : AppCompatActivity() {
                     if (user?.isEmailVerified == true) {
                         // Email is verified, proceed to the next activity
                         Toast.makeText(baseContext, "Login successful.", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, MainActivity::class.java))
-                        finish()
+                        navigateToMainActivity() // Use the dedicated navigation function
                     } else {
                         // Email is not verified
                         Toast.makeText(
@@ -107,6 +120,14 @@ class login : AppCompatActivity() {
                     ).show()
                 }
             }
+    }
+
+    private fun navigateToMainActivity() {
+        val intent = Intent(this, MainActivity::class.java)
+        // Clear the back stack so the user cannot go back to the login screen
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     companion object {

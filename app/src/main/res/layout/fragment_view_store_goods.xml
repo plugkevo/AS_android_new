@@ -31,6 +31,21 @@
             android:layout_gravity="center" />
     </androidx.cardview.widget.CardView>
 
+    <EditText
+        android:id="@+id/searchEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Search store inventory..."
+        android:padding="12dp"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="8dp"
+        android:background="@drawable/search_bar_background" android:singleLine="true"
+        android:imeOptions="actionSearch"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/headerCard" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/storeInventoryRecyclerView"
         android:layout_width="0dp"
@@ -39,8 +54,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerCard"
-        tools:listitem="@layout/store_goods_list_view" />
+        app:layout_constraintTop_toBottomOf="@+id/searchEditText" tools:listitem="@layout/store_goods_list_view" />
 
     <TextView
         android:id="@+id/emptyView"
@@ -50,9 +64,9 @@
         android:textSize="18sp"
         android:textColor="@color/text_primary"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@+id/storeInventoryRecyclerView"
+        app:layout_constraintEnd_toEndOf="@+id/storeInventoryRecyclerView"
+        app:layout_constraintStart_toStartOf="@+id/storeInventoryRecyclerView"
+        app:layout_constraintTop_toTopOf="@+id/storeInventoryRecyclerView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

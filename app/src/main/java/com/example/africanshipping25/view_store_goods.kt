@@ -1,6 +1,8 @@
 package com.example.africanshipping25
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObjects
+import java.util.Locale
 
 data class StoreGood(var goodsNumber: Long? = null, var name: String? = null, var storeLocation: String? = null)
 
@@ -25,6 +28,9 @@ class view_store_goods : Fragment() {
     private lateinit var storeGoodsAdapter: StoreGoodsAdapter
     private lateinit var db: FirebaseFirestore
     private var currentShipmentId: String? = null
+    private lateinit var searchEditText: EditText
+
+    private var allStoreGoods: List<StoreGood> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +53,7 @@ class view_store_goods : Fragment() {
         db = FirebaseFirestore.getInstance()
         storeInventoryRecyclerView = view.findViewById(R.id.storeInventoryRecyclerView)
         emptyView = view.findViewById(R.id.emptyView)
+        searchEditText = view.findViewById(R.id.searchEditText)
 
         storeInventoryRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         storeInventoryRecyclerView.setHasFixedSize(true)
@@ -57,6 +64,20 @@ class view_store_goods : Fragment() {
         storeInventoryRecyclerView.adapter = storeGoodsAdapter
 
         loadStoreInventory()
+        // Add TextWatcher to the search bar
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Not needed for this functionality
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Not needed for this functionality
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                filterStoreGoods(s.toString())
+            }
+        })
     }
 
     private fun loadStoreInventory() {
@@ -88,14 +109,43 @@ class view_store_goods : Fragment() {
         if (querySnapshot.isEmpty) {
             emptyView.visibility = View.VISIBLE
             storeInventoryRecyclerView.visibility = View.GONE
+            allStoreGoods = listOf() // Clear the allStoreGoods list
+            storeGoodsAdapter.updateData(mutableListOf())
         } else {
             emptyView.visibility = View.GONE
             storeInventoryRecyclerView.visibility = View.VISIBLE
             val storeGoodsList = querySnapshot.toObjects<StoreGood>()
             Log.d("ViewStoreGoodsFragment", "handleStoreInventoryData: storeGoodsList size = ${storeGoodsList.size}")
+            allStoreGoods = storeGoodsList
             storeGoodsAdapter.updateData(storeGoodsList)
         }
     }
+    private fun filterStoreGoods(query: String) {
+        val filteredList = if (query.isBlank()) {
+            allStoreGoods // If query is empty, show all items
+        } else {
+            val lowerCaseQuery = query.lowercase(Locale.getDefault())
+            allStoreGoods.filter { storeGood ->
+                storeGood.name?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true ||
+                        storeGood.goodsNumber?.toString()?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true ||
+                        storeGood.storeLocation?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
+            }
+        }
+        storeGoodsAdapter.updateData(filteredList.toMutableList()) // Update adapter with filtered list
+        if (filteredList.isEmpty() && !query.isBlank()) {
+            emptyView.text = "No matching items found."
+            emptyView.visibility = View.VISIBLE
+            storeInventoryRecyclerView.visibility = View.GONE
+        } else if (filteredList.isEmpty() && query.isBlank()) {
+            emptyView.text = "No items in store inventory" // Original empty message
+            emptyView.visibility = View.VISIBLE
+            storeInventoryRecyclerView.visibility = View.GONE
+        } else {
+            emptyView.visibility = View.GONE
+            storeInventoryRecyclerView.visibility = View.VISIBLE
+        }
+    }
+
 
     private fun showGoodsDetailsDialog(storeGood: StoreGood) {
         val dialogBuilder = AlertDialog.Builder(requireContext())
