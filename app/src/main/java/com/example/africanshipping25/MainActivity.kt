@@ -2,9 +2,7 @@ package com.example.africanshipping25
 
 
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -54,7 +52,7 @@ class MainActivity : AppCompatActivity() {
                     return@setOnItemSelectedListener true
                 }
                 R.id.nav_track -> {
-                    loadFragment(TrackFragment())
+                    loadFragment(PaymentFragment())
                     return@setOnItemSelectedListener true
                 }
                 R.id.nav_profile -> {

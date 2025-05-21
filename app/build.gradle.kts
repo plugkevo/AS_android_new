@@ -34,6 +34,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -46,8 +49,17 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation("com.google.android.gms:play-services-maps:19.2.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+
+// Or your current AGP version
     testImplementation(libs.junit)
+
+// For JSON parsing (Gson)
+    implementation("com.google.code.gson:gson:2.8.9")
+// If you are using Kotlin, ensure you have the Kotlin standard library
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.20")
+// Use your project's Kotlin version
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("de.hdodenhof:circleimageview:3.1.0")
