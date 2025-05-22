@@ -51,12 +51,12 @@ class MainActivity : AppCompatActivity() {
                     loadFragment(ShipmentsFragment())
                     return@setOnItemSelectedListener true
                 }
-                R.id.nav_track -> {
-                    loadFragment(PaymentFragment())
+                R.id.nav_loading_list -> {
+                    loadFragment(LoadingFragment())
                     return@setOnItemSelectedListener true
                 }
-                R.id.nav_profile -> {
-                    loadFragment(ProfileFragment())
+                R.id.nav_payment -> {
+                    loadFragment(PaymentFragment())
                     return@setOnItemSelectedListener true
                 }
             }

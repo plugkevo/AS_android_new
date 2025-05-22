@@ -25,10 +25,10 @@
                 android:id="@+id/imgPackage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/ic_truck_delivery"
+                android:src="@drawable/ic_store_truck"
                 android:layout_marginEnd="16dp"
                 android:contentDescription="Package"
-                app:tint="@color/colorLightBlue" />
+                 />
 
             <LinearLayout
                 android:layout_width="0dp"

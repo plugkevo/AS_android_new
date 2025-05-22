@@ -143,10 +143,10 @@
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/ic_add_box"
+                        android:src="@drawable/ic_add_shipment_color"
                         android:layout_marginBottom="8dp"
                         android:contentDescription="Create Shipment"
-                        app:tint="@color/colorLightBlue" />
+                         />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -178,10 +178,10 @@
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/ic_location"
+                        android:src="@drawable/ic_track_shipment_color"
                         android:layout_marginBottom="8dp"
                         android:contentDescription="Track Shipment"
-                        app:tint="@color/colorLightBlue" />
+                         />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -194,7 +194,7 @@
 
             <!-- Reports Button -->
             <androidx.cardview.widget.CardView
-                android:id="@+id/card_reports"
+                android:id="@+id/card_loading"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -205,24 +205,24 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:gravity="center"
+                    android:orientation="vertical"
                     android:padding="16dp">
 
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/ic_report"
                         android:layout_marginBottom="8dp"
                         android:contentDescription="Reports"
-                        app:tint="@color/colorLightBlue" />
+                        android:src="@drawable/ic_list_add_color"
+                         />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Reports"
-                        android:textSize="14sp"
-                        android:textColor="@color/colorLightBlue" />
+                        android:text="Loading List"
+                        android:textColor="@color/colorLightBlue"
+                        android:textSize="14sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
