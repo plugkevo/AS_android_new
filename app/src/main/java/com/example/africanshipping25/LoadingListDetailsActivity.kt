@@ -12,7 +12,7 @@ class LoadingListDetailsActivity : AppCompatActivity() {
 
     // Declare your UI elements
     private lateinit var viewPager: ViewPager
-    private lateinit var tabLayout: TabLayout // Assuming your TabLayout ID is 'tbLayout' or similar
+    private lateinit var tabLayout: TabLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,28 +20,27 @@ class LoadingListDetailsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_loading_list_details)
 
         // Initialize UI elements using findViewById
-        viewPager = findViewById(R.id.viewPager) // Make sure 'viewPager' is the ID in your XML
-        tabLayout = findViewById(R.id.tbLayout)   // Make sure 'tbLayout' is the ID in your XML
+        viewPager = findViewById(R.id.viewPager)
+        tabLayout = findViewById(R.id.tbLayout)
 
-        val adapter = ViewPagerAdapter(supportFragmentManager)
-
-        adapter.addFragment(EnterWarehouseGoods(), "Enter Goods")
-        adapter.addFragment(ViewWarehouseGoods(), "View Goods")
-        //adapter.addFragment(ThirdFragment(), "My Tenders")
-
-        // Set the adapter to the ViewPager
-        viewPager.adapter = adapter
-        // Link the TabLayout with the ViewPager
-        tabLayout.setupWithViewPager(viewPager)
-
-        // Retrieve the ID from the Intent
+        // Retrieve the ID from the Intent FIRST
         val loadingListId = intent.getStringExtra("loadingListId")
 
         if (loadingListId != null) {
             Log.d("LoadingListDetail", "Received Loading List ID: $loadingListId")
-            // Now you can use this ID to fetch the full details of the loading list from Firestore
-            // For example:
-            // FirebaseFirestore.getInstance().collection("loading_lists").document(loadingListId).get()...
+
+            val adapter = ViewPagerAdapter(supportFragmentManager)
+
+            // Pass the loadingListId to the EnterWarehouseGoods fragment using its newInstance method
+            adapter.addFragment(EnterWarehouseGoods.newInstance(loadingListId), "Enter Goods")
+            adapter.addFragment(ViewWarehouseGoods(), "View Goods") // Pass ID to ViewWarehouseGoods if needed too
+            //adapter.addFragment(ThirdFragment(), "My Tenders")
+
+            // Set the adapter to the ViewPager
+            viewPager.adapter = adapter
+            // Link the TabLayout with the ViewPager
+            tabLayout.setupWithViewPager(viewPager)
+
         } else {
             Log.e("LoadingListDetail", "No Loading List ID received!")
             // Handle the case where no ID is passed, e.g., show an error message or finish the activity

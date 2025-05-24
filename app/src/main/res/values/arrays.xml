@@ -15,4 +15,16 @@
         <item>North Branch</item>
         <item>South Branch</item>
     </string-array>
+
+
+
+        <string-array name="goods_names_array">
+            <item>Electronics</item>
+            <item>Apparel</item>
+            <item>Books</item>
+            <item>Food Items</item>
+            <item>Furniture</item>
+            <item>Other</item>
+        </string-array>
+
 </resources>
