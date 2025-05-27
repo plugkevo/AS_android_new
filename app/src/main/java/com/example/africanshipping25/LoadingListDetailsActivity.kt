@@ -33,7 +33,7 @@ class LoadingListDetailsActivity : AppCompatActivity() {
 
             // Pass the loadingListId to the EnterWarehouseGoods fragment using its newInstance method
             adapter.addFragment(EnterWarehouseGoods.newInstance(loadingListId), "Enter Goods")
-            adapter.addFragment(ViewWarehouseGoods(), "View Goods") // Pass ID to ViewWarehouseGoods if needed too
+            adapter.addFragment(ViewWarehouseGoods.newInstance(loadingListId), "View Goods") // Pass ID to ViewWarehouseGoods if needed too
             //adapter.addFragment(ThirdFragment(), "My Tenders")
 
             // Set the adapter to the ViewPager

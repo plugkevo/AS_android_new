@@ -51,7 +51,7 @@
                     android:id="@+id/iv_notifications"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:layout_toStartOf="@id/iv_profile"
+                    android:layout_toStartOf="@id/ic_logout"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="16dp"
                     android:src="@drawable/ic_notifications"
@@ -59,15 +59,15 @@
                     app:tint="@color/white" />
 
                 <ImageView
-                    android:id="@+id/iv_profile"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="16dp"
-                    android:src="@drawable/ic_profile"
-                    android:contentDescription="Profile"
-                    app:tint="@color/white" />
+                android:id="@+id/ic_logout"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_logout"
+                android:contentDescription="Profile"
+                app:tint="@color/white" />
 
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
