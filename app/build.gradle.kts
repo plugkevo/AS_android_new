@@ -50,7 +50,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
+    implementation("com.google.android.material:material:1.11.0")
 
 // Or your current AGP version
     testImplementation(libs.junit)

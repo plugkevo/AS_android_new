@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.viewpager.widget.ViewPager // Import ViewPager
 import com.google.android.material.tabs.TabLayout // Import TabLayout
 
@@ -22,6 +23,9 @@ class LoadingListDetailsActivity : AppCompatActivity() {
         // Initialize UI elements using findViewById
         viewPager = findViewById(R.id.viewPager)
         tabLayout = findViewById(R.id.tbLayout)
+
+        window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
+
 
         // Retrieve the ID from the Intent FIRST
         val loadingListId = intent.getStringExtra("loadingListId")

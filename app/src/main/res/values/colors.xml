@@ -8,6 +8,9 @@
     <color name="colorDarkBlue">#0D47A1</color>
     <color name="colorLightBlue">#29B6F6</color>
 
+    <color name="tc_blue">#1A237E</color>
+    <color name="backgroundd">#FFFFFFFF</color>
+
     <!-- Base colors -->
     <color name="dark_blue">#1A237E</color>
     <color name="medium_blue">#3949AB</color>
@@ -16,13 +19,59 @@
     <color name="red">#f10e11</color>
 
 
-    <!-- Theme colors -->
-    <color name="primary">@color/medium_blue</color>
-    <color name="primary_dark">@color/dark_blue</color>
-    <color name="primary_light">@color/light_blue</color>
-    <color name="accent">@color/medium_blue</color>
-    <color name="background">@color/white</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="text_on_primary">@color/white</color>
+
+    <color name="purple_700">#3700b3</color>
+
+
+
+        <!-- Primary Colors -->
+        <color name="primary">#0D47A1</color>
+        <color name="primary_dark">#002171</color>
+        <color name="primary_light">#5472D3</color>
+
+        <!-- Secondary Colors -->
+        <color name="secondary">#1976D2</color>
+        <color name="secondary_dark">#004BA0</color>
+        <color name="secondary_light">#63A4FF</color>
+
+        <!-- Accent Colors -->
+        <color name="accent">#2196F3</color>
+        <color name="accent_light">#6EC6FF</color>
+
+        <!-- Background Colors -->
+        <color name="background">#FFFFFF</color>
+        <color name="background_secondary">#F5F5F5</color>
+        <color name="surface">#FFFFFF</color>
+
+        <!-- Text Colors -->
+        <color name="text_primary">#212121</color>
+        <color name="text_secondary">#757575</color>
+        <color name="text_on_primary">#FFFFFF</color>
+        <color name="text_on_secondary">#FFFFFF</color>
+
+        <!-- Error Colors -->
+        <color name="error">#F44336</color>
+        <color name="error_dark">#D32F2F</color>
+
+        <!-- Success Colors -->
+        <color name="success">#4CAF50</color>
+        <color name="success_dark">#388E3C</color>
+
+        <!-- Warning Colors -->
+        <color name="warning">#FF9800</color>
+        <color name="warning_dark">#F57C00</color>
+
+        <!-- Divider and Border Colors -->
+        <color name="divider">#E0E0E0</color>
+        <color name="border">#BDBDBD</color>
+
+        <!-- Ripple Effect -->
+        <color name="ripple">#1A1976D2</color>
+
+        <!-- Status Bar -->
+        <color name="status_bar">#002171</color>
+
+        <!-- Navigation Bar -->
+        <color name="navigation_bar">#0D47A1</color>
+
 </resources>
