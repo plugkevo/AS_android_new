@@ -13,21 +13,25 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query // Import Query (if needed elsewhere in your fragment)
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.FieldValue
 
 class HomeFragment : Fragment() {
 
     private lateinit var firestore: FirebaseFirestore
     private lateinit var tvActiveCount: TextView
     private lateinit var tvDeliveredCount: TextView
+    private lateinit var rvAllShipments: RecyclerView
+    private lateinit var homeShipmentAdapter: HomeShipmentAdapter // Changed to HomeShipmentAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
@@ -38,27 +42,25 @@ class HomeFragment : Fragment() {
 
         tvActiveCount = view.findViewById(R.id.tv_active_count)
         tvDeliveredCount = view.findViewById(R.id.tv_delivered_count)
+        rvAllShipments = view.findViewById(R.id.rv_all_shipments)
+
+        // Initialize HomeShipmentAdapter
+        homeShipmentAdapter = HomeShipmentAdapter(mutableListOf())
+        rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
+        rvAllShipments.adapter = homeShipmentAdapter
 
         loadShipmentCounts()
+        loadLatestShipments()
 
-        // This is your EXISTING dialog trigger (presumably for fragment_new_shipment_dialog)
         val showCreateShipmentDialogButton = view.findViewById<CardView>(R.id.card_create_shipment)
         showCreateShipmentDialogButton?.setOnClickListener {
-            // This calls your ORIGINAL dialog function
             showCreateShipmentDialog()
         }
 
-        // --- NEW DIALOG TRIGGER ---
-        // Assuming you have another CardView or Button in your fragment_home.xml
-        // for triggering the "Create New Loading List" dialog.
-        // Replace R.id.your_new_loading_list_trigger_card with the actual ID from your layout
-        val showCreateLoadingListDialogButton = view.findViewById<CardView>(R.id.card_loading) // <--- IMPORTANT: Replace with your actual ID
+        val showCreateLoadingListDialogButton = view.findViewById<CardView>(R.id.card_loading)
         showCreateLoadingListDialogButton?.setOnClickListener {
-            // This calls the NEW dialog function
             showCreateLoadingListDialog()
         }
-        // --------------------------
-
 
         val mapsbtn = view.findViewById<CardView>(R.id.card_track_shipment)
         mapsbtn.setOnClickListener {
@@ -66,11 +68,14 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
 
-
+        val viewAllTextView = view.findViewById<TextView>(R.id.tv_view_all)
+        viewAllTextView.setOnClickListener {
+            Toast.makeText(requireContext(), "View All Shipments Clicked!", Toast.LENGTH_SHORT).show()
+            // Here you can navigate to a new activity or fragment that shows all shipments
+        }
     }
 
     private fun loadShipmentCounts() {
-        // Query for Active Shipments
         firestore.collection("shipments")
             .whereIn("status", listOf("Active", "In Transit","Processing"))
             .get()
@@ -84,7 +89,6 @@ class HomeFragment : Fragment() {
                 tvActiveCount.text = "Error"
             }
 
-        // Query for Delivered Shipments
         firestore.collection("shipments")
             .whereEqualTo("status", "Delivered")
             .get()
@@ -99,11 +103,32 @@ class HomeFragment : Fragment() {
             }
     }
 
-    // --- YOUR ORIGINAL DIALOG FUNCTION - UNTOUCHED ---
+    private fun loadLatestShipments() {
+        firestore.collection("shipments")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(2)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val latestShipments = mutableListOf<Shipment>()
+                for (document in querySnapshot.documents) {
+                    val shipment = document.toObject(Shipment::class.java)
+                    shipment?.let {
+                        it.id = document.id
+                        latestShipments.add(it)
+                    }
+                }
+                homeShipmentAdapter.updateShipments(latestShipments) // Use homeShipmentAdapter
+                Log.d("HomeFragment", "Loaded ${latestShipments.size} latest shipments.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("HomeFragment", "Error getting latest shipments: ", e)
+                Toast.makeText(requireContext(), "Error loading recent shipments: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     private fun showCreateShipmentDialog() {
         val builder = AlertDialog.Builder(requireContext())
-        // Assuming this dialog uses fragment_new_shipment_dialog.xml as you mentioned initially
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.fragment_new_shipment_dialog, null)
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_new_shipment, null)
         builder.setView(dialogView)
         val dialog = builder.create()
         dialog.show()
@@ -111,10 +136,9 @@ class HomeFragment : Fragment() {
         val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
         val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
         val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
-        val weightEditText = dialogView.findViewById<EditText>(R.id.et_weight) // This was likely a weight field previously
+        val weightEditText = dialogView.findViewById<EditText>(R.id.et_details)
         val createButton = dialogView.findViewById<Button>(R.id.btn_create)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
-
 
         createButton.setOnClickListener {
             val name = nameEditText.text.toString().trim()
@@ -138,15 +162,17 @@ class HomeFragment : Fragment() {
                 "origin" to origin,
                 "destination" to destination,
                 "weight" to weight,
-                "status" to "pending"
+                "status" to "Active",
+                "createdAt" to FieldValue.serverTimestamp()
             )
 
             firestore.collection("shipments")
                 .add(shipment)
                 .addOnSuccessListener { documentReference ->
-                    Toast.makeText(requireContext(), "Shipment created with ID: ${documentReference.id}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Shipment created successfully!", Toast.LENGTH_SHORT).show()
                     dialog.dismiss()
                     loadShipmentCounts()
+                    loadLatestShipments()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), "Error creating shipment: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -157,24 +183,19 @@ class HomeFragment : Fragment() {
             dialog.dismiss()
         }
     }
-    // --- END OF ORIGINAL DIALOG FUNCTION ---
 
-
-    // --- START OF NEW DIALOG FUNCTION FOR LOADING LISTS ---
     private fun showCreateLoadingListDialog() {
         val builder = AlertDialog.Builder(requireContext())
-        // Inflate the custom layout from YOUR PROVIDED XML (loading_list_dialog_layout.xml)
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_loading, null)
         builder.setView(dialogView)
 
         val dialog = builder.create()
         dialog.show()
 
-        // Get references to the EditText and Button views from the inflated dialog layout
         val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
         val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
         val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
-        val extraDetailsEditText = dialogView.findViewById<EditText>(R.id.et_weight) // This is your "Any extra info" field
+        val extraDetailsEditText = dialogView.findViewById<EditText>(R.id.et_details)
         val createButton = dialogView.findViewById<Button>(R.id.btn_create)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
@@ -184,31 +205,26 @@ class HomeFragment : Fragment() {
             val destination = destinationEditText.text.toString().trim()
             val extraDetails = extraDetailsEditText.text.toString().trim()
 
-            // Basic validation for mandatory fields
             if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
                 Toast.makeText(requireContext(), "Name, Origin, and Destination are required.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Create a map to hold the loading list data
             val loadingList = hashMapOf(
                 "name" to name,
                 "origin" to origin,
                 "destination" to destination,
-                "extraDetails" to extraDetails, // Storing "Any extra info"
-                "status" to "New" // Initial status for a new loading list entry
+                "extraDetails" to extraDetails,
+                "status" to "New",
+                "createdAt" to FieldValue.serverTimestamp()
             )
 
-            // Add a new document to a *different* collection, e.g., "loading_lists"
-            // to keep it separate from "shipments", or adjust if "shipments" should also contain this
-            firestore.collection("loading_lists") // <--- IMPORTANT: Consider a new collection name if these are distinct from "shipments"
+            firestore.collection("loading_lists")
                 .add(loadingList)
                 .addOnSuccessListener { documentReference ->
                     Toast.makeText(requireContext(), "Loading List created successfully!", Toast.LENGTH_SHORT).show()
                     Log.d("HomeFragment", "Loading List Document added with ID: ${documentReference.id}")
-                    dialog.dismiss() // Dismiss the dialog after successful creation
-                    // You might want to update a different count or UI element here
-                    // if loading lists have their own section/counts.
+                    dialog.dismiss()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), "Error creating loading list: ${e.message}", Toast.LENGTH_LONG).show()
@@ -221,5 +237,4 @@ class HomeFragment : Fragment() {
             Toast.makeText(requireContext(), "Loading list creation cancelled.", Toast.LENGTH_SHORT).show()
         }
     }
-    // --- END OF NEW DIALOG FUNCTION ---
 }

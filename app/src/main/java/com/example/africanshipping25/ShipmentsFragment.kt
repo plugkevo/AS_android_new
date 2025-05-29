@@ -223,6 +223,9 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         intent.putExtra("shipmentDestination", shipment.destination)
         intent.putExtra("shipmentStatus", shipment.status)
         intent.putExtra("shipmentDate", shipment.date)
+        shipment.createdAt?.let {
+            intent.putExtra("shipmentCreatedAtMillis", it.time) // Pass as milliseconds
+        }
         shipment.latitude?.let { intent.putExtra("shipmentLatitude", it) }
         shipment.longitude?.let { intent.putExtra("shipmentLongitude", it) }
         startActivity(intent)

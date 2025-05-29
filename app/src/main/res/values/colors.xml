@@ -11,12 +11,17 @@
     <color name="tc_blue">#1A237E</color>
     <color name="backgroundd">#FFFFFFFF</color>
 
+    <color name="orange">#FFA500</color>
+    <color name="blue">#29B6F6</color>
+    <color name="green">#008000</color>
+    <color name="red">#FF0000</color>
+
     <!-- Base colors -->
     <color name="dark_blue">#1A237E</color>
     <color name="medium_blue">#3949AB</color>
     <color name="light_blue">#BBDEFB</color>
     <color name="colorTextSecondary">#757575</color>
-    <color name="red">#f10e11</color>
+
 
 
 
