@@ -1,72 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:fillViewport="true"
     android:background="@color/white"
-    tools:context=".view_store_goods">
+    tools:context=".view_store_goods"> <!-- Corrected context to view_store_goods -->
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/headerCard"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:padding="16dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/headerCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/titleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Truck Goods"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:padding="16dp"
+                android:layout_gravity="center" />
+        </androidx.cardview.widget.CardView>
+
+        <EditText
+            android:id="@+id/searchEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Search store inventory..."
+            android:padding="12dp"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:background="@drawable/search_bar_background"
+            android:singleLine="true"
+            android:imeOptions="actionSearch"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/headerCard" />
+
+        <!-- Lottie animation view for the LOADING state -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_loading_animation"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="32dp"
+            android:visibility="gone"
+            app:lottie_rawRes="@raw/loading_animation"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintBottom_toTopOf="@id/storeInventoryRecyclerView"
+            app:layout_constraintVertical_bias="0.2" />
+
+        <!-- Lottie animation view for the NO DATA state -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_no_data_animation"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="32dp"
+            android:visibility="gone"
+            app:lottie_rawRes="@raw/no_data_animation"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintBottom_toTopOf="@id/emptyView"
+            app:layout_constraintVertical_bias="0.2" />
 
         <TextView
-            android:id="@+id/titleTextView"
+            android:id="@+id/emptyView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Store Inventory"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:padding="16dp"
-            android:layout_gravity="center" />
-    </androidx.cardview.widget.CardView>
+            android:text="No items in store inventory."
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lottie_no_data_animation"
+            app:layout_constraintVertical_bias="0.1" />
 
-    <EditText
-        android:id="@+id/searchEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Search store inventory..."
-        android:padding="12dp"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:drawablePadding="8dp"
-        android:background="@drawable/search_bar_background" android:singleLine="true"
-        android:imeOptions="actionSearch"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerCard" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/storeInventoryRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:nestedScrollingEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:listitem="@layout/store_goods_list_view" /> <!-- Assuming this is the list item layout -->
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/warehouseInventoryRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchEditText" tools:listitem="@layout/store_goods_list_view" />
-
-    <TextView
-        android:id="@+id/emptyView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="No items in store inventory"
-        android:textSize="18sp"
-        android:textColor="@color/text_primary"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/storeInventoryRecyclerView"
-        app:layout_constraintEnd_toEndOf="@+id/storeInventoryRecyclerView"
-        app:layout_constraintStart_toStartOf="@+id/storeInventoryRecyclerView"
-        app:layout_constraintTop_toTopOf="@+id/storeInventoryRecyclerView" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

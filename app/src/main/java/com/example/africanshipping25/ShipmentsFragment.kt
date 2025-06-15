@@ -13,12 +13,14 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.firestore.FirebaseFirestore
+import com.airbnb.lottie.LottieAnimationView
 
 interface OnShipmentUpdateListener {
     fun onUpdateShipment(shipment: Shipment)
@@ -30,6 +32,9 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     private lateinit var etSearch: EditText
     private lateinit var chipGroup: ChipGroup
     private lateinit var shipmentAdapter: ShipmentAdapter
+    private lateinit var lottieLoadingAnimation: LottieAnimationView // For loading state
+    private lateinit var lottieNoDataAnimation: LottieAnimationView // For no data state
+    private lateinit var tvNoDataMessage: TextView
     private val allShipmentsList = mutableListOf<Shipment>()
     private val filteredShipmentsList = mutableListOf<Shipment>()
     private val firestore = FirebaseFirestore.getInstance()
@@ -50,9 +55,12 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         rvAllShipments = view.findViewById(R.id.rv_all_shipments)
         etSearch = view.findViewById(R.id.et_search)
         chipGroup = view.findViewById(R.id.chip_group)
+        lottieLoadingAnimation = view.findViewById(R.id.lottie_loading_animation)
+        lottieNoDataAnimation = view.findViewById(R.id.lottie_no_data_animation) // Initialize no data Lottie
+        tvNoDataMessage = view.findViewById(R.id.tv_no_data_message)
 
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
-        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this) // Pass 'this' as the itemClickListener
+        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this)
         rvAllShipments.adapter = shipmentAdapter
 
         fetchShipments()
@@ -60,24 +68,59 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     }
 
     private fun fetchShipments() {
+        // Show loading animation, hide others
+        lottieLoadingAnimation.visibility = View.VISIBLE
+        lottieLoadingAnimation.playAnimation()
+        lottieNoDataAnimation.visibility = View.GONE
+        lottieNoDataAnimation.cancelAnimation()
+        tvNoDataMessage.visibility = View.GONE
+        rvAllShipments.visibility = View.GONE
+
         firestore.collection("shipments")
             .get()
             .addOnCompleteListener { task ->
+                lottieLoadingAnimation.cancelAnimation() // Stop loading animation when fetch completes
+
                 if (task.isSuccessful) {
                     allShipmentsList.clear()
                     for (document in task.result!!) {
                         val shipment = document.toObject(Shipment::class.java).apply {
                             id = document.id
                         }
-                        Log.d("ShipmentStatus", "Status: ${shipment.status}") // Add this line
+                        Log.d("ShipmentStatus", "Status: ${shipment.status}")
                         allShipmentsList.add(shipment)
                     }
+
+                    filteredShipmentsList.clear()
                     filteredShipmentsList.addAll(allShipmentsList)
                     shipmentAdapter.notifyDataSetChanged()
+
+                    if (allShipmentsList.isEmpty()) {
+                        // If no data in DB, show no data Lottie and message
+                        lottieNoDataAnimation.visibility = View.VISIBLE
+                        lottieNoDataAnimation.playAnimation()
+                        tvNoDataMessage.visibility = View.VISIBLE
+                        tvNoDataMessage.text = "No shipments found in the database." // Initial no data message
+                        rvAllShipments.visibility = View.GONE
+                    } else {
+                        // Data exists, hide Lottie and message, show RecyclerView
+                        lottieNoDataAnimation.visibility = View.GONE
+                        lottieNoDataAnimation.cancelAnimation()
+                        tvNoDataMessage.visibility = View.GONE
+                        rvAllShipments.visibility = View.VISIBLE
+                    }
                 } else {
                     Log.w("AllShipmentsFragment", "Error getting documents.", task.exception)
-                    // Handle the error appropriately, e.g., display a toast
+                    Toast.makeText(requireContext(), "Error loading shipments: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    // On error, show a message indicating failure
+                    lottieNoDataAnimation.visibility = View.GONE // No specific error Lottie, so hide it
+                    lottieNoDataAnimation.cancelAnimation()
+                    tvNoDataMessage.text = "Failed to load shipments. Please try again." // Specific error message
+                    tvNoDataMessage.visibility = View.VISIBLE
+                    rvAllShipments.visibility = View.GONE
                 }
+                // Always hide loading animation here, regardless of success/failure
+                lottieLoadingAnimation.visibility = View.GONE
             }
     }
 
@@ -85,49 +128,28 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                filterShipments(s.toString(), getSelectedFilter())
+                // Corrected call: Specify the outer class
+                this@ShipmentsFragment.filterShipments(s.toString(), this@ShipmentsFragment.getSelectedFilter())
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
 
         chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
-            val selectedFilter = getSelectedFilter()
-            filterShipments(etSearch.text.toString(), selectedFilter)
+            // Corrected call: Specify the outer class
+            val selectedFilter = this@ShipmentsFragment.getSelectedFilter()
+            this@ShipmentsFragment.filterShipments(etSearch.text.toString(), selectedFilter)
         }
     }
 
     private fun getSelectedFilter(): String {
         return when (chipGroup.checkedChipId) {
-            R.id.chip_active -> "Active" // Match the status options
+            R.id.chip_active -> "Active"
             R.id.chip_in_transit -> "In Transit"
             R.id.chip_delivered -> "Delivered"
             R.id.chip_processing -> "Processing"
             else -> "all"
         }
-    }
-
-    private fun filterShipments(searchText: String, filter: String) {
-        filteredShipmentsList.clear()
-        val lowerCaseSearchText = searchText.lowercase()
-
-        for (shipment in allShipmentsList) {
-            val matchesSearch =
-                shipment.name.lowercase().contains(lowerCaseSearchText) ||
-                        shipment.origin.lowercase().contains(lowerCaseSearchText) ||
-                        shipment.destination.lowercase().contains(lowerCaseSearchText)
-
-            val matchesFilter = if (filter == "all") {
-                true
-            } else {
-                shipment.status == filter // Direct case-sensitive comparison
-            }
-
-            if (matchesSearch && matchesFilter) {
-                filteredShipmentsList.add(shipment)
-            }
-        }
-        shipmentAdapter.notifyDataSetChanged()
     }
 
     override fun onUpdateShipment(shipment: Shipment) {
@@ -146,8 +168,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
         val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
         val detailsEditText = dialogView.findViewById<EditText>(R.id.et_details)
-        val latitudeEditText = dialogView.findViewById<EditText>(R.id.et_latitude) // Get latitude EditText
-        val longitudeEditText = dialogView.findViewById<EditText>(R.id.et_longitude) // Get longitude EditText
+        val latitudeEditText = dialogView.findViewById<EditText>(R.id.et_latitude)
+        val longitudeEditText = dialogView.findViewById<EditText>(R.id.et_longitude)
         val statusSpinner = dialogView.findViewById<Spinner>(R.id.spinner_status)
         val updateButton = dialogView.findViewById<Button>(R.id.btn_update)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
@@ -177,7 +199,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             val updatedOrigin = originEditText.text.toString().trim()
             val updatedDestination = destinationEditText.text.toString().trim()
             val updatedDetails = detailsEditText.text.toString().trim()
-            val updatedStatus = statusSpinner.selectedItem.toString() // Get selected status
+            val updatedStatus = statusSpinner.selectedItem.toString()
             val updatedLatitude = latitudeEditText.text.toString().toDoubleOrNull()
             val updatedLongitude = longitudeEditText.text.toString().toDoubleOrNull()
 
@@ -194,7 +216,6 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                 "status" to updatedStatus,
                 "latitude" to updatedLatitude,
                 "longitude" to updatedLongitude
-                // Add other fields you want to update
             )
 
             firestore.collection("shipments").document(shipment.id)
@@ -215,19 +236,55 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     }
 
     override fun onShipmentItemClick(shipment: Shipment) {
-        // Handle item click to navigate to another activity
         val intent = Intent(requireContext(), ViewShipment::class.java)
-        intent.putExtra("shipmentId", shipment.id) // It's a good practice to pass the ID
+        intent.putExtra("shipmentId", shipment.id)
         intent.putExtra("shipmentName", shipment.name)
         intent.putExtra("shipmentOrigin", shipment.origin)
         intent.putExtra("shipmentDestination", shipment.destination)
         intent.putExtra("shipmentStatus", shipment.status)
         intent.putExtra("shipmentDate", shipment.date)
         shipment.createdAt?.let {
-            intent.putExtra("shipmentCreatedAtMillis", it.time) // Pass as milliseconds
+            intent.putExtra("shipmentCreatedAtMillis", it.time)
         }
         shipment.latitude?.let { intent.putExtra("shipmentLatitude", it) }
         shipment.longitude?.let { intent.putExtra("shipmentLongitude", it) }
         startActivity(intent)
+    }
+    private fun filterShipments(searchText: String, filter: String) {
+        filteredShipmentsList.clear()
+        val lowerCaseSearchText = searchText.lowercase()
+
+        for (shipment in allShipmentsList) {
+            val matchesSearch =
+                shipment.name.lowercase().contains(lowerCaseSearchText) ||
+                        shipment.origin.lowercase().contains(lowerCaseSearchText) ||
+                        shipment.destination.lowercase().contains(lowerCaseSearchText)
+
+            val matchesFilter = if (filter == "all") {
+                true
+            } else {
+                shipment.status == filter
+            }
+
+            if (matchesSearch && matchesFilter) {
+                filteredShipmentsList.add(shipment)
+            }
+        }
+        shipmentAdapter.notifyDataSetChanged()
+
+        // Update visibility based on filtered results
+        if (filteredShipmentsList.isEmpty()) {
+            lottieNoDataAnimation.visibility = View.VISIBLE
+            lottieNoDataAnimation.playAnimation()
+            tvNoDataMessage.visibility = View.VISIBLE
+            tvNoDataMessage.text = "No matching shipments found." // Message for filtered empty state
+            rvAllShipments.visibility = View.GONE
+        } else {
+            lottieNoDataAnimation.visibility = View.GONE
+            lottieNoDataAnimation.cancelAnimation()
+            tvNoDataMessage.visibility = View.GONE
+            tvNoDataMessage.text = "No shipments found in the database." // Reset to default for next potential no data
+            rvAllShipments.visibility = View.VISIBLE
+        }
     }
 }

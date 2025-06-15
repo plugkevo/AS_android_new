@@ -16,7 +16,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObjects
+import com.airbnb.lottie.LottieAnimationView // Import LottieAnimationView
 import java.util.Locale
 
 data class StoreGood(var goodsNumber: Long? = null, var name: String? = null, var storeLocation: String? = null)
@@ -29,6 +31,10 @@ class view_store_goods : Fragment() {
     private lateinit var db: FirebaseFirestore
     private var currentShipmentId: String? = null
     private lateinit var searchEditText: EditText
+
+    // Declare Lottie animations
+    private lateinit var lottieLoadingAnimation: LottieAnimationView
+    private lateinit var lottieNoDataAnimation: LottieAnimationView
 
     private var allStoreGoods: List<StoreGood> = listOf()
 
@@ -55,6 +61,10 @@ class view_store_goods : Fragment() {
         emptyView = view.findViewById(R.id.emptyView)
         searchEditText = view.findViewById(R.id.searchEditText)
 
+        // Initialize Lottie animations
+        lottieLoadingAnimation = view.findViewById(R.id.lottie_loading_animation)
+        lottieNoDataAnimation = view.findViewById(R.id.lottie_no_data_animation)
+
         storeInventoryRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         storeInventoryRecyclerView.setHasFixedSize(true)
 
@@ -64,18 +74,13 @@ class view_store_goods : Fragment() {
         storeInventoryRecyclerView.adapter = storeGoodsAdapter
 
         loadStoreInventory()
-        // Add TextWatcher to the search bar
         searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // Not needed for this functionality
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Not needed for this functionality
-            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                filterStoreGoods(s.toString())
+                // Ensure the string is not null for filtering
+                filterStoreGoods(s?.toString() ?: "")
             }
         })
     }
@@ -85,32 +90,62 @@ class view_store_goods : Fragment() {
             Log.e("view_store_goods", "Shipment ID is null")
             emptyView.text = "Error: Shipment ID is missing."
             emptyView.visibility = View.VISIBLE
+
+            // Hide all Lotties and RecyclerView
+            lottieLoadingAnimation.visibility = View.GONE
+            lottieLoadingAnimation.cancelAnimation()
+            lottieNoDataAnimation.visibility = View.GONE
+            lottieNoDataAnimation.cancelAnimation()
+            storeInventoryRecyclerView.visibility = View.GONE
+
             return
         }
 
         Log.d("ViewStoreGoodsFragment", "loadStoreInventory: shipmentId = $currentShipmentId")
+
+        // Show loading Lottie, hide everything else
+        lottieLoadingAnimation.visibility = View.VISIBLE
+        lottieLoadingAnimation.playAnimation()
+        storeInventoryRecyclerView.visibility = View.GONE
+        emptyView.visibility = View.GONE
+        lottieNoDataAnimation.visibility = View.GONE
+        lottieNoDataAnimation.cancelAnimation() // Ensure no-data Lottie is stopped
 
         db.collection("shipments")
             .document(currentShipmentId!!)
             .collection("store_inventory")
             .get()
             .addOnSuccessListener { querySnapshot ->
-                Log.d("ViewStoreGoodsFragment", "loadStoreInventory: querySnapshot size = ${querySnapshot.size()}")
+                lottieLoadingAnimation.cancelAnimation() // Stop loading animation when fetch completes
+                lottieLoadingAnimation.visibility = View.GONE // Hide loading Lottie
+
                 handleStoreInventoryData(querySnapshot)
             }
             .addOnFailureListener { e ->
                 Log.e("ViewStoreGoodsFragment", "Error getting store inventory: ", e)
+
+                lottieLoadingAnimation.cancelAnimation() // Stop loading animation
+                lottieLoadingAnimation.visibility = View.GONE // Hide loading Lottie
+
                 emptyView.text = "Error loading data: ${e.message}"
                 emptyView.visibility = View.VISIBLE
+                storeInventoryRecyclerView.visibility = View.GONE
+                lottieNoDataAnimation.visibility = View.GONE // Ensure no data Lottie is hidden on general error
+                lottieNoDataAnimation.cancelAnimation()
             }
     }
 
     private fun handleStoreInventoryData(querySnapshot: com.google.firebase.firestore.QuerySnapshot) {
         if (querySnapshot.isEmpty) {
+            emptyView.text = "No items in store inventory." // Set original no data message
             emptyView.visibility = View.VISIBLE
             storeInventoryRecyclerView.visibility = View.GONE
             allStoreGoods = listOf() // Clear the allStoreGoods list
-            storeGoodsAdapter.updateData(mutableListOf())
+            storeGoodsAdapter.updateData(mutableListOf()) // Clear adapter as well
+
+            // Show no data Lottie
+            lottieNoDataAnimation.visibility = View.VISIBLE
+            lottieNoDataAnimation.playAnimation()
         } else {
             emptyView.visibility = View.GONE
             storeInventoryRecyclerView.visibility = View.VISIBLE
@@ -118,6 +153,10 @@ class view_store_goods : Fragment() {
             Log.d("ViewStoreGoodsFragment", "handleStoreInventoryData: storeGoodsList size = ${storeGoodsList.size}")
             allStoreGoods = storeGoodsList
             storeGoodsAdapter.updateData(storeGoodsList)
+
+            // Hide no data Lottie if data is present
+            lottieNoDataAnimation.visibility = View.GONE
+            lottieNoDataAnimation.cancelAnimation()
         }
     }
     private fun filterStoreGoods(query: String) {
@@ -132,20 +171,24 @@ class view_store_goods : Fragment() {
             }
         }
         storeGoodsAdapter.updateData(filteredList.toMutableList()) // Update adapter with filtered list
-        if (filteredList.isEmpty() && !query.isBlank()) {
-            emptyView.text = "No matching items found."
+
+        if (filteredList.isEmpty()) {
+            emptyView.text = if (query.isBlank()) {
+                "No items in store inventory." // If search is empty and original list is empty
+            } else {
+                "No matching items found." // If search has query but no matches
+            }
             emptyView.visibility = View.VISIBLE
             storeInventoryRecyclerView.visibility = View.GONE
-        } else if (filteredList.isEmpty() && query.isBlank()) {
-            emptyView.text = "No items in store inventory" // Original empty message
-            emptyView.visibility = View.VISIBLE
-            storeInventoryRecyclerView.visibility = View.GONE
+            lottieNoDataAnimation.visibility = View.VISIBLE // Show no data Lottie for empty filtered list
+            lottieNoDataAnimation.playAnimation()
         } else {
             emptyView.visibility = View.GONE
             storeInventoryRecyclerView.visibility = View.VISIBLE
+            lottieNoDataAnimation.visibility = View.GONE // Hide no data Lottie
+            lottieNoDataAnimation.cancelAnimation()
         }
     }
-
 
     private fun showGoodsDetailsDialog(storeGood: StoreGood) {
         val dialogBuilder = AlertDialog.Builder(requireContext())

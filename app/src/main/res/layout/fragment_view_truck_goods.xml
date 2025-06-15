@@ -52,26 +52,63 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/headerCard" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/truckInventoryRecyclerView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:nestedScrollingEnabled="false"
+        <!-- Lottie animation view for the LOADING state -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_loading_animation"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="32dp"
+            android:visibility="gone"
+            app:lottie_rawRes="@raw/loading_animation"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/searchEditText"
-            app:layout_constraintBottom_toBottomOf="parent" tools:listitem="@layout/truck_goods_list_view" />
+            app:layout_constraintBottom_toTopOf="@id/truckInventoryRecyclerView"
+            app:layout_constraintVertical_bias="0.2" />
+
+        <!-- Lottie animation view for the NO DATA state -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_no_data_animation"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="32dp"
+            android:visibility="gone"
+            app:lottie_rawRes="@raw/no_data_animation"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintBottom_toTopOf="@id/emptyView"
+            app:layout_constraintVertical_bias="0.2" />
 
         <TextView
             android:id="@+id/emptyView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No items in truck inventory"
+            android:text="No items in truck inventory."
             android:textSize="18sp"
             android:textColor="@color/text_primary"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@+id/truckInventoryRecyclerView" app:layout_constraintEnd_toEndOf="@+id/truckInventoryRecyclerView"   app:layout_constraintStart_toStartOf="@+id/truckInventoryRecyclerView" app:layout_constraintTop_toTopOf="@+id/truckInventoryRecyclerView"   />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lottie_no_data_animation"
+            app:layout_constraintVertical_bias="0.1" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/truckInventoryRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:nestedScrollingEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:listitem="@layout/truck_goods_list_view" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

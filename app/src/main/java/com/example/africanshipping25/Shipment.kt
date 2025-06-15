@@ -8,7 +8,7 @@ data class Shipment(
     var name: String = "",
     var origin: String = "",
     var destination: String = "",
-    var weight: Double = 0.0,
+    val weight: String = "",
     var details: String ="",
     var status: String="",
     var date:String= "",

@@ -151,20 +151,18 @@ class HomeFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val weight = weightStr.toDoubleOrNull()
-            if (weight == null) {
-                Toast.makeText(requireContext(), "Invalid weight", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            val weight = weightStr // treat it as a string
+
 
             val shipment = hashMapOf(
                 "name" to name,
                 "origin" to origin,
                 "destination" to destination,
-                "weight" to weight,
+                "weight" to weight,  // now it's a string
                 "status" to "Active",
                 "createdAt" to FieldValue.serverTimestamp()
             )
+
 
             firestore.collection("shipments")
                 .add(shipment)
