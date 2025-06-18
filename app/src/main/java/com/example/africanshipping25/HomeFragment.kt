@@ -1,3 +1,4 @@
+// com.example.africanshipping25/HomeFragment.kt
 package com.example.africanshipping25
 
 import android.app.AlertDialog
@@ -19,13 +20,14 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.FieldValue
 
-class HomeFragment : Fragment() {
+// Implement the OnShipmentItemClickListener interface
+class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { // <<< Make sure this is here
 
     private lateinit var firestore: FirebaseFirestore
     private lateinit var tvActiveCount: TextView
     private lateinit var tvDeliveredCount: TextView
     private lateinit var rvAllShipments: RecyclerView
-    private lateinit var homeShipmentAdapter: HomeShipmentAdapter // Changed to HomeShipmentAdapter
+    private lateinit var homeShipmentAdapter: HomeShipmentAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,8 +46,8 @@ class HomeFragment : Fragment() {
         tvDeliveredCount = view.findViewById(R.id.tv_delivered_count)
         rvAllShipments = view.findViewById(R.id.rv_all_shipments)
 
-        // Initialize HomeShipmentAdapter
-        homeShipmentAdapter = HomeShipmentAdapter(mutableListOf())
+        // Initialize HomeShipmentAdapter and pass 'this' as the itemClickListener
+        homeShipmentAdapter = HomeShipmentAdapter(mutableListOf(), this) // <<< Pass 'this'
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
         rvAllShipments.adapter = homeShipmentAdapter
 
@@ -72,6 +74,8 @@ class HomeFragment : Fragment() {
         viewAllTextView.setOnClickListener {
             Toast.makeText(requireContext(), "View All Shipments Clicked!", Toast.LENGTH_SHORT).show()
             // Here you can navigate to a new activity or fragment that shows all shipments
+            // For example, navigate to ShipmentsFragment if it's part of a ViewPager or similar setup
+            // (Requires a way to communicate with the containing activity/fragment manager)
         }
     }
 
@@ -117,7 +121,7 @@ class HomeFragment : Fragment() {
                         latestShipments.add(it)
                     }
                 }
-                homeShipmentAdapter.updateShipments(latestShipments) // Use homeShipmentAdapter
+                homeShipmentAdapter.updateShipments(latestShipments)
                 Log.d("HomeFragment", "Loaded ${latestShipments.size} latest shipments.")
             }
             .addOnFailureListener { e ->
@@ -234,5 +238,22 @@ class HomeFragment : Fragment() {
             dialog.dismiss()
             Toast.makeText(requireContext(), "Loading list creation cancelled.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Implement the onShipmentItemClick method for HomeFragment
+    override fun onShipmentItemClick(shipment: Shipment) { // <<< This method handles the click
+        val intent = Intent(requireContext(), ViewShipment::class.java)
+        intent.putExtra("shipmentId", shipment.id)
+        intent.putExtra("shipmentName", shipment.name)
+        intent.putExtra("shipmentOrigin", shipment.origin)
+        intent.putExtra("shipmentDestination", shipment.destination)
+        intent.putExtra("shipmentStatus", shipment.status)
+        intent.putExtra("shipmentDate", shipment.date)
+        shipment.createdAt?.let {
+            intent.putExtra("shipmentCreatedAtMillis", it.time)
+        }
+        shipment.latitude?.let { intent.putExtra("shipmentLatitude", it) }
+        shipment.longitude?.let { intent.putExtra("shipmentLongitude", it) }
+        startActivity(intent)
     }
 }

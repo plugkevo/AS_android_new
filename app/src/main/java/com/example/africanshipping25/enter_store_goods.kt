@@ -1,5 +1,6 @@
 package com.example.africanshipping25
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -21,6 +22,10 @@ class enter_store_goods : Fragment() {
     private lateinit var saveButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
+
+    // Key for SharedPreferences
+    private val PREFS_NAME = "StoreGoodsPrefs"
+    private val LAST_STORE_KEY = "lastSelectedStore"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +59,15 @@ class enter_store_goods : Fragment() {
         val locationAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, storeLocations)
         storeLocationSpinner.adapter = locationAdapter
 
+        // --- NEW: Set last selected store location ---
+        val sharedPrefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val lastSelectedStore = sharedPrefs.getString(LAST_STORE_KEY, storeLocations[0]) // Default to first item
+        val lastSelectedIndex = storeLocations.indexOf(lastSelectedStore)
+        if (lastSelectedIndex != -1) {
+            storeLocationSpinner.setSelection(lastSelectedIndex)
+        }
+        // --- END NEW ---
+
         saveButton.setOnClickListener {
             currentShipmentId?.let { shipmentId ->
                 saveGoodsToStore(shipmentId)
@@ -82,13 +96,13 @@ class enter_store_goods : Fragment() {
 
         val itemData = hashMapOf(
             "name" to goodsName,
-            "storeLocation" to storeLocation, // Changed "location" to "storeLocation"
+            "storeLocation" to storeLocation,
             "goodsNumber" to quantity
         )
 
         firestore.collection("shipments")
             .document(shipmentId)
-            .collection("store_inventory") // Using "store_inventory" as the subcollection name
+            .collection("store_inventory")
             .add(itemData)
             .addOnSuccessListener { documentReference ->
                 Toast.makeText(
@@ -96,9 +110,19 @@ class enter_store_goods : Fragment() {
                     "Goods added to store inventory for shipment $shipmentId with ID: ${documentReference.id}",
                     Toast.LENGTH_SHORT
                 ).show()
+
+                // --- NEW: Save the currently selected store location ---
+                val sharedPrefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                with(sharedPrefs.edit()) {
+                    putString(LAST_STORE_KEY, storeLocation)
+                    apply()
+                }
+                // --- END NEW ---
+
+                // Only reset goods name and quantity, keep store location as is
                 quantityEditText.text = null
                 goodsNameSpinner.setSelection(0)
-                storeLocationSpinner.setSelection(0)
+                // storeLocationSpinner.setSelection(0) // <<< REMOVE THIS LINE to prevent resetting
             }
             .addOnFailureListener { e ->
                 Toast.makeText(
@@ -109,7 +133,6 @@ class enter_store_goods : Fragment() {
                 Log.e("FirestoreError", "Error adding store goods for shipment $shipmentId", e)
             }
     }
-
 
     companion object {
         fun newInstance(shipmentId: String): enter_store_goods {

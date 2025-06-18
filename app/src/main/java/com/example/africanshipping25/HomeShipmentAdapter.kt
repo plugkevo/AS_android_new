@@ -6,19 +6,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Locale
-import java.util.Date
 
-// Renamed the class to HomeShipmentAdapter
-class HomeShipmentAdapter(private val shipments: MutableList<Shipment>) :
-    RecyclerView.Adapter<HomeShipmentAdapter.HomeShipmentViewHolder>() { // Updated ViewHolder reference
+// Updated constructor to accept OnShipmentItemClickListener
+class HomeShipmentAdapter(
+    private val shipments: MutableList<Shipment>,
+    private val itemClickListener: ShipmentAdapter.OnShipmentItemClickListener // Added listener
+) : RecyclerView.Adapter<HomeShipmentAdapter.HomeShipmentViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeShipmentViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.shipment_list_view, parent, false)
+            .inflate(R.layout.shipment_list_view, parent, false) // Using shipment_list_view
         return HomeShipmentViewHolder(view)
     }
 
@@ -44,13 +44,16 @@ class HomeShipmentAdapter(private val shipments: MutableList<Shipment>) :
             else -> holder.txtStatus.setTextColor(context.getColor(android.R.color.black))
         }
 
+        // Call the itemClickListener's method when the item is clicked
         holder.itemView.setOnClickListener {
-            Toast.makeText(holder.itemView.context, "Shipment Clicked: ${shipment.name}", Toast.LENGTH_SHORT).show()
+            itemClickListener.onShipmentItemClick(shipment)
         }
 
-        holder.btnUpdate.setOnClickListener {
-            Toast.makeText(holder.itemView.context, "Update clicked for: ${shipment.name}", Toast.LENGTH_SHORT).show()
-        }
+        // Removed the btnUpdate listener as per the goal of only opening details here.
+        // If you need update functionality on the home screen, you'll need a separate listener for it.
+        // holder.btnUpdate.setOnClickListener {
+        //     Toast.makeText(holder.itemView.context, "Update clicked for: ${shipment.name}", Toast.LENGTH_SHORT).show()
+        // }
     }
 
     override fun getItemCount(): Int = shipments.size
@@ -61,13 +64,12 @@ class HomeShipmentAdapter(private val shipments: MutableList<Shipment>) :
         notifyDataSetChanged()
     }
 
-    // Renamed the ViewHolder to HomeShipmentViewHolder
     class HomeShipmentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val txtShipmentName: TextView = itemView.findViewById(R.id.txtShipmentName)
         val txtLocation: TextView = itemView.findViewById(R.id.txtLocation)
         val txtStatus: TextView = itemView.findViewById(R.id.txtStatus)
         val txtDate: TextView = itemView.findViewById(R.id.txtDate)
         val imgPackage: ImageView = itemView.findViewById(R.id.imgPackage)
-        val btnUpdate: ImageView = itemView.findViewById(R.id.btnUpdate)
+        val btnUpdate: ImageView = itemView.findViewById(R.id.btnUpdate) // Keep this if your layout has it, even if not used for clicks
     }
 }

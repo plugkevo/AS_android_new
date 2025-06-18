@@ -3,11 +3,13 @@ package com.example.africanshipping25
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View // Import View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.airbnb.lottie.LottieAnimationView // Import LottieAnimationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
@@ -22,9 +24,14 @@ class sign_up : AppCompatActivity() {
     private lateinit var tv_login: TextView
     private lateinit var btnSignUp: Button
 
+    // New Lottie elements
+    private lateinit var lottieLoadingAnimation: LottieAnimationView
+    private lateinit var signupContentLayout: View // Reference to your LinearLayout holding sign-up content
+    private lateinit var signupScrollView: View // Reference to your ScrollView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sign_up) // Assuming your XML layout file is named activity_sign_up.xml
+        setContentView(R.layout.activity_sign_up)
 
         // Initialize Firebase Auth
         auth = Firebase.auth
@@ -35,6 +42,11 @@ class sign_up : AppCompatActivity() {
         etConfirmPassword = findViewById(R.id.et_confirm_password)
         btnSignUp = findViewById(R.id.btn_signup)
         tv_login = findViewById(R.id.tv_login)
+
+        // Initialize Lottie and content views
+        lottieLoadingAnimation = findViewById(R.id.lottie_loading_animation_signup)
+        signupContentLayout = findViewById(R.id.signup_content_layout)
+        signupScrollView = findViewById(R.id.signup_scroll_view)
 
         // Set up the sign-up button click listener
         btnSignUp.setOnClickListener {
@@ -53,7 +65,7 @@ class sign_up : AppCompatActivity() {
         val password = etPassword.text.toString().trim()
         val confirmPassword = etConfirmPassword.text.toString().trim()
 
-        // Basic input validation (same as before)
+        // Basic input validation
         if (email.isEmpty()) {
             etEmail.error = "Email is required"
             etEmail.requestFocus()
@@ -84,9 +96,16 @@ class sign_up : AppCompatActivity() {
             return
         }
 
+        // --- Show loading animation and hide content while processing sign-up ---
+        showLoading(true)
+
+
         // Create user with email and password
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
+                // --- Hide loading animation regardless of success or failure ---
+                showLoading(false)
+
                 if (task.isSuccessful) {
                     // Sign up success, send verification email
                     Log.d(TAG, "createUserWithEmail:success")
@@ -96,22 +115,21 @@ class sign_up : AppCompatActivity() {
                             if (sendTask.isSuccessful) {
                                 Toast.makeText(
                                     baseContext,
-                                    "Verification email sent. Please check your inbox.",
+                                    "Verification email sent. Please check your inbox and then log in.",
                                     Toast.LENGTH_LONG
                                 ).show()
 
+                                // Navigate to login after sending verification email
                                 startActivity(Intent(this, login::class.java))
-
-                                // Optionally, you can disable the sign-up button or show a message
-                                // indicating that the user needs to verify their email.
-                                // You should NOT proceed to the next activity here.
+                                finish() // Finish sign-up activity
                             } else {
                                 Toast.makeText(
                                     baseContext,
                                     "Failed to send verification email: ${sendTask.exception?.message}",
                                     Toast.LENGTH_LONG
                                 ).show()
-                                // You might want to handle this error, possibly by allowing the user to resend the email.
+                                // Handle this error: user might still be created but no email sent.
+                                // You might offer to resend or direct them to login.
                             }
                         }
                 } else {
@@ -122,13 +140,23 @@ class sign_up : AppCompatActivity() {
                         "Sign up failed: ${task.exception?.message}",
                         Toast.LENGTH_LONG
                     ).show()
-                    // Optionally, you can update UI to display error messages
                 }
             }
     }
 
-    // You will need to handle the email verification in your next activity or when the user tries to log in.
-    // A common approach is to check `auth.currentUser?.isEmailVerified` in your login activity.
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            signupContentLayout.visibility = View.GONE // Hide the main signup content
+            signupScrollView.visibility = View.GONE // Hide the scroll view
+            lottieLoadingAnimation.visibility = View.VISIBLE // Show the Lottie animation
+            lottieLoadingAnimation.playAnimation() // Ensure animation is playing
+        } else {
+            signupContentLayout.visibility = View.VISIBLE // Show the main signup content
+            signupScrollView.visibility = View.VISIBLE // Show the scroll view
+            lottieLoadingAnimation.visibility = View.GONE // Hide the Lottie animation
+            lottieLoadingAnimation.pauseAnimation() // Pause animation when hidden
+        }
+    }
 
     companion object {
         private const val TAG = "SignUpActivity"
