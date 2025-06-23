@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
+    android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/content_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -22,7 +21,6 @@
             android:textColor="@color/colorDarkBlue"
             android:layout_marginBottom="16dp" />
 
-        <!-- Search Bar -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -57,12 +55,19 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-
-
-        <!-- Shipments RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_all_loading_lists"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>
-</LinearLayout>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/loading_animation_view"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        app:lottie_rawRes="@raw/loading_animation"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+</RelativeLayout>

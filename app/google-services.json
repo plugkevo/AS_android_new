@@ -13,7 +13,20 @@
           "package_name": "com.example.africanshipping25"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "20925324301-86umjbu3rjsd1d9n7isjv6f91vpfr2fk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.africanshipping25",
+            "certificate_hash": "88e8209d978de414cf3ef9dde6386e188454a7b8"
+          }
+        },
+        {
+          "client_id": "20925324301-pibcrfbe1bpe472h0b8llge8rocddgpi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBAj0p3C9PmZKMRZkvK7YgCgx7I9ZlXhBA"
@@ -21,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "20925324301-pibcrfbe1bpe472h0b8llge8rocddgpi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -32,7 +50,12 @@
           "package_name": "com.example.africanshippingapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "20925324301-pibcrfbe1bpe472h0b8llge8rocddgpi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBAj0p3C9PmZKMRZkvK7YgCgx7I9ZlXhBA"
@@ -40,7 +63,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "20925324301-pibcrfbe1bpe472h0b8llge8rocddgpi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

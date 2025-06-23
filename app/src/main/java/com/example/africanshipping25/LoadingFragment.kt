@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
+import com.airbnb.lottie.LottieAnimationView // Import Lottie
 
 // Ensure LoadingListItem data class is defined in LoadingListItem.kt
 // Ensure OnLoadingListItemClickListener interface is defined in LoadingListAdapter.kt
@@ -32,32 +34,54 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
     private val filteredLoadingLists = mutableListOf<LoadingListItem>()
     private val firestore = FirebaseFirestore.getInstance()
 
+    private lateinit var loadingAnimationView: LottieAnimationView
+    private lateinit var contentLayout: LinearLayout // Declare contentLayout
+
     // Define status options for the Spinner in the update dialog
-    private val loadingListStatusOptions = arrayOf("New", "Open", "Closed") // Customize as needed
+    private val loadingListStatusOptions = arrayOf("New", "Open", "Closed")
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_loading, container, false) // Ensure this is your correct layout file name
+        return inflater.inflate(R.layout.fragment_loading, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize views FIRST
         rvAllLoadingLists = view.findViewById(R.id.rv_all_loading_lists)
         etSearch = view.findViewById(R.id.et_search)
+        loadingAnimationView = view.findViewById(R.id.loading_animation_view) // Initialize LottieAnimationView
+        contentLayout = view.findViewById(R.id.content_layout) // Initialize contentLayout
 
+        // Now that all views are initialized, proceed with other setup
         rvAllLoadingLists.layoutManager = LinearLayoutManager(requireContext())
         loadingListAdapter = LoadingListAdapter(filteredLoadingLists, this)
         rvAllLoadingLists.adapter = loadingListAdapter
 
-        fetchLoadingLists()
+        fetchLoadingLists() // This is now safe to call as loadingAnimationView is initialized
         setupSearch()
     }
 
+    private fun showLoading() {
+        loadingAnimationView.visibility = View.VISIBLE
+        loadingAnimationView.playAnimation()
+        rvAllLoadingLists.visibility = View.GONE // Hide content while loading
+        etSearch.visibility = View.GONE // Hide search while loading
+    }
+
+    private fun hideLoading() {
+        loadingAnimationView.visibility = View.GONE
+        loadingAnimationView.pauseAnimation()
+        rvAllLoadingLists.visibility = View.VISIBLE // Show content after loading
+        etSearch.visibility = View.VISIBLE // Show search after loading
+    }
+
     private fun fetchLoadingLists() {
+        showLoading() // Show loading animation before fetching data
         firestore.collection("loading_lists")
             .get()
             .addOnSuccessListener { querySnapshot ->
@@ -71,10 +95,12 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
                     }
                 }
                 filterLoadingLists(etSearch.text.toString())
+                hideLoading() // Hide loading animation on success
             }
             .addOnFailureListener { e ->
                 Log.e("LoadingFragment", "Error fetching loading lists: ", e)
                 Toast.makeText(requireContext(), "Error loading lists: ${e.message}", Toast.LENGTH_SHORT).show()
+                hideLoading() // Hide loading animation on failure
             }
     }
 
