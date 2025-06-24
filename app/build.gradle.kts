@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services) // Ensure the version for this plugin in libs.versions.toml is up-to-date
+
 }
 
 android {
@@ -85,12 +86,18 @@ dependencies {
     // Circle ImageView
     implementation("de.hdodenhof:circleimageview:3.1.0") // Keep explicit version
 
+    implementation("com.google.firebase:firebase-messaging")
 
     // Testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Remove this line, it's generally not needed and handled by Kotlin Android plugin
-    // implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.20")
+    // Import the BoM for the Firebase platform
+    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+
+    // Add the dependencies for the In-App Messaging and Analytics libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-inappmessaging-display")
+    implementation("com.google.firebase:firebase-analytics")
 }

@@ -18,6 +18,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var btnlogout: ImageView
+
+    private lateinit var btnNotificaations: ImageView
     // You've declared firestore, but it's not initialized or used in your provided code
     // private lateinit var firestore: FirebaseFirestore
 
@@ -43,6 +45,13 @@ class MainActivity : AppCompatActivity() {
         btnlogout.setOnClickListener {
             // Call the logout function
             performLogout()
+        }
+
+        btnNotificaations = findViewById<ImageView>(R.id.iv_notifications)
+
+        btnNotificaations.setOnClickListener {
+            val intent=Intent( this, NotificationsActivity :: class.java)
+            startActivity(intent)
         }
 
         fabNewShipment.setOnClickListener {
