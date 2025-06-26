@@ -1,72 +1,133 @@
 package com.example.africanshipping25
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
-import android.widget.Button
+import android.util.Log
+import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat // Import ContextCompat
 import androidx.fragment.app.Fragment
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.material.bottomnavigation.BottomNavigationView // Import BottomNavigationView
+import com.google.android.material.floatingactionbutton.FloatingActionButton // Import FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth // Import Firebase Auth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.jvm.java
+import com.google.firebase.installations.FirebaseInstallations // Import FirebaseInstallations
+import com.google.firebase.messaging.FirebaseMessaging // Import FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
 
+    private val TAG = "MainActivity"
+
+    // Toolbar and Notification Badge
+    private lateinit var notificationBadge: TextView
+    private lateinit var notificationIconContainer: View // The FrameLayout for the icon and badge
+    private lateinit var btnNotificaations: ImageView // This is your bell icon
+
+    // Bottom Navigation
     private lateinit var bottomNavigation: BottomNavigationView
+
+    // FAB
+    private lateinit var fabNewShipment: FloatingActionButton // Declared here
+
+    // Logout
     private lateinit var btnlogout: ImageView
 
-    private lateinit var btnNotificaations: ImageView
-    // You've declared firestore, but it's not initialized or used in your provided code
-    // private lateinit var firestore: FirebaseFirestore
-
-    // Declare FirebaseAuth
+    // Firebase Auth
     private lateinit var auth: FirebaseAuth
+
+    // Receiver to update badge when count changes
+    private val unseenCountReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ViewNotificationsFragment.ACTION_UNSEEN_COUNT_UPDATED) {
+                updateNotificationBadge()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Set status bar color
         window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
-
 
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
 
-        // Initialize views
-        bottomNavigation = findViewById(R.id.bottom_navigation)
-        val fabNewShipment = findViewById<FloatingActionButton>(R.id.fab_new_shipment)
-        btnlogout = findViewById(R.id.ic_logout)
+        // Initialize toolbar elements
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.title = "Dashboard" // Default title
 
-        // Set OnClickListener for the logout ImageView
+        // Initialize notification icon and badge
+        notificationBadge = findViewById(R.id.tv_notification_badge)
+        notificationIconContainer = findViewById(R.id.notification_icon_container)
+        btnNotificaations = findViewById(R.id.iv_notifications) // Initialize the bell icon ImageView
+
+        // Initialize other UI components
+        bottomNavigation = findViewById(R.id.bottom_navigation)
+        fabNewShipment = findViewById(R.id.fab_new_shipment) // Initialize FAB
+        btnlogout = findViewById(R.id.ic_logout) // Initialize logout icon
+
+        // Set OnClickListeners
         btnlogout.setOnClickListener {
-            // Call the logout function
             performLogout()
         }
 
-        btnNotificaations = findViewById<ImageView>(R.id.iv_notifications)
-
+        // Changed to navigate to ViewNotificationsFragment directly
         btnNotificaations.setOnClickListener {
-            val intent=Intent( this, NotificationsActivity :: class.java)
-            startActivity(intent)
+            navigateToNotificationsFragment()
         }
 
         fabNewShipment.setOnClickListener {
-            // Navigate to create shipment screen
             openNewShipmentForm()
         }
 
         // Set up bottom navigation
         setupBottomNavigation()
 
-        // Load the default fragment (Home)
+        // Load the default fragment (Home) if starting fresh
         if (savedInstanceState == null) {
-            bottomNavigation.selectedItemId = R.id.nav_home
+            // Only set if not launched from a notification intent, otherwise handleNotificationIntent
+            // will take precedence and navigate.
+            if (intent?.extras?.containsKey("google.message_id") != true && intent?.extras?.containsKey("from") != true) {                bottomNavigation.selectedItemId = R.id.nav_home // This will trigger the listener and load HomeFragment
+            }
         }
+
+        // Handle initial intent (e.g., from tapping a notification)
+        handleNotificationIntent(intent)
+
+        // Initial badge update
+        updateNotificationBadge()
+
+        // Get FCM token and Installation ID
+        getFCMToken()
+        getFirebaseInstallationId()
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Register the BroadcastReceiver when the activity is resumed
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(unseenCountReceiver, IntentFilter(ViewNotificationsFragment.ACTION_UNSEEN_COUNT_UPDATED))
+
+        // Update badge in case unseen count changed while app was in background
+        updateNotificationBadge()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Unregister the BroadcastReceiver when the activity is paused
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(unseenCountReceiver)
+    }
+
+    // --- Private Helper Methods ---
 
     private fun performLogout() {
         auth.signOut() // Sign out the current user
@@ -84,35 +145,134 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_home -> {
                     loadFragment(HomeFragment())
-                    return@setOnItemSelectedListener true
+                    // Update toolbar title when selecting from bottom nav
+                    supportActionBar?.title = "Dashboard"
+                    true
                 }
                 R.id.nav_shipments -> {
                     loadFragment(ShipmentsFragment())
-                    return@setOnItemSelectedListener true
+                    supportActionBar?.title = "Shipments"
+                    true
                 }
                 R.id.nav_loading_list -> {
                     loadFragment(LoadingFragment())
-                    return@setOnItemSelectedListener true
+                    supportActionBar?.title = "Loading List"
+                    true
                 }
                 R.id.nav_payment -> {
                     loadFragment(PaymentFragment())
-                    return@setOnItemSelectedListener true
+                    supportActionBar?.title = "Payment"
+                    true
                 }
+                else -> false // Should not happen if menu items are correctly mapped
             }
-            false
         }
     }
 
     private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
+        // Check if the fragment is already the current fragment to avoid unnecessary replacements
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment?.javaClass != fragment.javaClass) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                // Do not add to back stack for main bottom nav items to avoid deep nesting
+                .commit()
+        }
     }
 
     private fun openNewShipmentForm() {
-        // You can either start a new activity or show a dialog/fragment
-        // For now, we'll just show a simple dialog
+        // Instantiate and show your NewShipmentDialogFragment
         val dialog = NewShipmentDialogFragment()
         dialog.show(supportFragmentManager, "NewShipmentDialog")
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        intent?.extras?.let { extras ->
+            val fromFCM = extras.containsKey("google.message_id") || extras.containsKey("from")
+            if (fromFCM) {
+                Log.d(TAG, "Activity launched/resumed from FCM notification.")
+                Log.d(TAG, "FCM Custom Data Received:")
+                for (key in extras.keySet()) {
+                    val value = extras.getString(key)
+                    Log.d(TAG, "  Key: $key, Value: $value")
+                }
+
+                // If launched from a notification, directly go to the notifications list
+                navigateToNotificationsFragment()
+                // Ensure the bottom navigation doesn't interfere if it has a notifications item.
+                // For now, assuming notification list is accessed only via the toolbar icon.
+            }
+        }
+        // Clear the intent's data after processing to prevent it from being re-processed
+        intent?.replaceExtras(Bundle())
+    }
+
+    // Public method to allow fragments to request navigation
+    fun navigateToNotificationsFragment() {
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment !is ViewNotificationsFragment) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, ViewNotificationsFragment())
+                .addToBackStack("notifications_list") // Add to back stack to allow going back
+                .commit()
+            supportActionBar?.title = "Notifications" // Update toolbar title
+        }
+    }
+
+    private fun updateNotificationBadge() {
+        val unseenCount = ViewNotificationsFragment.getUnseenCount(this)
+        if (unseenCount > 0) {
+            notificationBadge.text = if (unseenCount > 99) "99+" else unseenCount.toString()
+            notificationBadge.visibility = View.VISIBLE
+        } else {
+            notificationBadge.visibility = View.GONE
+        }
+        Log.d(TAG, "Updated notification badge to: $unseenCount")
+    }
+
+    override fun onBackPressed() {
+        // If there are fragments in the back stack (e.g., from navigating to notifications), pop them
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+            // After popping, update toolbar title based on the fragment now visible
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            when (currentFragment) {
+                is HomeFragment -> supportActionBar?.title = "Dashboard"
+                is ShipmentsFragment -> supportActionBar?.title = "Shipments"
+                is LoadingFragment -> supportActionBar?.title = "Loading List"
+                is PaymentFragment -> supportActionBar?.title = "Payment"
+                is ViewNotificationsFragment -> supportActionBar?.title = "Notifications"
+                else -> supportActionBar?.title = "African Shipping" // Default or app name
+            }
+        } else {
+            // If no fragments in back stack, let system handle back press (exit app)
+            super.onBackPressed()
+        }
+    }
+
+    // New method to get the FCM token
+    private fun getFCMToken() {
+        FirebaseMessaging.getInstance().getToken()
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                    return@addOnCompleteListener
+                }
+                val token = task.result
+                Log.d(TAG, "Current FCM Token: $token")
+            }
+    }
+
+    // New method to get the Firebase Installation ID
+    private fun getFirebaseInstallationId() {
+        FirebaseInstallations.getInstance().getId()
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w(TAG, "Fetching Firebase Installation ID failed", task.exception)
+                    return@addOnCompleteListener
+                }
+                val installationId = task.result
+                Log.d(TAG, "Firebase Installation ID: $installationId")
+            }
     }
 }
