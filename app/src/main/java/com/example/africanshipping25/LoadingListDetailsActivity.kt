@@ -24,7 +24,7 @@ class LoadingListDetailsActivity : AppCompatActivity() {
         viewPager = findViewById(R.id.viewPager)
         tabLayout = findViewById(R.id.tbLayout)
 
-        window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
+        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
 
 
         // Retrieve the ID from the Intent FIRST

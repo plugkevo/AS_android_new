@@ -1,6 +1,7 @@
 package com.example.africanshipping25
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -42,6 +43,8 @@ class login : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+
 
         // Initialize Firebase Auth
         auth = Firebase.auth

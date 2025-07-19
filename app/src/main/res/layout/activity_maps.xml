@@ -8,14 +8,25 @@
     android:layout_height="match_parent"
     tools:context=".MapsActivity">
 
-    <TextView
+    <androidx.cardview.widget.CardView
+        android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Track Shipment"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/colorDarkBlue"
-        android:layout_marginBottom="16dp" />
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:layout_margin="10dp"
+        app:cardBackgroundColor="@color/primary">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Track shipment"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:padding="16dp"
+            android:layout_gravity="center" />
+    </androidx.cardview.widget.CardView>
 
     <!-- Tracking Input -->
     <androidx.cardview.widget.CardView

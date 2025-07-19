@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Set status bar color
-        window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
+        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
 
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
