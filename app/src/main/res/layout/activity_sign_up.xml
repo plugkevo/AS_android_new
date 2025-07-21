@@ -24,7 +24,7 @@
                 android:layout_height="120dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp"
-                android:src="@drawable/logo_placeholder"
+                android:src="@drawable/as_logo"
                 android:contentDescription="Company Logo" />
 
             <TextView
@@ -97,7 +97,7 @@
                 android:layout_marginBottom="16dp"
                 android:backgroundTint="@color/dark_blue"
                 android:padding="12dp"
-                android:text="Login"
+                android:text="Register"
                 android:textColor="@android:color/white" />
 
             <LinearLayout
