@@ -2,11 +2,13 @@
 <resources>
     <!-- Goods Name Options for both Truck and Store -->
     <string-array name="goods_name_options">
-        <item>Electronics</item>
-        <item>Clothing</item>
-        <item>Food</item>
+        <item>Box</item>
         <item>Furniture</item>
-        <item>Toys</item>
+        <item>Electronics</item>
+        <item>Toiletries</item>
+        <item>Tote/Barrel</item>
+        <item>Machinery</item>
+        <item>Other</item>
     </string-array>
 
     <!-- Store Location Options -->
