@@ -21,13 +21,7 @@
     <color name="medium_blue">#3949AB</color>
     <color name="light_blue">#BBDEFB</color>
     <color name="colorTextSecondary">#757575</color>
-
-
-
-
     <color name="purple_700">#3700b3</color>
-
-
 
         <!-- Primary Colors -->
         <color name="primary">#0D47A1</color>
@@ -78,5 +72,31 @@
 
         <!-- Navigation Bar -->
         <color name="navigation_bar">#0D47A1</color>
+
+    <color name="card_background">#FFFFFF</color> <!-- Default card background for light theme -->
+    <!-- App specific colors - Light Theme -->
+    <color name="app_background">#FFFFFF</color> <!-- White background -->
+    <!-- Darker blue for titles -->
+    <color name="card_bg_active">#E1F5FE</color> <!-- Light blue for active shipments card -->
+    <color name="card_bg_delivered">#E8F5E9</color> <!-- Light green for delivered shipments card -->
+    <color name="text_delivered_green">#2E7D32</color> <!-- Dark green for delivered count -->
+    <color name="card_border">#E0E0E0</color>
+
+    <color name="text_primary_dark">#212121</color> <!-- Dark text for shipment name -->
+    <color name="text_status_orange">#FF9800</color> <!-- Orange for status -->
+
+    <!-- New colors for MainActivity components - Light Theme -->
+    <color name="toolbar_background">#0047AB</color> <!-- Primary dark blue for AppBar -->
+    <color name="toolbar_text_color">#FFFFFF</color> <!-- White text/icons on toolbar -->
+    <color name="icon_tint_color">#FFFFFF</color> <!-- White tint for icons -->
+    <color name="bottom_nav_background">#FFFFFF</color> <!-- White background for bottom nav -->
+    <color name="bottom_nav_selected_item_color">#0047AB</color> <!-- **THIS ONE** Dark blue for selected bottom nav item -->
+    <color name="bottom_nav_unselected_item_color">#6B7280</color> <!-- **THIS ONE** Muted gray for unselected bottom nav item -->
+    <color name="fab_background_tint">#0047AB</color> <!-- Dark blue for FAB background -->
+    <color name="fab_icon_tint">#FFFFFF</color> <!-- White for FAB icon -->
+    <color name="badge_background_color">#FF0000</color> <!-- Red for notification badge -->
+    <color name="badge_text_color">#FFFFFF</color> <!-- White for notification badge text -->
+    <color name="nav_icon_selected">#64B5F6</color>
+    <color name="nav_icon_unselected">#1A237E</color>
 
 </resources>

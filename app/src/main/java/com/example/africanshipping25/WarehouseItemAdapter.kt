@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout // Import TextInputLayout
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -23,13 +24,14 @@ class WarehouseItemAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textGoodNo: TextView = view.findViewById(R.id.textGoodNo)
-        val textGoodsName: TextView = view.findViewById(R.id.textGoodsName)
+        // Removed textGoodsName: TextView = view.findViewById(R.id.textGoodsName)
         val textSenderName: TextView = view.findViewById(R.id.textSenderName)
         val textDate: TextView = view.findViewById(R.id.textDate)
         val imageMoreVert: ImageView = view.findViewById(R.id.imageMoreVert)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        // Ensure 'warehouse_list_view' layout also no longer contains a TextView for 'goodsName'
         val view = LayoutInflater.from(parent.context).inflate(R.layout.warehouse_list_view, parent, false)
         return ViewHolder(view)
     }
@@ -37,7 +39,7 @@ class WarehouseItemAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = filteredItems[position] // Use filteredItems here
         holder.textGoodNo.text = "Good No: ${item.goodNo}"
-        holder.textGoodsName.text = "Goods: ${item.goodsName}"
+        // Removed holder.textGoodsName.text = "Goods: ${item.goodsName}"
         holder.textSenderName.text = "Sender: ${item.senderName}"
         holder.textDate.text = "Date: ${item.date}"
 
@@ -50,8 +52,10 @@ class WarehouseItemAdapter(
 
     private fun showUpdateDialog(context: Context, item: WarehouseItem) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_update_warehouse_items, null)
+
+        // ** Get a reference to the TextInputLayout wrapping editTextUpdateGoodNo **
+        val goodNoInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateGoodNo)
         val goodNoField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateGoodNo)
-        val goodsSpinner = dialogView.findViewById<Spinner>(R.id.spinnerUpdateGoodsName)
         val senderField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateSenderName)
         val dateField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateDate)
         val buttonUpdate = dialogView.findViewById<Button>(R.id.buttonUpdate)
@@ -60,12 +64,6 @@ class WarehouseItemAdapter(
         goodNoField.setText(item.goodNo)
         senderField.setText(item.senderName)
         dateField.setText(item.date)
-
-        val goodsOptions = context.resources.getStringArray(R.array.goods_name_options)
-        val spinnerAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, goodsOptions)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        goodsSpinner.adapter = spinnerAdapter
-        goodsSpinner.setSelection(goodsOptions.indexOf(item.goodsName))
 
         dateField.setOnClickListener {
             val c = Calendar.getInstance()
@@ -96,11 +94,40 @@ class WarehouseItemAdapter(
             .create()
 
         buttonUpdate.setOnClickListener {
+            val updatedGoodNo = goodNoField.text.toString().trim() // Get trimmed text
+            val updatedSenderName = senderField.text.toString().trim()
+            val updatedDate = dateField.text.toString().trim()
+
+            // Clear any previous error messages on the goodNoField's TextInputLayout
+            goodNoInputLayout.error = null
+
+            // --- ADD 4-CHARACTER VALIDATION FOR GOODS NUMBER HERE ---
+            if (updatedGoodNo.isEmpty()) {
+                goodNoInputLayout.error = "Goods number cannot be empty."
+                return@setOnClickListener // Stop the update process
+            }
+
+            if (updatedGoodNo.length != 4) {
+                goodNoInputLayout.error = "Goods number must be 4 characters."
+                return@setOnClickListener // Stop the update process
+            }
+            // --- END VALIDATION ---
+
+            // Basic validation for other fields (optional but recommended)
+            if (updatedSenderName.isEmpty()) {
+                senderField.error = "Sender name cannot be empty."
+                return@setOnClickListener
+            }
+            if (updatedDate.isEmpty()) {
+                dateField.error = "Date cannot be empty."
+                return@setOnClickListener
+            }
+
+
             val updatedItem = item.copy(
-                goodNo = goodNoField.text.toString(),
-                goodsName = goodsSpinner.selectedItem.toString(),
-                senderName = senderField.text.toString(),
-                date = dateField.text.toString()
+                goodNo = updatedGoodNo,
+                senderName = updatedSenderName,
+                date = updatedDate
             )
             onItemUpdated(updatedItem)
             dialog.dismiss()
@@ -124,7 +151,6 @@ class WarehouseItemAdapter(
                     for (row in originalItems) {
                         // Apply lowercase() instead of toLowerCase(Locale.ROOT)
                         if (row.goodNo.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT)) ||
-                            row.goodsName.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT)) ||
                             row.senderName.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT)) ||
                             row.date.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT))
                         ) {

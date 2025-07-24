@@ -42,12 +42,7 @@
                 android:padding="4dp" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textGoodsName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            tools:text="Goods: Electronics" />
+
 
         <TextView
             android:id="@+id/textSenderName"

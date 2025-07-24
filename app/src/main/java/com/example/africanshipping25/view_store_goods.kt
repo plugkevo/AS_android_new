@@ -211,8 +211,9 @@ class view_store_goods : Fragment() {
 
         // Set initial data
         goodsNumberEditText.setText(storeGood.goodsNumber?.toString())
-        goodsNameTextView.text = "Name: ${storeGood.name}"
-        storeLocationTextView.text = "Location: ${storeGood.storeLocation}"
+        goodsNameTextView.text = "Name: ${selectedGoodsName ?: "N/A"}" // Handle null case
+        storeLocationTextView.text = "Location: ${selectedLocation ?: "N/A"}" // Handle null case
+
 
         // Goods Name selection dialog
         goodsNameTextView.setOnClickListener {
@@ -250,12 +251,27 @@ class view_store_goods : Fragment() {
 
         // Update button click
         updateButton.setOnClickListener {
-            val newNumberString = goodsNumberEditText.text.toString()
+            val newNumberString = goodsNumberEditText.text.toString().trim() // Trim whitespace
+
+            // *** ADD VALIDATION HERE ***
+            if (newNumberString.isEmpty()) {
+                Toast.makeText(requireContext(), "Goods number cannot be empty.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener // Stop execution
+            }
+
+            if (newNumberString.length != 4) {
+                Toast.makeText(requireContext(), "Goods number must be 4 characters.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener // Stop execution
+            }
+
             val newNumber = newNumberString.toLongOrNull()
             if (newNumber == null) {
-                Toast.makeText(requireContext(), "Invalid goods number", Toast.LENGTH_SHORT).show()
+                // This case should ideally be caught by the length check if inputType is number,
+                // but keep for robustness against non-numeric input if inputType changes.
+                Toast.makeText(requireContext(), "Invalid goods number (must be numeric).", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            // *** END VALIDATION ***
 
             Log.d("ViewStoreGoodsFragment", "Update: Name=$selectedGoodsName, Number=$newNumber, Location=$selectedLocation")
 
@@ -311,7 +327,7 @@ class view_store_goods : Fragment() {
                             .addOnSuccessListener {
                                 Log.d("Firestore", "Document updated successfully")
                                 Toast.makeText(requireContext(), "Goods updated successfully.", Toast.LENGTH_SHORT).show()
-                                loadStoreInventory()
+                                loadStoreInventory() // Reload data to reflect changes
                             }
                             .addOnFailureListener { e ->
                                 Log.e("Firestore", "Error updating document", e)

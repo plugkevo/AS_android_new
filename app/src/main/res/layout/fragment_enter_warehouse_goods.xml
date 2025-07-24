@@ -29,43 +29,46 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Good Numbers Section -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Good Number"
+                        android:text="Good Numbers"
                         android:textSize="18dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
                         android:layout_marginBottom="4dp"/>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Good Number"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextGoodNo"
-                            android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+                        <TextView
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:inputType="number" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_weight="1"
+                            android:text="Add Good Number Field"
+                            android:textSize="16dp"
+                            android:textAppearance="?attr/textAppearanceBodyMedium"/>
+                        <ImageButton
+                            android:id="@+id/buttonAddGoodNo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@android:drawable/ic_input_add"
+                            android:contentDescription="Add another good number input field"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="8dp"/>
+                    </LinearLayout>
 
-                    <TextView
+                    <LinearLayout
+                        android:id="@+id/goodsNumberFieldsContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Goods Name"
-                        android:textSize="18dp"
-                        android:layout_marginTop="16dp"
-                        android:textAppearance="?attr/textAppearanceLabelLarge"
-                        android:layout_marginBottom="4dp"/>
-
-                    <Spinner
-                        android:id="@+id/spinnerGoodsName"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="48dp"
-                        android:entries="@array/goods_name_options"
-                        style="@style/Widget.AppCompat.Spinner.Underlined"/>
+                        android:orientation="vertical">
+                        <!-- Dynamic TextInputEditTexts will be added here by Kotlin code -->
+                    </LinearLayout>
+                    <!-- End Good Numbers Section -->
 
                     <TextView
                         android:layout_width="match_parent"
@@ -75,13 +78,11 @@
                         android:layout_marginTop="16dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
                         android:layout_marginBottom="4dp"/>
-
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Enter Sender Name"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextSenderName"
                             android:layout_width="match_parent"
@@ -97,13 +98,11 @@
                         android:layout_marginTop="16dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
                         android:layout_marginBottom="4dp"/>
-
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Select Date"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextDate"
                             android:layout_width="match_parent"
@@ -112,7 +111,6 @@
                             android:clickable="true"
                             android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -123,6 +121,7 @@
                 android:layout_marginTop="16dp"
                 android:backgroundTint="@color/dark_blue"
                 android:text="Submit Goods"
-                android:textColor="@android:color/white"/> </LinearLayout>
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
     </ScrollView>
 </FrameLayout>

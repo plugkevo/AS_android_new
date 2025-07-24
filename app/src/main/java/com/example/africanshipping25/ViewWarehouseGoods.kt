@@ -124,7 +124,8 @@ class ViewWarehouseGoods : Fragment() {
                         val item = doc.toObject(WarehouseItem::class.java)
                         if (item != null) {
                             itemList.add(item.copy(id = doc.id))
-                            Log.d("ViewWarehouseGoods", "Added item: GoodNo=${item.goodNo}, GoodsName=${item.goodsName}, Sender=${item.senderName} (Firestore ID: ${doc.id})")
+                            // Removed reference to goodsName in logging
+                            Log.d("ViewWarehouseGoods", "Added item: GoodNo=${item.goodNo}, Sender=${item.senderName} (Firestore ID: ${doc.id})")
                         } else {
                             Log.e("ViewWarehouseGoods", "Failed to convert document ${doc.id} to WarehouseItem. Data: ${doc.data}")
                         }

@@ -6,25 +6,26 @@
     android:orientation="vertical"
     android:padding="24dp">
     <TextView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Update Good Item"
-    android:textAppearance="?attr/textAppearanceHeadline6"
-    android:textStyle="bold"
-    android:gravity="center_horizontal"
-    android:layout_marginBottom="24dp" /> <com.google.android.material.textfield.TextInputLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="Good Number"
-    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-    android:layout_marginBottom="16dp">
-
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/editTextUpdateGoodNo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="number" />
-</com.google.android.material.textfield.TextInputLayout>
+        android:text="Update Good Item"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textStyle="bold"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="24dp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutUpdateGoodNo" android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Good Number (4 characters)" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextUpdateGoodNo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:maxLength="4" /> </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:layout_width="match_parent"
@@ -32,14 +33,6 @@
         android:text="Goods Name"
         android:layout_marginTop="8dp"
         android:textAppearance="?attr/textAppearanceSubtitle1" />
-
-    <Spinner
-        android:id="@+id/spinnerUpdateGoodsName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:entries="@array/goods_name_options"
-        android:layout_marginBottom="16dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
@@ -75,13 +68,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end"> <Button
-        android:id="@+id/buttonCancelUpdate"
-        style="?attr/buttonBarNegativeButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cancel"
-        android:layout_marginEnd="8dp"/>
+        android:gravity="end">
+        <Button
+            android:id="@+id/buttonCancelUpdate"
+            style="?attr/buttonBarNegativeButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:layout_marginEnd="8dp"/>
 
         <Button
             android:id="@+id/buttonUpdate"

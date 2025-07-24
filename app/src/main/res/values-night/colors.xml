@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Dark Theme Colors -->
-    <color name="tc_blue">#1A237E</color>
+    <color name="tc_blue">#64B5F6</color>
     <color name="backgroundd">#FF000000</color>
 
     <color name="background_secondary">#1E1E1E</color>
@@ -17,4 +17,37 @@
 
     <!-- Status Bar for Dark Theme -->
     <color name="status_bar">#000000</color>
+
+    <!-- Base colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <color name="card_background">#1E1E1E</color> <!-- Default card background for dark theme -->
+    <!-- App specific colors - Dark Theme -->
+    <color name="app_background">#121212</color> <!-- Dark background -->
+    <color name="colorTextSecondary">#A0A0A0</color> <!-- Lighter gray for secondary text -->
+    <color name="card_bg_active">#1E3A8A</color> <!-- Darker blue for active shipments card -->
+    <color name="card_bg_delivered">#1A472A</color> <!-- Darker green for delivered shipments card -->
+    <color name="text_delivered_green">#81C784</color> <!-- Lighter green for delivered count -->
+    <color name="colorDarkBlue">#64B5F6</color> <!-- Same as tc_blue for consistency -->
+    <color name="colorLightBlue">#64B5F6</color> <!-- Lighter blue for action text and links -->
+    <color name="card_border">#333333</color> <!-- Darker gray for card borders if needed -->
+
+    <color name="text_primary_dark">#E0E0E0</color> <!-- Light text for shipment name -->
+    <color name="text_status_orange">#FFB74D</color> <!-- Lighter orange for status -->
+
+    <!-- New colors for MainActivity components - Dark Theme -->
+    <color name="toolbar_background">#1E3A8A</color> <!-- Darker blue for AppBar -->
+    <color name="toolbar_text_color">#E0E0E0</color> <!-- Light text/icons on toolbar -->
+    <color name="icon_tint_color">#E0E0E0</color> <!-- Light tint for icons -->
+    <color name="bottom_nav_background">#1E1E1E</color> <!-- Darker background for bottom nav -->
+    <color name="bottom_nav_selected_item_color">#64B5F6</color> <!-- **THIS ONE** Lighter blue for selected bottom nav item -->
+    <color name="bottom_nav_unselected_item_color">#A0A0A0</color> <!-- **THIS ONE** Lighter gray for unselected bottom nav item -->
+    <color name="fab_background_tint">#64B5F6</color> <!-- Lighter blue for FAB background -->
+    <color name="fab_icon_tint">#121212</color> <!-- Dark for FAB icon (assuming it's a light icon) -->
+    <color name="badge_background_color">#B71C1C</color> <!-- Darker red for notification badge -->
+    <color name="badge_text_color">#FFFFFF</color> <!-- White for notification badge text -->
+    <color name="nav_icon_selected">#64B5F6</color>
+    <color name="nav_icon_unselected">#BDBDBD</color>
+
 </resources>

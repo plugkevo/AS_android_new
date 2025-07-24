@@ -226,7 +226,20 @@ class view_truck_goods : Fragment() {
 
         // Set click listeners for the buttons
         updateButton.setOnClickListener {
-            val newNumber = goodsNumberEditText.text.toString()
+            val newNumber = goodsNumberEditText.text.toString().trim() // Trim whitespace
+
+            // --- ADD VALIDATION HERE ---
+            if (newNumber.isEmpty()) {
+                Toast.makeText(requireContext(), "Goods number cannot be empty.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener // Stop execution of the click listener
+            }
+
+            if (newNumber.length != 4) {
+                Toast.makeText(requireContext(), "Goods number must be 4 characters.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener // Stop execution of the click listener
+            }
+            // --- END VALIDATION ---
+
             Log.d("ViewTruckGoodsFragment", "Update button clicked for Name: $selectedGoodsName, Number: $newNumber")
             if (currentShipmentId != null) {
                 updateTruckGoodInFirestore(currentShipmentId!!, truckGood.goodsNumber, selectedGoodsName, newNumber)

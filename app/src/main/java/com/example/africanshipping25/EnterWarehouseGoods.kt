@@ -7,12 +7,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Spinner
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Toast
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -27,11 +30,15 @@ class EnterWarehouseGoods : Fragment() {
     private lateinit var firestore: FirebaseFirestore
 
     // Declare your UI elements
-    private lateinit var editTextGoodNo: EditText
-    private lateinit var spinnerGoodsName: Spinner
+    private lateinit var goodsNumberFieldsContainer: LinearLayout
+    private lateinit var buttonAddGoodNo: ImageButton
     private lateinit var editTextSenderName: EditText
     private lateinit var editTextDate: EditText
     private lateinit var buttonSubmit: Button
+
+    // List to hold references to all dynamically added goods number input fields and their parent TextInputLayouts
+    private val goodsNumberInputLayouts: MutableList<TextInputLayout> = mutableListOf()
+    private val goodsNumberEditTexts: MutableList<TextInputEditText> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +46,6 @@ class EnterWarehouseGoods : Fragment() {
             loadingListId = it.getString(ARG_LOADING_LIST_ID)
         }
         Log.d("EnterWarehouseGoods", "Fragment received Loading List ID: $loadingListId")
-
         // Initialize Firestore
         firestore = FirebaseFirestore.getInstance()
     }
@@ -52,20 +58,18 @@ class EnterWarehouseGoods : Fragment() {
         val view = inflater.inflate(R.layout.fragment_enter_warehouse_goods, container, false)
 
         // Initialize UI elements
-        editTextGoodNo = view.findViewById(R.id.editTextGoodNo)
-        spinnerGoodsName = view.findViewById(R.id.spinnerGoodsName)
+        goodsNumberFieldsContainer = view.findViewById(R.id.goodsNumberFieldsContainer)
+        buttonAddGoodNo = view.findViewById(R.id.buttonAddGoodNo)
         editTextSenderName = view.findViewById(R.id.editTextSenderName)
         editTextDate = view.findViewById(R.id.editTextDate)
         buttonSubmit = view.findViewById(R.id.buttonSubmit)
 
-        // Setup Spinner with options from strings.xml
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.goods_name_options, // Make sure this array name matches your strings.xml
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinnerGoodsName.adapter = adapter
+        // Add the initial goods number input field
+        addGoodsNumberInputField()
+
+        // Setup Add Good Number Button Click Listener
+        buttonAddGoodNo.setOnClickListener {
+            addGoodsNumberInputField()
         }
 
         // Setup Date Picker
@@ -75,10 +79,43 @@ class EnterWarehouseGoods : Fragment() {
 
         // Setup Submit Button Click Listener
         buttonSubmit.setOnClickListener {
-            saveWarehouseItem()
+            saveWarehouseItems()
         }
 
         return view
+    }
+
+    /**
+     * Dynamically adds a new TextInputEditText for a goods number.
+     */
+    private fun addGoodsNumberInputField() {
+        // Create TextInputLayout with the OutlinedBox style
+        val textInputLayout = TextInputLayout(
+            requireContext(),
+            null,
+            com.google.android.material.R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox
+        ).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 0, 0, resources.getDimensionPixelSize(com.example.africanshipping25.R.dimen.margin_small))
+            }
+            hint = "Enter Good Number (4 characters)" // Update hint for clarity
+        }
+
+        val textInputEditText = TextInputEditText(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+        }
+
+        textInputLayout.addView(textInputEditText)
+        goodsNumberFieldsContainer.addView(textInputLayout)
+        goodsNumberInputLayouts.add(textInputLayout) // Add the TextInputLayout to track errors
+        goodsNumberEditTexts.add(textInputEditText) // Add to our list for tracking
     }
 
     private fun showDatePickerDialog() {
@@ -97,15 +134,16 @@ class EnterWarehouseGoods : Fragment() {
         dpd.show()
     }
 
-    private fun saveWarehouseItem() {
-        val goodNo = editTextGoodNo.text.toString().trim()
-        val goodsName = spinnerGoodsName.selectedItem.toString()
+    private fun saveWarehouseItems() {
         val senderName = editTextSenderName.text.toString().trim()
         val date = editTextDate.text.toString().trim()
 
-        // Basic validation
-        if (goodNo.isEmpty() || senderName.isEmpty() || date.isEmpty()) {
-            Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
+        // Reset errors on all goods number fields
+        goodsNumberInputLayouts.forEach { it.error = null }
+
+        // Basic validation for sender name and date
+        if (senderName.isEmpty() || date.isEmpty()) {
+            Toast.makeText(requireContext(), "Please fill in Sender Name and Date", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -115,38 +153,86 @@ class EnterWarehouseGoods : Fragment() {
             return
         }
 
-        // Create a map of data to be saved
-        val warehouseItem = hashMapOf(
-            "goodNo" to goodNo,
-            "goodsName" to goodsName,
-            "senderName" to senderName,
-            "date" to date,
-            "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp() // Adds a server-generated timestamp
-        )
+        val goodsNumbersToSave = mutableListOf<String>()
+        var hasValidationErrors = false
 
-        // Reference to the subcollection
-        // loading_lists/{loadingListId}/warehouseItems/{documentId}
-        firestore.collection("loading_lists")
-            .document(loadingListId!!) // Use !! because we've already checked for null
-            .collection(WAREHOUSE_ITEMS_COLLECTION)
-            .add(warehouseItem) // Add a new document with an auto-generated ID
-            .addOnSuccessListener { documentReference ->
-                Log.d("EnterWarehouseGoods", "DocumentSnapshot added with ID: ${documentReference.id}")
-                Toast.makeText(requireContext(), "Warehouse item added successfully!", Toast.LENGTH_SHORT).show()
-                // Optionally clear fields after successful submission
-                clearInputFields()
+        for (i in goodsNumberEditTexts.indices) {
+            val goodNo = goodsNumberEditTexts[i].text.toString().trim()
+            if (goodNo.isEmpty()) {
+                goodsNumberInputLayouts[i].error = "Good Number cannot be empty"
+                hasValidationErrors = true
+            } else if (goodNo.length != 4) {
+                goodsNumberInputLayouts[i].error = "Good Number must be 4 characters"
+                hasValidationErrors = true
+            } else {
+                goodsNumbersToSave.add(goodNo)
             }
-            .addOnFailureListener { e ->
-                Log.w("EnterWarehouseGoods", "Error adding document", e)
-                Toast.makeText(requireContext(), "Error adding warehouse item: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+        }
+
+        if (hasValidationErrors) {
+            Toast.makeText(requireContext(), "Please correct the errors in the Good Numbers", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        if (goodsNumbersToSave.isEmpty()) {
+            Toast.makeText(requireContext(), "Please enter at least one valid Good Number", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        var successCount = 0
+        var failureCount = 0
+        val totalItems = goodsNumbersToSave.size
+
+        for (goodNo in goodsNumbersToSave) {
+            // Create a map of data to be saved for each good number
+            val warehouseItem = hashMapOf(
+                "goodNo" to goodNo,
+                "senderName" to senderName,
+                "date" to date,
+                "timestamp" to FieldValue.serverTimestamp() // Adds a server-generated timestamp
+            )
+
+            // Reference to the subcollection
+            // loading_lists/{loadingListId}/warehouseItems/{documentId}
+            firestore.collection("loading_lists")
+                .document(loadingListId!!) // Use !! because we've already checked for null
+                .collection(WAREHOUSE_ITEMS_COLLECTION)
+                .add(warehouseItem) // Add a new document with an auto-generated ID
+                .addOnSuccessListener { documentReference ->
+                    Log.d("EnterWarehouseGoods", "DocumentSnapshot added with ID: ${documentReference.id} for Good No: $goodNo")
+                    successCount++
+                    if (successCount + failureCount == totalItems) {
+                        // All items processed
+                        if (failureCount == 0) {
+                            Toast.makeText(requireContext(), "All warehouse items added successfully!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(requireContext(), "Added $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
+                        }
+                        clearInputFields()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.w("EnterWarehouseGoods", "Error adding document for Good No: $goodNo", e)
+                    failureCount++
+                    if (successCount + failureCount == totalItems) {
+                        // All items processed
+                        Toast.makeText(requireContext(), "Added $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
+                        clearInputFields()
+                    }
+                }
+        }
     }
 
     private fun clearInputFields() {
-        editTextGoodNo.text.clear()
         editTextSenderName.text.clear()
-        editTextDate.text.clear()
-        spinnerGoodsName.setSelection(0) // Reset spinner to first item
+
+        // Clear all dynamically added goods number fields and remove them
+        goodsNumberEditTexts.clear()
+        goodsNumberInputLayouts.clear() // Clear the TextInputLayouts list as well
+        goodsNumberFieldsContainer.removeAllViews()
+
+        // Add back a single, fresh goods number input field
+        addGoodsNumberInputField()
     }
 
     companion object {

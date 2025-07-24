@@ -18,7 +18,7 @@ class enter_store_goods : Fragment() {
 
     private lateinit var goodsNameSpinner: Spinner
     private lateinit var storeLocationSpinner: Spinner
-    private lateinit var quantityEditText: TextInputEditText
+    private lateinit var goodsNumberEditText: TextInputEditText
     private lateinit var saveButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
@@ -46,7 +46,7 @@ class enter_store_goods : Fragment() {
 
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
         storeLocationSpinner = view.findViewById(R.id.storeLocationSpinner)
-        quantityEditText = view.findViewById(R.id.quantityEditText)
+        goodsNumberEditText = view.findViewById(R.id.etgoodsNumber)
         saveButton = view.findViewById(R.id.saveButton)
 
         // Options for the goods name spinner
@@ -81,16 +81,21 @@ class enter_store_goods : Fragment() {
     private fun saveGoodsToStore(shipmentId: String) {
         val goodsName = goodsNameSpinner.selectedItem.toString()
         val storeLocation = storeLocationSpinner.selectedItem.toString()
-        val quantityString = quantityEditText.text.toString().trim()
+        val goodsnostring = goodsNumberEditText.text.toString().trim()
 
-        if (quantityString.isEmpty()) {
-            quantityEditText.error = "Please enter the quantity"
+        if (goodsnostring.isEmpty()) {
+            goodsNumberEditText.error = "Please enter the Goods Number"
             return
         }
 
-        val quantity = quantityString.toIntOrNull()
+        val quantity = goodsnostring.toIntOrNull()
         if (quantity == null || quantity <= 0) {
-            quantityEditText.error = "Please enter a valid positive quantity"
+            goodsNumberEditText.error = "Please enter a valid positive quantity"
+            return
+        }
+
+        if(goodsnostring.length !=4){
+            goodsNumberEditText.error = "Goods Number must be 4 characters"
             return
         }
 
@@ -120,7 +125,7 @@ class enter_store_goods : Fragment() {
                 // --- END NEW ---
 
                 // Only reset goods name and quantity, keep store location as is
-                quantityEditText.text = null
+                goodsNumberEditText.text = null
                 goodsNameSpinner.setSelection(0)
                 // storeLocationSpinner.setSelection(0) // <<< REMOVE THIS LINE to prevent resetting
             }

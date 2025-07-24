@@ -11,8 +11,9 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
+// No need to import TextInputLayout if it's not directly referenced for errors
+
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.toObjects
 
 // Data class to represent the data we are saving
 data class TruckGoodInput(
@@ -23,7 +24,9 @@ data class TruckGoodInput(
 class enter_truck_goods : Fragment() {
 
     private lateinit var goodsNameSpinner: Spinner
-    private lateinit var quantityEditText: TextInputEditText
+    private lateinit var goodsNumber: TextInputEditText
+    // Removed lateinit var quantityInputLayout: TextInputLayout
+
     private lateinit var addButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
@@ -47,7 +50,8 @@ class enter_truck_goods : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
-        quantityEditText = view.findViewById(R.id.quantityEditText)
+        goodsNumber = view.findViewById(R.id.etgoodsNumber)
+        // No longer need to find quantityInputLayout here
         addButton = view.findViewById(R.id.saveButton)
 
         // Options for the goods name spinner
@@ -60,6 +64,9 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun addGoodsToShipment() {
+        // Clear any previous errors on the TextInputEditText
+        goodsNumber.error = null
+
         if (currentShipmentId == null) {
             Toast.makeText(requireContext(), "Error: Shipment ID not available.", Toast.LENGTH_SHORT).show()
             Log.e("enter_truck_goods", "Shipment ID is null.")
@@ -67,15 +74,22 @@ class enter_truck_goods : Fragment() {
         }
 
         val goodsName = goodsNameSpinner.selectedItem.toString()
-        val quantityString = quantityEditText.text.toString().trim()
+        val goodsNumberString = goodsNumber.text.toString().trim() // Renamed for clarity
 
-        if (quantityString.isEmpty()) {
-            quantityEditText.error = "Please enter the quantity"
-            return
+        // --- Validation Logic for Goods Number (4 characters) ---
+        if (goodsNumberString.isEmpty()) {
+            goodsNumber.error = "Please enter the goods number"
+            return // Stop execution if validation fails
         }
 
-        // No need to convert to Int, just use the string
-        val newTruckGood = TruckGoodInput(name = goodsName, goodsNumber = quantityString)
+        if (goodsNumberString.length != 4) {
+            goodsNumber.error = "Goods number must be 4 characters"
+            return // Stop execution if validation fails
+        }
+        // --- End Validation Logic ---
+
+        // If validation passes, proceed to save
+        val newTruckGood = TruckGoodInput(name = goodsName, goodsNumber = goodsNumberString)
 
         firestore.collection("shipments")
             .document(currentShipmentId!!)
@@ -87,7 +101,8 @@ class enter_truck_goods : Fragment() {
                     "Item added to shipment $currentShipmentId with ID: ${documentReference.id}",
                     Toast.LENGTH_SHORT
                 ).show()
-                quantityEditText.text = null
+                // Clear the input field and reset spinner after successful save
+                goodsNumber.text = null
                 goodsNameSpinner.setSelection(0)
             }
             .addOnFailureListener { e ->
