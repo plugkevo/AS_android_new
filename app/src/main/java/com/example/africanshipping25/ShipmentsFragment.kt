@@ -236,6 +236,9 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     }
 
     override fun onShipmentItemClick(shipment: Shipment) {
+
+        Toast.makeText(requireContext(), "Clicked Shipment : ${shipment.name}", Toast.LENGTH_SHORT).show()
+
         val intent = Intent(requireContext(), ViewShipment::class.java)
         intent.putExtra("shipmentId", shipment.id)
         intent.putExtra("shipmentName", shipment.name)

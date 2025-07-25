@@ -9,9 +9,35 @@
 
     </style>
 
-    <style name="Theme.YourApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- ... other items ... -->
+    <style name="Theme.AfricanShipping25" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary_dark</item>
+        <item name="colorOnSecondary">@color/text_on_secondary</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/status_bar</item>
+        <!-- Navigation bar color. -->
+        <item name="android:navigationBarColor">@color/navigation_bar</item>
 
+        <!-- Custom attributes for theming (Light Theme values) -->
+        <item name="colorBackground">@color/app_background</item>
+        <item name="textColorPrimary">@color/text_primary</item>
+        <item name="textColorSecondary">@color/text_secondary</item>
+        <item name="inputBoxStrokeColor">@color/secondary</item>
+        <item name="inputHintColor">@color/secondary</item>
+        <item name="inputTextColor">@color/black</item>
+        <item name="buttonBackgroundTint">@color/dark_blue</item>
+        <item name="buttonTextColor">@android:color/white</item>
+        <item name="orDividerColor">@color/divider</item>
+        <item name="orTextColor">@color/text_secondary</item>
+        <item name="googleCardBackground">@color/white</item>
+        <item name="googleTextColor">@color/text_secondary</item>
+        <item name="linkTextColor">@color/secondary</item>
+        <item name="signupPromptColor">@color/text_secondary</item>
     </style>
 
 </resources>

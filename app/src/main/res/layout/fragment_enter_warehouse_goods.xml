@@ -5,30 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".EnterWarehouseGoods">
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
                 android:layout_marginBottom="16dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <!-- Good Numbers Section -->
                     <TextView
                         android:layout_width="match_parent"
@@ -37,7 +32,6 @@
                         android:textSize="18dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
                         android:layout_marginBottom="4dp"/>
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -60,7 +54,6 @@
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:padding="8dp"/>
                     </LinearLayout>
-
                     <LinearLayout
                         android:id="@+id/goodsNumberFieldsContainer"
                         android:layout_width="match_parent"
@@ -69,7 +62,6 @@
                         <!-- Dynamic TextInputEditTexts will be added here by Kotlin code -->
                     </LinearLayout>
                     <!-- End Good Numbers Section -->
-
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -89,6 +81,28 @@
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName" />
                     </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Phone Number Section -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Phone Number"
+                        android:textSize="18dp"
+                        android:layout_marginTop="16dp"
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:layout_marginBottom="4dp"/>
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Enter Sender's Phone Number"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextPhoneNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <!-- End Phone Number Section -->
 
                     <TextView
                         android:layout_width="match_parent"
@@ -113,7 +127,6 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
             <Button
                 android:id="@+id/buttonSubmit"
                 android:layout_width="match_parent"

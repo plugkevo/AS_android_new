@@ -24,23 +24,22 @@ class WarehouseItemAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textGoodNo: TextView = view.findViewById(R.id.textGoodNo)
-        // Removed textGoodsName: TextView = view.findViewById(R.id.textGoodsName)
         val textSenderName: TextView = view.findViewById(R.id.textSenderName)
+        val textPhoneNumber: TextView = view.findViewById(R.id.textPhoneNumber) // Added phone number TextView
         val textDate: TextView = view.findViewById(R.id.textDate)
         val imageMoreVert: ImageView = view.findViewById(R.id.imageMoreVert)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        // Ensure 'warehouse_list_view' layout also no longer contains a TextView for 'goodsName'
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.warehouse_list_view, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.warehouse_list_view, parent, false) // Changed to warehouse_item_card
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = filteredItems[position] // Use filteredItems here
         holder.textGoodNo.text = "Good No: ${item.goodNo}"
-        // Removed holder.textGoodsName.text = "Goods: ${item.goodsName}"
         holder.textSenderName.text = "Sender: ${item.senderName}"
+        holder.textPhoneNumber.text = "Phone: ${item.phoneNumber}" // Set phone number text
         holder.textDate.text = "Date: ${item.date}"
 
         holder.imageMoreVert.setOnClickListener {
@@ -53,16 +52,18 @@ class WarehouseItemAdapter(
     private fun showUpdateDialog(context: Context, item: WarehouseItem) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_update_warehouse_items, null)
 
-        // ** Get a reference to the TextInputLayout wrapping editTextUpdateGoodNo **
         val goodNoInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateGoodNo)
         val goodNoField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateGoodNo)
         val senderField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateSenderName)
+        val phoneNumberField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdatePhoneNumber) // Get phone number field
         val dateField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateDate)
+
         val buttonUpdate = dialogView.findViewById<Button>(R.id.buttonUpdate)
         val buttonCancel = dialogView.findViewById<Button>(R.id.buttonCancelUpdate)
 
         goodNoField.setText(item.goodNo)
         senderField.setText(item.senderName)
+        phoneNumberField.setText(item.phoneNumber) // Set initial phone number
         dateField.setText(item.date)
 
         dateField.setOnClickListener {
@@ -75,7 +76,6 @@ class WarehouseItemAdapter(
                     e.printStackTrace()
                 }
             }
-
             val year = c.get(Calendar.YEAR)
             val month = c.get(Calendar.MONTH)
             val day = c.get(Calendar.DAY_OF_MONTH)
@@ -94,39 +94,48 @@ class WarehouseItemAdapter(
             .create()
 
         buttonUpdate.setOnClickListener {
-            val updatedGoodNo = goodNoField.text.toString().trim() // Get trimmed text
+            val updatedGoodNo = goodNoField.text.toString().trim()
             val updatedSenderName = senderField.text.toString().trim()
+            val updatedPhoneNumber = phoneNumberField.text.toString().trim() // Get updated phone number
             val updatedDate = dateField.text.toString().trim()
 
-            // Clear any previous error messages on the goodNoField's TextInputLayout
+            // Clear any previous error messages
             goodNoInputLayout.error = null
+            val phoneNumberInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdatePhoneNumber)
+            phoneNumberInputLayout.error = null // Clear error for phone number
 
-            // --- ADD 4-CHARACTER VALIDATION FOR GOODS NUMBER HERE ---
+            // --- VALIDATION ---
             if (updatedGoodNo.isEmpty()) {
                 goodNoInputLayout.error = "Goods number cannot be empty."
-                return@setOnClickListener // Stop the update process
+                return@setOnClickListener
             }
-
             if (updatedGoodNo.length != 4) {
                 goodNoInputLayout.error = "Goods number must be 4 characters."
-                return@setOnClickListener // Stop the update process
+                return@setOnClickListener
             }
-            // --- END VALIDATION ---
-
-            // Basic validation for other fields (optional but recommended)
             if (updatedSenderName.isEmpty()) {
                 senderField.error = "Sender name cannot be empty."
                 return@setOnClickListener
             }
+            if (updatedPhoneNumber.isEmpty()) { // Validate phone number
+                phoneNumberInputLayout.error = "Phone number cannot be empty."
+                return@setOnClickListener
+            }
+            // Optional: Add more specific phone number validation (e.g., length, format)
+            // if (updatedPhoneNumber.length < 10) {
+            //     phoneNumberInputLayout.error = "Phone number is too short."
+            //     return@setOnClickListener
+            // }
             if (updatedDate.isEmpty()) {
                 dateField.error = "Date cannot be empty."
                 return@setOnClickListener
             }
-
+            // --- END VALIDATION ---
 
             val updatedItem = item.copy(
                 goodNo = updatedGoodNo,
                 senderName = updatedSenderName,
+                phoneNumber = updatedPhoneNumber, // Include phone number in the updated item
                 date = updatedDate
             )
             onItemUpdated(updatedItem)
@@ -136,7 +145,6 @@ class WarehouseItemAdapter(
         buttonCancel.setOnClickListener {
             dialog.dismiss()
         }
-
         dialog.show()
     }
 
@@ -152,6 +160,7 @@ class WarehouseItemAdapter(
                         // Apply lowercase() instead of toLowerCase(Locale.ROOT)
                         if (row.goodNo.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT)) ||
                             row.senderName.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT)) ||
+                            row.phoneNumber.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT)) || // Include phone number in filter
                             row.date.lowercase(Locale.ROOT).contains(charSearch.lowercase(Locale.ROOT))
                         ) {
                             resultList.add(row)

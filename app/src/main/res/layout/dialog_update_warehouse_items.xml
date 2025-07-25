@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp">
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,17 +16,19 @@
         android:layout_marginBottom="24dp" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayoutUpdateGoodNo" android:layout_width="match_parent"
+        android:id="@+id/textInputLayoutUpdateGoodNo"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Good Number (4 characters)" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:hint="Good Number (4 characters)"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginBottom="16dp">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextUpdateGoodNo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
-            android:maxLength="4" /> </com.google.android.material.textfield.TextInputLayout>
+            android:maxLength="4" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:layout_width="match_parent"
@@ -40,7 +43,6 @@
         android:hint="Sender Name"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginBottom="16dp">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextUpdateSenderName"
             android:layout_width="match_parent"
@@ -48,13 +50,34 @@
             android:inputType="textPersonName" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Phone Number Input Field -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Phone Number"
+        android:layout_marginTop="8dp"
+        android:textAppearance="?attr/textAppearanceSubtitle1" />
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutUpdatePhoneNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Phone Number"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="16dp">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextUpdatePhoneNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone" />
+    </com.google.android.material.textfield.TextInputLayout>
+    <!-- End Phone Number Input Field -->
+
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Date"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_marginBottom="24dp">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextUpdateDate"
             android:layout_width="match_parent"
@@ -76,7 +99,6 @@
             android:layout_height="wrap_content"
             android:text="Cancel"
             android:layout_marginEnd="8dp"/>
-
         <Button
             android:id="@+id/buttonUpdate"
             style="?attr/buttonBarPositiveButtonStyle"
@@ -86,5 +108,4 @@
             android:textColor="@color/white"
             android:backgroundTint="@color/dark_blue"/>
     </LinearLayout>
-
 </LinearLayout>

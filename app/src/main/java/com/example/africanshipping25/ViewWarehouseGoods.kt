@@ -42,7 +42,6 @@ class ViewWarehouseGoods : Fragment() {
         Log.d("ViewWarehouseGoods", "onCreate: Received loadingListId: $loadingListId")
 
         firestore = FirebaseFirestore.getInstance()
-
         // No setHasOptionsMenu(true) needed as we're not using a menu for search
     }
 
@@ -57,7 +56,6 @@ class ViewWarehouseGoods : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         searchEditText = view.findViewById(R.id.searchEditText)
         emptyView = view.findViewById(R.id.emptyView)
-
 
         // Pass the original itemList to the adapter. The adapter will manage its own filtered list.
         adapter = WarehouseItemAdapter(itemList) { updatedItem ->
@@ -124,8 +122,7 @@ class ViewWarehouseGoods : Fragment() {
                         val item = doc.toObject(WarehouseItem::class.java)
                         if (item != null) {
                             itemList.add(item.copy(id = doc.id))
-                            // Removed reference to goodsName in logging
-                            Log.d("ViewWarehouseGoods", "Added item: GoodNo=${item.goodNo}, Sender=${item.senderName} (Firestore ID: ${doc.id})")
+                            Log.d("ViewWarehouseGoods", "Added item: GoodNo=${item.goodNo}, Sender=${item.senderName}, Phone=${item.phoneNumber} (Firestore ID: ${doc.id})") // Updated logging
                         } else {
                             Log.e("ViewWarehouseGoods", "Failed to convert document ${doc.id} to WarehouseItem. Data: ${doc.data}")
                         }
@@ -161,7 +158,6 @@ class ViewWarehouseGoods : Fragment() {
                 return@let
             }
             Log.d("ViewWarehouseGoods", "Updating item with ID: ${item.id} in path: $LOADING_LISTS_COLLECTION/$id/$WAREHOUSE_ITEMS_COLLECTION")
-
             firestore.collection(LOADING_LISTS_COLLECTION)
                 .document(id)
                 .collection(WAREHOUSE_ITEMS_COLLECTION)

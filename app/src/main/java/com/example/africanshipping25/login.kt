@@ -1,9 +1,11 @@
 package com.example.africanshipping25
 
+import android.app.AlertDialog // Import AlertDialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater // Import LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -16,6 +18,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.material.textfield.TextInputEditText // Import TextInputEditText
+import com.google.android.material.textfield.TextInputLayout // Import TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
@@ -23,7 +27,6 @@ import com.google.firebase.ktx.Firebase
 import androidx.cardview.widget.CardView // Import CardView
 
 class login : AppCompatActivity() {
-
     private lateinit var auth: FirebaseAuth
     private lateinit var etEmail: EditText
     private lateinit var etPassword: EditText
@@ -43,8 +46,6 @@ class login : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-
-
 
         // Initialize Firebase Auth
         auth = Firebase.auth
@@ -69,10 +70,8 @@ class login : AppCompatActivity() {
             .requestIdToken(getString(R.string.default_web_client_id)) // This comes from google-services.json
             .requestEmail() // Request the user's email address
             .build()
-
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         // --- End Google Sign-In Configuration ---
-
 
         // --- Check for existing user session (Firebase) ---
         val currentUser = auth.currentUser
@@ -81,7 +80,6 @@ class login : AppCompatActivity() {
             // Check if the current user is signed in with Google and if their email is verified
             // This is a more robust check since they could have logged in with Google earlier
             val isGoogleUser = currentUser.providerData.any { it.providerId == GoogleAuthProvider.PROVIDER_ID }
-
             if (currentUser.isEmailVerified || isGoogleUser) { // Consider Google users verified by default
                 // User is signed in and verified (or signed in via Google)
                 showLoading(true)
@@ -106,9 +104,8 @@ class login : AppCompatActivity() {
         }
 
         tvForgotPassword.setOnClickListener {
-            Toast.makeText(this, "Forgot Password clicked", Toast.LENGTH_SHORT).show()
-            // You would typically navigate to a reset password activity here
-            // startActivity(Intent(this, ForgotPasswordActivity::class.java))
+            // Call the new function to show the forgot password dialog
+            showForgotPasswordDialog()
         }
 
         tvSignUp.setOnClickListener {
@@ -132,7 +129,6 @@ class login : AppCompatActivity() {
             etEmail.requestFocus()
             return
         }
-
         if (password.isEmpty()) {
             etPassword.error = "Password is required"
             etPassword.requestFocus()
@@ -140,15 +136,12 @@ class login : AppCompatActivity() {
         }
 
         showLoading(true)
-
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 showLoading(false) // Hide loading regardless of success or failure
-
                 if (task.isSuccessful) {
                     Log.d(TAG, "signInWithEmail:success")
                     val user = auth.currentUser
-
                     if (user?.isEmailVerified == true) {
                         Toast.makeText(baseContext, "Login successful.", Toast.LENGTH_SHORT).show()
                         navigateToMainActivity()
@@ -172,7 +165,6 @@ class login : AppCompatActivity() {
     }
 
     // --- New Google Sign-In methods ---
-
     private fun signInWithGoogle() {
         showLoading(true) // Show loading when initiating Google Sign-In
         val signInIntent = googleSignInClient.signInIntent
@@ -204,7 +196,6 @@ class login : AppCompatActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 showLoading(false) // Hide loading regardless of Firebase auth success/failure
-
                 if (task.isSuccessful) {
                     // Sign in success. User is now signed in to Firebase with Google.
                     Log.d(TAG, "Firebase signInWithCredential success")
@@ -219,8 +210,52 @@ class login : AppCompatActivity() {
             }
     }
 
-    // --- End New Google Sign-In methods ---
+    // --- New function for Forgot Password dialog ---
+    private fun showForgotPasswordDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_forgot_password, null)
+        val emailField = dialogView.findViewById<TextInputEditText>(R.id.editTextResetEmail)
+        val emailInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutResetEmail)
+        val buttonSendResetEmail = dialogView.findViewById<Button>(R.id.buttonSendResetEmail)
+        val buttonCancelReset = dialogView.findViewById<Button>(R.id.buttonCancelReset)
 
+        // Pre-fill email if available from login field
+        emailField.setText(etEmail.text.toString().trim())
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        buttonSendResetEmail.setOnClickListener {
+            val email = emailField.text.toString().trim()
+            emailInputLayout.error = null // Clear previous error
+
+            if (email.isEmpty()) {
+                emailInputLayout.error = "Email is required"
+                emailField.requestFocus()
+                return@setOnClickListener
+            }
+
+            // Send password reset email
+            auth.sendPasswordResetEmail(email)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "Password reset email sent to $email. Please check your inbox.", Toast.LENGTH_LONG).show()
+                        dialog.dismiss()
+                    } else {
+                        val errorMessage = task.exception?.message ?: "Failed to send reset email."
+                        Toast.makeText(this, "Error: $errorMessage", Toast.LENGTH_LONG).show()
+                        Log.e(TAG, "Failed to send password reset email: $errorMessage", task.exception)
+                    }
+                }
+        }
+
+        buttonCancelReset.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+    // --- End new function ---
 
     private fun showLoading(isLoading: Boolean) {
         if (isLoading) {
@@ -235,7 +270,6 @@ class login : AppCompatActivity() {
             lottieLoadingAnimation.pauseAnimation()
         }
     }
-
 
     private fun navigateToMainActivity() {
         val intent = Intent(this, MainActivity::class.java)

@@ -6,4 +6,36 @@
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
     </style>
+
+        <!-- Base application theme for Night mode. -->
+        <style name="Theme.AfricanShipping25" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+            <!-- Primary brand color. -->
+            <item name="colorPrimary">@color/toolbar_background</item>
+            <item name="colorPrimaryVariant">@color/toolbar_background</item>
+            <item name="colorOnPrimary">@color/toolbar_text_color</item>
+            <!-- Secondary brand color. -->
+            <item name="colorSecondary">@color/colorLightBlue</item>
+            <item name="colorSecondaryVariant">@color/colorLightBlue</item>
+            <item name="colorOnSecondary">@color/text_on_secondary</item>
+            <!-- Status bar color. -->
+            <item name="android:statusBarColor">@color/status_bar</item>
+            <!-- Navigation bar color. -->
+            <item name="android:navigationBarColor">@color/app_background</item>
+
+            <!-- Custom attributes for theming (Dark Theme values) -->
+            <item name="colorBackground">@color/app_background</item>
+            <item name="textColorPrimary">@color/text_primary</item>
+            <item name="textColorSecondary">@color/text_secondary</item>
+            <item name="inputBoxStrokeColor">@color/colorLightBlue</item>
+            <item name="inputHintColor">@color/colorLightBlue</item>
+            <item name="inputTextColor">@color/white</item>
+            <item name="buttonBackgroundTint">@color/colorLightBlue</item>
+            <item name="buttonTextColor">@color/black</item>
+            <item name="orDividerColor">@color/divider</item>
+            <item name="orTextColor">@color/text_secondary</item>
+            <item name="googleCardBackground">@color/card_background</item>
+            <item name="googleTextColor">@color/text_primary</item>
+            <item name="linkTextColor">@color/colorLightBlue</item>
+            <item name="signupPromptColor">@color/text_secondary</item>
+        </style>
 </resources>

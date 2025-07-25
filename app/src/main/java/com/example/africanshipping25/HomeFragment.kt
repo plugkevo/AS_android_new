@@ -70,13 +70,7 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
             startActivity(intent)
         }
 
-        val viewAllTextView = view.findViewById<TextView>(R.id.tv_view_all)
-        viewAllTextView.setOnClickListener {
-            Toast.makeText(requireContext(), "View All Shipments Clicked!", Toast.LENGTH_SHORT).show()
-            // Here you can navigate to a new activity or fragment that shows all shipments
-            // For example, navigate to ShipmentsFragment if it's part of a ViewPager or similar setup
-            // (Requires a way to communicate with the containing activity/fragment manager)
-        }
+
     }
 
     private fun loadShipmentCounts() {

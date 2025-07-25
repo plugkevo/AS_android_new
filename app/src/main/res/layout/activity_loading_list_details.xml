@@ -7,6 +7,30 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/headerCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:layout_margin="5dp"
+        app:cardBackgroundColor="@color/primary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading List"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:padding="16dp"
+            android:layout_gravity="center" />
+    </androidx.cardview.widget.CardView>
+
+
 
 
     <com.google.android.material.tabs.TabLayout
@@ -17,7 +41,7 @@
         app:tabGravity="fill"
         app:tabIndicatorColor="@color/red"
         app:tabSelectedTextColor="@color/dark_blue"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerCard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

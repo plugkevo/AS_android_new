@@ -33,6 +33,7 @@ class EnterWarehouseGoods : Fragment() {
     private lateinit var goodsNumberFieldsContainer: LinearLayout
     private lateinit var buttonAddGoodNo: ImageButton
     private lateinit var editTextSenderName: EditText
+    private lateinit var editTextPhoneNumber: EditText // Declared the phone number EditText
     private lateinit var editTextDate: EditText
     private lateinit var buttonSubmit: Button
 
@@ -46,6 +47,7 @@ class EnterWarehouseGoods : Fragment() {
             loadingListId = it.getString(ARG_LOADING_LIST_ID)
         }
         Log.d("EnterWarehouseGoods", "Fragment received Loading List ID: $loadingListId")
+
         // Initialize Firestore
         firestore = FirebaseFirestore.getInstance()
     }
@@ -61,6 +63,7 @@ class EnterWarehouseGoods : Fragment() {
         goodsNumberFieldsContainer = view.findViewById(R.id.goodsNumberFieldsContainer)
         buttonAddGoodNo = view.findViewById(R.id.buttonAddGoodNo)
         editTextSenderName = view.findViewById(R.id.editTextSenderName)
+        editTextPhoneNumber = view.findViewById(R.id.editTextPhoneNumber) // Initialized the phone number EditText
         editTextDate = view.findViewById(R.id.editTextDate)
         buttonSubmit = view.findViewById(R.id.buttonSubmit)
 
@@ -136,14 +139,15 @@ class EnterWarehouseGoods : Fragment() {
 
     private fun saveWarehouseItems() {
         val senderName = editTextSenderName.text.toString().trim()
+        val phoneNumber = editTextPhoneNumber.text.toString().trim() // Get phone number
         val date = editTextDate.text.toString().trim()
 
         // Reset errors on all goods number fields
         goodsNumberInputLayouts.forEach { it.error = null }
 
-        // Basic validation for sender name and date
-        if (senderName.isEmpty() || date.isEmpty()) {
-            Toast.makeText(requireContext(), "Please fill in Sender Name and Date", Toast.LENGTH_SHORT).show()
+        // Basic validation for sender name, phone number, and date
+        if (senderName.isEmpty() || phoneNumber.isEmpty() || date.isEmpty()) {
+            Toast.makeText(requireContext(), "Please fill in Sender Name, Phone Number, and Date", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -188,6 +192,7 @@ class EnterWarehouseGoods : Fragment() {
             val warehouseItem = hashMapOf(
                 "goodNo" to goodNo,
                 "senderName" to senderName,
+                "phoneNumber" to phoneNumber, // Added phone number to the data map
                 "date" to date,
                 "timestamp" to FieldValue.serverTimestamp() // Adds a server-generated timestamp
             )
@@ -225,6 +230,8 @@ class EnterWarehouseGoods : Fragment() {
 
     private fun clearInputFields() {
         editTextSenderName.text.clear()
+        editTextPhoneNumber.text.clear() // Clear the phone number field
+        editTextDate.text.clear() // Clear the date field
 
         // Clear all dynamically added goods number fields and remove them
         goodsNumberEditTexts.clear()

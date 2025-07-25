@@ -238,13 +238,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/colorDarkBlue" />
 
-            <TextView
-                android:id="@+id/tv_view_all"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="View All"
-                android:textSize="14sp"
-                android:textColor="@color/colorLightBlue" />
+
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
