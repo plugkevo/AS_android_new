@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background"
+    android:background="?attr/colorBackground"
     android:fillViewport="true"
     tools:context=".HomeFragment">
 
@@ -22,15 +22,16 @@
             android:text="Welcome back"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@color/tc_blue" />
+            android:textColor="?attr/homeTitleColor"
+        />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Here's your shipping overview"
             android:textSize="14sp"
-            android:textColor="@color/colorTextSecondary"
-            android:layout_marginBottom="24dp" />
+            android:textColor="?attr/textColorSecondary"
+        android:layout_marginBottom="24dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -45,15 +46,13 @@
                 android:layout_marginEnd="8dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/card_bg_active">
-
+                app:cardBackgroundColor="?attr/cardBgActive">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
                     android:padding="16dp">
-
                     <TextView
                         android:id="@+id/tv_active_count"
                         android:layout_width="wrap_content"
@@ -61,14 +60,15 @@
                         android:text="12"
                         android:textSize="24sp"
                         android:textStyle="bold"
-                        android:textColor="@color/tc_blue" />
-
+                        android:textColor="?attr/homeTitleColor"
+                    />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Active Shipments"
                         android:textSize="14sp"
-                        android:textColor="@color/colorTextSecondary" />
+                        android:textColor="?attr/textColorSecondary"
+                    />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -79,15 +79,13 @@
                 android:layout_marginStart="8dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/card_bg_delivered">
-
+                app:cardBackgroundColor="?attr/cardBgDelivered">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
                     android:padding="16dp">
-
                     <TextView
                         android:id="@+id/tv_delivered_count"
                         android:layout_width="wrap_content"
@@ -95,99 +93,95 @@
                         android:text="28"
                         android:textSize="24sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_delivered_green" />
-
+                        android:textColor="?attr/textDeliveredGreen"
+                    />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Delivered This Month"
                         android:textSize="14sp"
-                        android:textColor="@color/colorTextSecondary" />
+                        android:textColor="?attr/textColorSecondary"
+                    />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Quick Actions"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorDarkBlue"
-            android:layout_marginBottom="16dp" />
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Quick Actions"
+    android:textSize="18sp"
+    android:textStyle="bold"
+    android:textColor="?attr/homeTitleColor"
+android:layout_marginBottom="16dp" />
 
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginBottom="24dp">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_create_shipment"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginEnd="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="?attr/cardBackground">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="24dp">
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_create_shipment"
-                android:layout_width="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="16dp">
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_add_shipment_color"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="Create Shipment" />
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/card_background">
+                android:text="Create Shipment"
+                android:textSize="14sp"
+                android:textColor="?attr/actionCardTextColor"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_add_shipment_color"
-                        android:layout_marginBottom="8dp"
-                        android:contentDescription="Create Shipment" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Create Shipment"
-                        android:textSize="14sp"
-                        android:textColor="@color/colorLightBlue" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_track_shipment"
-                android:layout_width="0dp"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_track_shipment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            app:cardBackgroundColor="?attr/cardBackground">
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="@color/card_background">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp">
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_track_shipment_color"
+                    android:layout_marginBottom="8dp"
+                    android:contentDescription="Track Shipment" />
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_track_shipment_color"
-                        android:layout_marginBottom="8dp"
-                        android:contentDescription="Track Shipment" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Track Shipment"
-                        android:textSize="14sp"
-                        android:textColor="@color/colorLightBlue" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                    android:text="Track Shipment"
+                    android:textSize="14sp"
+                    android:textColor="?attr/actionCardTextColor"
+                />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_loading"
@@ -197,28 +191,25 @@
                 android:layout_marginStart="8dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/card_background">
-
+                app:cardBackgroundColor="?attr/cardBackground">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginBottom="8dp"
                         android:contentDescription="Reports"
                         android:src="@drawable/ic_list_add_color" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Loading List"
-                        android:textColor="@color/colorLightBlue"
-                        android:textSize="14sp" />
+                        android:textColor="?attr/actionCardTextColor"
+                    android:textSize="14sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
@@ -228,7 +219,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -236,9 +226,8 @@
                 android:text="Recent Shipments"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/colorDarkBlue" />
-
-
+                android:textColor="?attr/homeTitleColor"
+            />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

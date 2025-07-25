@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_checked="true" android:color="@color/nav_icon_selected" /> <!-- Dark Blue when selected -->
-    <item android:color="@color/nav_icon_unselected" /> <!-- Gray when not selected -->
+    <!-- Selected state -->
+    <item android:color="?attr/bottomNavSelectedItemColor" android:state_checked="true"/>
+    <!-- Unselected state -->
+    <item android:color="?attr/bottomNavUnselectedItemColor" android:state_checked="false"/>
 </selector>

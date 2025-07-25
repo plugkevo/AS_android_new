@@ -15,4 +15,24 @@
     <attr name="googleTextColor" format="color" />
     <attr name="linkTextColor" format="color" />
     <attr name="signupPromptColor" format="color" />
+
+    <!-- New custom attributes for HomeFragment theming -->
+    <attr name="cardBgActive" format="color" />
+    <attr name="cardBgDelivered" format="color" />
+    <attr name="textDeliveredGreen" format="color" />
+    <attr name="cardBackground" format="color" />
+    <attr name="actionCardTextColor" format="color" />
+    <attr name="homeTitleColor" format="color" /> <!-- For "Welcome back" and "Quick Actions" titles -->
+
+    <!-- New custom attributes for MainActivity components -->
+    <attr name="toolbarBackground" format="color" />
+    <attr name="toolbarTextColor" format="color" />
+    <attr name="iconTintColor" format="color" />
+    <attr name="bottomNavBackground" format="color" />
+    <attr name="bottomNavSelectedItemColor" format="color" />
+    <attr name="bottomNavUnselectedItemColor" format="color" />
+    <attr name="fabBackgroundTint" format="color" />
+    <attr name="fabIconTint" format="color" />
+    <attr name="badgeBackgroundColor" format="color" />
+    <attr name="badgeTextColor" format="color" />
 </resources>

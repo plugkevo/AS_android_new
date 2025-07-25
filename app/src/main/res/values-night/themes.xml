@@ -37,5 +37,25 @@
             <item name="googleTextColor">@color/text_primary</item>
             <item name="linkTextColor">@color/colorLightBlue</item>
             <item name="signupPromptColor">@color/text_secondary</item>
+
+            <!-- HomeFragment specific colors - Dark Theme -->
+            <item name="cardBgActive">@color/card_bg_active</item>
+            <item name="cardBgDelivered">@color/card_bg_delivered</item>
+            <item name="textDeliveredGreen">@color/text_delivered_green</item>
+            <item name="cardBackground">@color/card_background</item>
+            <item name="actionCardTextColor">@color/colorLightBlue</item>
+            <item name="homeTitleColor">@color/colorDarkBlue</item>
+
+            <!-- MainActivity components - Dark Theme -->
+            <item name="toolbarBackground">@color/toolbar_background</item>
+            <item name="toolbarTextColor">@color/toolbar_text_color</item>
+            <item name="iconTintColor">@color/icon_tint_color</item>
+            <item name="bottomNavBackground">@color/bottom_nav_background</item>
+            <item name="bottomNavSelectedItemColor">@color/bottom_nav_selected_item_color</item>
+            <item name="bottomNavUnselectedItemColor">@color/bottom_nav_unselected_item_color</item>
+            <item name="fabBackgroundTint">@color/fab_background_tint</item>
+            <item name="fabIconTint">@color/fab_icon_tint</item>
+            <item name="badgeBackgroundColor">@color/badge_background_color</item>
+            <item name="badgeTextColor">@color/badge_text_color</item>
         </style>
 </resources>
