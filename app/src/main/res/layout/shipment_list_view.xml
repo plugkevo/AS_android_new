@@ -15,7 +15,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:cardBackgroundColor="@color/card_background"> <!-- Added for theme support -->
+        app:cardBackgroundColor="?attr/shipmentCardBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -45,7 +45,7 @@
                     android:text="SHP12345678"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary_dark" /> <!-- Changed to theme attribute -->
+                    android:textColor="?attr/shipmentNameColor" />
 
                 <TextView
                     android:id="@+id/txtLocation"
@@ -53,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:text="New York to Los Angeles"
                     android:textSize="14sp"
-                    android:textColor="@color/colorTextSecondary" /> <!-- Changed to theme attribute -->
+                    android:textColor="?attr/shipmentLocationColor" />
 
                 <TextView
                     android:id="@+id/txtStatus"
@@ -61,7 +61,7 @@
                     android:layout_height="wrap_content"
                     android:text="In Transit"
                     android:textSize="14sp"
-                    android:textColor="@color/text_status_orange" /> <!-- Changed to theme attribute -->
+                    android:textColor="?attr/shipmentStatusColor" />
             </LinearLayout>
 
             <TextView
@@ -70,8 +70,8 @@
                 android:layout_height="wrap_content"
                 android:text="May 12"
                 android:textSize="14sp"
-                android:textColor="@color/colorTextSecondary"
-                android:layout_marginStart="8dp"/> <!-- Changed to theme attribute -->
+                android:textColor="?attr/shipmentDateColor"
+                android:layout_marginStart="8dp"/>
 
             <ImageView
                 android:id="@+id/btnUpdate"
@@ -82,7 +82,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginStart="16dp"/>
+                android:layout_marginStart="16dp"
+                app:tint="?attr/shipmentMoreButtonTint"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

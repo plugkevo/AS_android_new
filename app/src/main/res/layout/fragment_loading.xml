@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/colorBackground">
 
     <LinearLayout
         android:id="@+id/content_layout"
@@ -18,7 +19,7 @@
             android:text="All Loading Lists"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@color/colorDarkBlue"
+            android:textColor="?attr/homeTitleColor"
             android:layout_marginBottom="16dp" />
 
         <androidx.cardview.widget.CardView
@@ -26,32 +27,35 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="8dp"
             app:cardElevation="2dp"
+            app:cardBackgroundColor="?attr/searchCardBackground"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_search"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Search"
+                app:tint="?attr/searchIconTint" />
+
+            <EditText
+                android:id="@+id/et_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="8dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_search"
-                    android:layout_marginEnd="8dp"
-                    android:contentDescription="Search"
-                    app:tint="#757575" />
-
-                <EditText
-                    android:id="@+id/et_search"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@null"
-                    android:hint="Search loading lists..."
-                    android:inputType="text"
-                    android:padding="8dp"
-                    android:textSize="16sp" />
+                android:background="@null"
+                android:hint="Search loading lists..."
+                android:textColorHint="?attr/searchHintColor"
+                android:textColor="?attr/searchTextColor"
+                android:inputType="text"
+                android:padding="8dp"
+                android:textSize="16sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -62,12 +66,12 @@
     </LinearLayout>
 
     <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/loading_animation_view"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        app:lottie_rawRes="@raw/loading_animation"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        android:layout_centerInParent="true"
-        android:visibility="gone" />
+    android:id="@+id/loading_animation_view"
+    android:layout_width="200dp"
+    android:layout_height="200dp"
+    app:lottie_rawRes="@raw/loading_animation"
+    app:lottie_autoPlay="true"
+    app:lottie_loop="true"
+    android:layout_centerInParent="true"
+    android:visibility="gone" />
 </RelativeLayout>

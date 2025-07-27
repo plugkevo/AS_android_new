@@ -57,5 +57,49 @@
             <item name="fabIconTint">@color/fab_icon_tint</item>
             <item name="badgeBackgroundColor">@color/badge_background_color</item>
             <item name="badgeTextColor">@color/badge_text_color</item>
+
+            <!-- All Shipments layout - Light Theme -->
+            <item name="shipmentsTitleColor">@color/colorDarkBlue</item>
+            <item name="shipmentsSearchCardBackground">@color/card_background</item>
+            <item name="shipmentsSearchIconTint">@color/text_secondary</item>
+            <item name="shipmentsSearchHintColor">@color/text_secondary</item>
+            <item name="shipmentsSearchTextColor">@color/text_primary</item>
+            <item name="chipSelectedBackgroundColor">@color/colorDarkBlue</item>
+            <item name="chipSelectedTextColor">@android:color/white</item>
+            <item name="chipUnselectedBackgroundColor">@color/card_background</item>
+            <item name="chipUnselectedTextColor">@color/text_primary</item>
+            <item name="noDataMessageColor">@color/text_primary</item>
+
+            <!-- Shipment Item Card - Dark Theme -->
+            <item name="shipmentCardBackground">@color/card_background</item>
+            <item name="shipmentIconTint">@color/colorLightBlue</item>
+            <item name="shipmentNameColor">@color/text_primary</item>
+            <item name="shipmentLocationColor">@color/text_secondary</item>
+            <item name="shipmentStatusColor">@color/text_status_orange</item>
+            <item name="shipmentDateColor">@color/text_secondary</item>
+            <item name="shipmentMoreButtonTint">@color/text_secondary</item>
+
+            <!-- Loading Lists layout - Dark Theme -->
+            <item name="searchCardBackground">@color/card_background</item>
+            <item name="searchIconTint">@color/text_secondary</item>
+            <item name="searchHintColor">@color/text_secondary</item>
+            <item name="searchTextColor">@color/text_primary</item>
+
+            <!-- Loading List Item Card - Dark Theme -->
+            <item name="listItemCardBackground">@color/card_background</item>
+            <item name="listItemTitleColor">@color/text_primary</item>
+            <item name="listItemLabelColor">@color/text_secondary</item>
+            <item name="listItemValueColor">@color/text_primary</item>
+            <item name="listItemStatusColor">@color/text_status_orange</item>
+            <item name="listItemMoreButtonTint">@color/text_secondary</item>
+
+            <!-- MPESA Payment layout - Dark Theme -->
+            <item name="paymentCardBackground">@color/card_background</item>
+            <item name="paymentTitleColor">@color/colorDarkBlue</item>
+            <item name="paymentLabelColor">@color/text_primary</item>
+            <item name="paymentInputBackgroundColor">@color/surface</item>
+            <item name="paymentInputStrokeColor">@color/divider</item>
+            <item name="paymentInputTextColor">@color/text_primary</item>
+            <item name="paymentInputHintColor">@color/text_secondary</item>
         </style>
 </resources>

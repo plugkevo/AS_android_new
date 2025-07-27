@@ -35,4 +35,48 @@
     <attr name="fabIconTint" format="color" />
     <attr name="badgeBackgroundColor" format="color" />
     <attr name="badgeTextColor" format="color" />
+
+    <!-- New custom attributes for Loading Lists layout -->
+    <attr name="searchCardBackground" format="color" />
+    <attr name="searchIconTint" format="color" />
+    <attr name="searchHintColor" format="color" />
+    <attr name="searchTextColor" format="color" />
+
+    <!-- New custom attributes for All Shipments layout -->
+    <attr name="shipmentsTitleColor" format="color" />
+    <attr name="shipmentsSearchCardBackground" format="color" />
+    <attr name="shipmentsSearchIconTint" format="color" />
+    <attr name="shipmentsSearchHintColor" format="color" />
+    <attr name="shipmentsSearchTextColor" format="color" />
+    <attr name="chipSelectedBackgroundColor" format="color" />
+    <attr name="chipSelectedTextColor" format="color" />
+    <attr name="chipUnselectedBackgroundColor" format="color" />
+    <attr name="chipUnselectedTextColor" format="color" />
+    <attr name="noDataMessageColor" format="color" />
+
+    <!-- New custom attributes for Shipment Item Card -->
+    <attr name="shipmentCardBackground" format="color" />
+    <attr name="shipmentIconTint" format="color" />
+    <attr name="shipmentNameColor" format="color" />
+    <attr name="shipmentLocationColor" format="color" />
+    <attr name="shipmentStatusColor" format="color" />
+    <attr name="shipmentDateColor" format="color" />
+    <attr name="shipmentMoreButtonTint" format="color" />
+
+    <!-- New custom attributes for Loading List Item Card -->
+    <attr name="listItemCardBackground" format="color" />
+    <attr name="listItemTitleColor" format="color" />
+    <attr name="listItemLabelColor" format="color" />
+    <attr name="listItemValueColor" format="color" />
+    <attr name="listItemStatusColor" format="color" />
+    <attr name="listItemMoreButtonTint" format="color" />
+
+    <!-- New custom attributes for MPESA Payment layout -->
+    <attr name="paymentCardBackground" format="color" />
+    <attr name="paymentTitleColor" format="color" />
+    <attr name="paymentLabelColor" format="color" />
+    <attr name="paymentInputBackgroundColor" format="color" />
+    <attr name="paymentInputStrokeColor" format="color" />
+    <attr name="paymentInputTextColor" format="color" />
+    <attr name="paymentInputHintColor" format="color" />
 </resources>

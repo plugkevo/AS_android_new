@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="?attr/colorBackground"
     android:padding="16dp">
 
     <TextView
@@ -13,15 +14,16 @@
         android:text="MPESA Payment"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/colorDarkBlue"
+        android:textColor="?attr/paymentTitleColor"
         android:layout_marginBottom="16dp" />
 
-    <!-- Tracking Input -->
+    <!-- Payment Input Card -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
+        app:cardBackgroundColor="?attr/paymentCardBackground"
         android:layout_marginBottom="16dp">
 
         <LinearLayout
@@ -33,10 +35,10 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter Phone  Number"
+                android:text="Enter Phone Number"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#212121"
+                android:textColor="?attr/paymentLabelColor"
                 android:layout_marginBottom="8dp" />
 
             <EditText
@@ -44,18 +46,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="e.g., 0712345678"
-                android:inputType="text"
+                android:textColorHint="?attr/paymentInputHintColor"
+                android:textColor="?attr/paymentInputTextColor"
+                android:inputType="phone"
                 android:padding="12dp"
-                android:background="@drawable/edit_text_background"
+                android:background="@drawable/payment_input_background"
                 android:layout_marginBottom="16dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter amount"
+                android:text="Enter Amount"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#212121"
+                android:textColor="?attr/paymentLabelColor"
                 android:layout_marginBottom="8dp" />
 
             <EditText
@@ -63,9 +67,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="e.g., 40000"
-                android:inputType="text"
+                android:textColorHint="?attr/paymentInputHintColor"
+                android:textColor="?attr/paymentInputTextColor"
+                android:inputType="numberDecimal"
                 android:padding="12dp"
-                android:background="@drawable/edit_text_background"
+                android:background="@drawable/payment_input_background"
                 android:layout_marginBottom="16dp" />
 
             <Button
@@ -73,14 +79,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Prompt"
-                android:backgroundTint="@color/dark_blue"
-                android:textColor="@android:color/white"
+                android:backgroundTint="?attr/buttonBackgroundTint"
+                android:textColor="?attr/buttonTextColor"
                 android:padding="12dp" />
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
-
-
-    <!-- Recent Tracking -->
-
 </LinearLayout>
