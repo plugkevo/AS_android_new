@@ -17,6 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:cardBackgroundColor="?attr/shipmentCardBackground">
 
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
