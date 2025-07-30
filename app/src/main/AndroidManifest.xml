@@ -25,6 +25,8 @@
         <activity
             android:name=".MapsActivity"
             android:exported="false"
+            android:theme="@style/Theme.AfricanShipping25"
+
             />
 
         <meta-data
