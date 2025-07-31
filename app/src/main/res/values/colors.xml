@@ -85,6 +85,10 @@
     <color name="text_primary_dark">#212121</color> <!-- Dark text for shipment name -->
     <color name="text_status_orange">#FF9800</color> <!-- Orange for status -->
 
+    <!-- maps - Light Theme -->
+    <color name="titleCardText">#FFFFFF</color>
+
+
     <!-- New colors for MainActivity components - Light Theme -->
     <color name="toolbar_background">#0047AB</color> <!-- Primary dark blue for AppBar -->
     <color name="toolbar_text_color">#FFFFFF</color> <!-- White text/icons on toolbar -->

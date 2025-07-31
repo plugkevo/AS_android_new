@@ -101,5 +101,16 @@
             <item name="paymentInputStrokeColor">@color/divider</item>
             <item name="paymentInputTextColor">@color/text_primary</item>
             <item name="paymentInputHintColor">@color/text_secondary</item>
+
+            <!-- Maps layout - Dark Theme -->
+            <item name="mapsCardBackground">@color/card_background</item>
+            <item name="mapsTitleColor">@color/titleCardText</item>
+            <item name="mapsLabelColor">@color/text_primary</item>
+            <item name="mapsInputBackgroundColor">@color/white</item>
+            <item name="mapsInputStrokeColor">@color/divider</item>
+            <item name="mapsInputTextColor">@color/text_primary</item>
+            <item name="mapsInputHintColor">@color/text_secondary</item>
+
+
         </style>
 </resources>

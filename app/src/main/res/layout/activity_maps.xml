@@ -15,7 +15,8 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
         android:layout_margin="10dp"
-        app:cardBackgroundColor="@color/primary">
+        app:cardBackgroundColor="?attr/buttonBackgroundTint"
+        >
 
         <TextView
             android:layout_width="wrap_content"
@@ -23,7 +24,7 @@
             android:text="Track shipment"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/white"
+            android:textColor="?attr/buttonTextColor"
             android:padding="16dp"
             android:layout_gravity="center" />
     </androidx.cardview.widget.CardView>
@@ -34,6 +35,7 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
+        app:cardBackgroundColor="?attr/mapsCardBackground"
         android:layout_marginBottom="16dp">
 
         <LinearLayout
@@ -48,7 +50,7 @@
                 android:text="Enter Tracking Number"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#212121"
+                android:textColor="?attr/mapsTitleColor"
                 android:layout_marginBottom="8dp" />
 
             <EditText
@@ -58,7 +60,9 @@
                 android:hint="e.g., SHP12345678"
                 android:inputType="text"
                 android:padding="12dp"
-                android:background="@drawable/edit_text_background"
+                android:textColor="?attr/mapsInputTextColor"
+                android:textColorHint="?attr/mapsInputHintColor"
+                android:background="@drawable/payment_input_background"
                 android:layout_marginBottom="16dp" />
 
             <Button
@@ -66,8 +70,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Track"
-                android:backgroundTint="@color/dark_blue"
-                android:textColor="@android:color/white"
+                android:backgroundTint="?attr/buttonBackgroundTint"
+                android:textColor="?attr/buttonTextColor"
                 android:padding="12dp" />
         </LinearLayout>
 

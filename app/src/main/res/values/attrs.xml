@@ -79,4 +79,13 @@
     <attr name="paymentInputStrokeColor" format="color" />
     <attr name="paymentInputTextColor" format="color" />
     <attr name="paymentInputHintColor" format="color" />
+
+    <!--New custom attributes for maps activity-->
+    <attr name="mapsCardBackground" format="color"/>
+    <attr name="mapsTitleColor" format="color"/>
+    <attr name="mapsLabelColor" format="color"/>
+    <attr name="mapsInputBackgroundColor" format="color"/>
+    <attr name="mapsInputStrokeColor" format="color"/>
+    <attr name="mapsInputTextColor" format="color"/>
+    <attr name="mapsInputHintColor" format="color"/>
 </resources>
