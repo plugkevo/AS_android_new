@@ -50,7 +50,7 @@
                 android:text="Enter Tracking Number"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="?attr/mapsTitleColor"
+                android:textColor="?attr/mapsTvColor"
                 android:layout_marginBottom="8dp" />
 
             <EditText
@@ -60,8 +60,8 @@
                 android:hint="e.g., SHP12345678"
                 android:inputType="text"
                 android:padding="12dp"
-                android:textColor="?attr/mapsInputTextColor"
-                android:textColorHint="?attr/mapsInputHintColor"
+                android:textColor="?attr/InputTextColor"
+                android:textColorHint="?attr/InputHintColor"
                 android:background="@drawable/payment_input_background"
                 android:layout_marginBottom="16dp" />
 

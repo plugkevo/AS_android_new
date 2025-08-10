@@ -83,9 +83,19 @@
     <!--New custom attributes for maps activity-->
     <attr name="mapsCardBackground" format="color"/>
     <attr name="mapsTitleColor" format="color"/>
+    <attr name="mapsTvColor" format="color"/>
     <attr name="mapsLabelColor" format="color"/>
     <attr name="mapsInputBackgroundColor" format="color"/>
     <attr name="mapsInputStrokeColor" format="color"/>
     <attr name="mapsInputTextColor" format="color"/>
     <attr name="mapsInputHintColor" format="color"/>
+
+    <!--New custom attributes for create shipment & loading list dialog-->
+    <attr name="titleColor" format="color"/>
+    <attr name="tvColor" format="color"/>
+    <attr name="InputBackgroundColor" format="color"/>
+    <attr name="InputStrokeColor" format="color"/>
+    <attr name="InputTextColor" format="color"/>
+    <attr name="InputHintColor" format="color"/>
+
 </resources>

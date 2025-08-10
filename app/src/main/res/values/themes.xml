@@ -108,11 +108,21 @@
         <!-- Maps layout - Light Theme -->
         <item name="mapsCardBackground">@color/card_background</item>
         <item name="mapsTitleColor">@color/titleCardText</item>
+        <item name="mapsTvColor">@color/tc_blue</item>
         <item name="mapsLabelColor">@color/text_primary</item>
         <item name="mapsInputBackgroundColor">@color/white</item>
         <item name="mapsInputStrokeColor">@color/divider</item>
         <item name="mapsInputTextColor">@color/text_primary</item>
         <item name="mapsInputHintColor">@color/text_secondary</item>
+
+        <!--create shipment & loading list dialog -->
+        <item name="titleColor">@color/tc_blue</item>
+        <item name="tvColor">@color/black</item>
+        <item name="InputBackgroundColor">@color/white</item>
+        <item name="InputStrokeColor">@color/divider</item>
+        <item name="InputTextColor">@color/text_primary</item>
+        <item name="InputHintColor">@color/text_secondary</item>
+
     </style>
 
 </resources>

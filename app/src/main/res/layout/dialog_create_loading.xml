@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="?attr/colorBackground">
 
     <TextView
         android:layout_width="match_parent"
@@ -12,7 +13,7 @@
         android:text="Create New Loading List"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/colorDarkBlue"
+        android:textColor="?attr/titleColor"
         android:layout_marginBottom="16dp" />
     <!-- Name -->
     <TextView
@@ -21,7 +22,7 @@
         android:text="Name"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="#212121"
+        android:textColor="?attr/tvColor"
         android:layout_marginBottom="8dp" />
 
     <EditText
@@ -31,7 +32,9 @@
         android:hint="Enter shipment name"
         android:inputType="text"
         android:padding="12dp"
-        android:background="@drawable/edit_text_background"
+        android:textColor="?attr/InputTextColor"
+        android:textColorHint="?attr/InputHintColor"
+        android:background="@drawable/payment_input_background"
         android:layout_marginBottom="16dp" />
 
     <!-- Origin -->
@@ -41,7 +44,7 @@
         android:text="Origin"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="#212121"
+        android:textColor="?attr/tvColor"
         android:layout_marginBottom="8dp" />
 
     <EditText
@@ -51,7 +54,9 @@
         android:hint="Enter origin address"
         android:inputType="text"
         android:padding="12dp"
-        android:background="@drawable/edit_text_background"
+        android:textColor="?attr/InputTextColor"
+        android:textColorHint="?attr/InputHintColor"
+        android:background="@drawable/payment_input_background"
         android:layout_marginBottom="16dp" />
 
     <!-- Destination -->
@@ -61,7 +66,7 @@
         android:text="Destination"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="#212121"
+        android:textColor="?attr/tvColor"
         android:layout_marginBottom="8dp" />
 
     <EditText
@@ -71,7 +76,9 @@
         android:hint="Enter destination address"
         android:inputType="text"
         android:padding="12dp"
-        android:background="@drawable/edit_text_background"
+        android:textColor="?attr/InputTextColor"
+        android:textColorHint="?attr/InputHintColor"
+        android:background="@drawable/payment_input_background"
         android:layout_marginBottom="16dp" />
 
     <!-- Package Details -->
@@ -81,7 +88,7 @@
         android:text="Loading List Details"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="#212121"
+        android:textColor="?attr/tvColor"
         android:layout_marginBottom="8dp" />
 
 
@@ -91,7 +98,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:background="@drawable/edit_text_background"
+        android:textColor="?attr/InputTextColor"
+        android:textColorHint="?attr/InputHintColor"
+        android:background="@drawable/payment_input_background"
         android:hint="Any extra info"
         android:inputType="text"
         android:padding="12dp" />
@@ -117,8 +126,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Create"
-            android:textColor="@android:color/white"
-            android:background="@drawable/button_primary"
+            android:backgroundTint="?attr/buttonBackgroundTint"
+            android:textColor="?attr/buttonTextColor"
             android:padding="12dp" />
     </LinearLayout>
 </LinearLayout>
