@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@color/white"
+    android:background="?attr/colorBackground"
     tools:context=".enter_store_goods">
 
 
@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/primary"
+        app:cardBackgroundColor="?attr/buttonBackgroundTint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -26,7 +26,7 @@
             android:text="Store Goods"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/white"
+            android:textColor="?attr/buttonTextColor"
             android:padding="16dp"
             android:layout_gravity="center" />
     </androidx.cardview.widget.CardView>
@@ -37,7 +37,7 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="6dp"
         android:layout_marginTop="70dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="?attr/VsCardBackground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerCard">
@@ -52,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Enter Store Goods"
-                android:textColor="@color/primary_dark"
+                android:textColor="?attr/VsTitleColor"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -76,7 +76,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/spinner_background"
+                android:background="@drawable/payment_input_background"
                 android:minHeight="48dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -100,7 +100,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:minHeight="48dp"
-                android:background="@drawable/spinner_background"
+                android:background="@drawable/payment_input_background"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/storeLocationLabel" />
@@ -112,16 +112,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="Goods Number (Quantity)"
-                app:boxStrokeColor="@color/primary"
-                app:hintTextColor="@color/primary"
+                app:boxStrokeColor="?attr/VsInputStrokeColor"
+                app:hintTextColor="?attr/VsInputHintColor"
                 app:layout_constraintTop_toBottomOf="@+id/storeLocationSpinner">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etgoodsNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:textColor="@color/black" />
+                    android:background="@drawable/payment_input_background"
+                    android:textColor="?attr/VsInputBackgroundColor" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -129,9 +129,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:backgroundTint="@color/primary"
                 android:text="Save to Store Inventory"
-                android:textColor="@color/white"
+                android:textColor="?attr/buttonTextColor"
+                android:backgroundTint="?attr/buttonBackgroundTint"
                 app:layout_constraintTop_toBottomOf="@+id/quantityLayout"
                 tools:layout_editor_absoluteX="16dp" />
 

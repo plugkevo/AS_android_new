@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@color/white"
+    android:background="?attr/colorBackground"
     tools:context=".enter_truck_goods">
 
     <androidx.cardview.widget.CardView
@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/primary"
+        app:cardBackgroundColor="?attr/buttonBackgroundTint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -25,7 +25,7 @@
             android:text="Truck Goods"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/white"
+            android:textColor="?attr/buttonTextColor"
             android:padding="16dp"
             android:layout_gravity="center" />
     </androidx.cardview.widget.CardView>
@@ -36,7 +36,7 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
         android:layout_marginTop="70dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="?attr/VsCardBackground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerCard">
@@ -53,7 +53,7 @@
                 android:text="Enter Truck Goods"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary_dark"
+                android:textColor="?attr/VsTitleColor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -69,35 +69,50 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
+
             <Spinner
                 android:id="@+id/goodsNameSpinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:minHeight="48dp"
-                android:background="@drawable/spinner_background"
+                android:background="@drawable/payment_input_background"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/goodsNameLabel" />
+
+            <!-- New TextView above the goods number input -->
+            <TextView
+                android:id="@+id/goodsNumberLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Goods Number:"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/goodsNameSpinner" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/quantityLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:hint="Goods Number (Quantity)"
-                app:boxStrokeColor="@color/primary"
-                app:hintTextColor="@color/primary"
-                app:layout_constraintTop_toBottomOf="@+id/goodsNameSpinner">
+                app:boxStrokeColor="?attr/VsInputStrokeColor"
+                app:hintTextColor="?attr/VsInputHintColor"
+                app:layout_constraintTop_toBottomOf="@+id/goodsNumberLabel">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etgoodsNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:textColor="@color/black" />
+                    android:background="@drawable/payment_input_background"
+                    android:textColor="?attr/VsInputBackgroundColor" />
             </com.google.android.material.textfield.TextInputLayout>
+
 
             <Button
                 android:id="@+id/saveButton"
@@ -105,8 +120,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Save to Truck Inventory"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/primary"
+                android:textColor="?attr/buttonTextColor"
+                android:backgroundTint="?attr/buttonBackgroundTint"
                 app:layout_constraintTop_toBottomOf="@+id/quantityLayout" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

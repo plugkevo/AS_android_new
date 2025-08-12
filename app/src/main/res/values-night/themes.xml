@@ -120,6 +120,15 @@
             <item name="InputTextColor">@color/text_primary</item>
             <item name="InputHintColor">@color/text_secondary</item>
 
+            <!-- MPESA Payment layout - Light Theme -->
+            <item name="VsCardBackground">@color/card_background</item>
+            <item name="VsTitleColor">@color/tc_blue</item>
+            <item name="VsLabelColor">@color/text_primary</item>
+            <item name="VsInputBackgroundColor">@color/white</item>
+            <item name="VsInputStrokeColor">@color/divider</item>
+            <item name="VsInputTextColor">@color/text_primary</item>
+            <item name="VsInputHintColor">@color/text_secondary</item>
+
 
         </style>
 </resources>

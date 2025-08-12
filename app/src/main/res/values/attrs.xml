@@ -98,4 +98,14 @@
     <attr name="InputTextColor" format="color"/>
     <attr name="InputHintColor" format="color"/>
 
+    <!-- New custom attributes for Fragment enter truck & store goods layout -->
+    <attr name="VsCardBackground" format="color" />
+    <attr name="VsTitleCardBackground" format="color" />
+    <attr name="VsTitleColor" format="color" />
+    <attr name="VsLabelColor" format="color" />
+    <attr name="VsInputBackgroundColor" format="color" />
+    <attr name="VsInputStrokeColor" format="color" />
+    <attr name="VsInputTextColor" format="color" />
+    <attr name="VsInputHintColor" format="color" />
+
 </resources>

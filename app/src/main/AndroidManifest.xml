@@ -35,7 +35,9 @@
 
         <activity
             android:name=".ViewShipment"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AfricanShipping25"
+            />
         <activity
             android:name=".login"
             android:theme="@style/Theme.AfricanShipping25"
