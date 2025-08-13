@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white"
+    android:background="?attr/colorBackground"
     tools:context=".view_truck_goods">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="8dp"
             app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/primary"
+            app:cardBackgroundColor="?attr/buttonBackgroundTint"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -31,7 +31,7 @@
                 android:text="Truck Inventory"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/white"
+                android:textColor="?attr/buttonTextColor"
                 android:padding="16dp"
                 android:layout_gravity="center" />
         </androidx.cardview.widget.CardView>

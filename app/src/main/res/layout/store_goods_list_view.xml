@@ -1,51 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" android:padding="8dp"
     android:layout_margin="8dp"
-    android:background="@color/light_blue"
-    android:gravity="center_vertical">
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/light_blue">
+
+
 
     <LinearLayout
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/goodsNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textColor="#212121"
-        android:text="Goods Name: "
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/storeLocationTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="#666666"
-        android:text="Store Location: " />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/goodsNumberTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="#1a237e"
-        android:text="Goods Number: " />
-</LinearLayout>
+            <TextView
+                android:id="@+id/goodsNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="#212121"
+                android:text="Goods Name: "
+                android:textStyle="bold" />
 
-    <ImageView
-        android:id="@+id/moreOptionsImageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_more_vert"
-        android:contentDescription="More options"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless" />
-</LinearLayout>
+            <TextView
+                android:id="@+id/storeLocationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="#666666"
+                android:text="Store Location: " />
+
+            <TextView
+                android:id="@+id/goodsNumberTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="#1a237e"
+                android:text="Goods Number: " />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/moreOptionsImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_more_vert"
+            android:contentDescription="More options"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

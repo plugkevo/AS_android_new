@@ -62,12 +62,13 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="8dp">
+
                 <ImageView
                     android:id="@+id/iv_notifications"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_notifications"
+                    android:layout_width="20dp"
+                    android:layout_height="17dp"
                     android:contentDescription="Notifications"
+                    android:src="@drawable/ic_notifications"
                     app:tint="?attr/iconTintColor" />
                 <TextView
                     android:id="@+id/tv_notification_badge"
