@@ -31,6 +31,7 @@
                         android:text="Good Numbers"
                         android:textSize="18dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="@color/text_primary"
                         android:layout_marginBottom="4dp"/>
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -44,6 +45,7 @@
                             android:layout_weight="1"
                             android:text="Add Good Number Field"
                             android:textSize="16dp"
+                            android:textColor="@color/text_primary"
                             android:textAppearance="?attr/textAppearanceBodyMedium"/>
                         <ImageButton
                             android:id="@+id/buttonAddGoodNo"
@@ -69,6 +71,8 @@
                         android:textSize="18dp"
                         android:layout_marginTop="16dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="@color/text_primary"
+
                         android:layout_marginBottom="4dp"/>
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
@@ -79,7 +83,9 @@
                             android:id="@+id/editTextSenderName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textPersonName" />
+                            android:inputType="textPersonName"
+                            app:hintTextColor="?attr/VsInputHintColor"
+                            />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Phone Number Section -->
@@ -90,6 +96,8 @@
                         android:textSize="18dp"
                         android:layout_marginTop="16dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="@color/text_primary"
+
                         android:layout_marginBottom="4dp"/>
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
@@ -100,7 +108,9 @@
                             android:id="@+id/editTextPhoneNumber"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="phone" />
+                            android:inputType="phone"
+                            app:hintTextColor="?attr/VsInputHintColor"
+                            />
                     </com.google.android.material.textfield.TextInputLayout>
                     <!-- End Phone Number Section -->
 
@@ -111,6 +121,7 @@
                         android:textSize="18dp"
                         android:layout_marginTop="16dp"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
+                        android:textColor="@color/text_primary"
                         android:layout_marginBottom="4dp"/>
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
@@ -123,7 +134,9 @@
                             android:layout_height="wrap_content"
                             android:focusable="false"
                             android:clickable="true"
-                            android:inputType="none" />
+                            android:inputType="none"
+                            app:hintTextColor="?attr/VsInputHintColor"
+                            />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

@@ -18,10 +18,13 @@
         android:theme="@style/Base.Theme.AfricanShipping25">
         <activity
             android:name=".NotificationsActivity"
+            android:theme="@style/Theme.AfricanShipping25"
             android:exported="false" />
         <activity
             android:name=".LoadingListDetailsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AfricanShipping25"
+            />
         <activity
             android:name=".MapsActivity"
             android:exported="false"

@@ -65,8 +65,8 @@
 
                 <ImageView
                     android:id="@+id/iv_notifications"
-                    android:layout_width="20dp"
-                    android:layout_height="17dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:contentDescription="Notifications"
                     android:src="@drawable/ic_notifications"
                     app:tint="?attr/iconTintColor" />
