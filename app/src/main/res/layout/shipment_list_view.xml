@@ -84,7 +84,7 @@
                 android:focusable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:layout_marginStart="16dp"
-                app:tint="?attr/shipmentMoreButtonTint"/>
+                app:tint="?attr/buttonBackgroundTint"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

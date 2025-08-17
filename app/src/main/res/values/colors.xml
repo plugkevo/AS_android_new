@@ -69,10 +69,13 @@
 
         <!-- Status Bar -->
         <color name="status_bar">#002171</color>
+        <color name="dialog_title_color">#008000</color>
 
 
 
-        <!-- Navigation Bar -->
+
+
+    <!-- Navigation Bar -->
         <color name="navigation_bar">#0D47A1</color>
 
     <color name="card_background">#FFFFFF</color> <!-- Default card background for light theme -->
@@ -105,7 +108,8 @@
     <color name="nav_icon_selected">#64B5F6</color>
     <color name="nav_icon_unselected">#1A237E</color>
 
-    
+
+
 
 
 

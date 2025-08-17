@@ -58,7 +58,7 @@
             android:contentDescription="More options"
             android:clickable="true"
             android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless" />
+            app:tint="?attr/buttonBackgroundTint" />
 
     </LinearLayout>
 

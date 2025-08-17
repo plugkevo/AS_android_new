@@ -99,6 +99,6 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="More Options"
         android:padding="12dp"
-        app:tint="?attr/listItemMoreButtonTint" /> <!-- Use theme attribute -->
+        app:tint="?attr/buttonBackgroundTint" /> <!-- Use theme attribute -->
     </LinearLayout>
     </androidx.cardview.widget.CardView>

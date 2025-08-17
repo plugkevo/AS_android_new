@@ -35,6 +35,8 @@
 
     <color name="text_primary_dark">#E0E0E0</color> <!-- Light text for shipment name -->
     <color name="text_status_orange">#FFB74D</color> <!-- Lighter orange for status -->
+    <color name="dialog_title_color">#64B5F6</color>
+
 
     <!-- maps - Light Theme -->
     <color name="titleCardText">#FFFFFF</color>
