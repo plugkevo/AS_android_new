@@ -203,7 +203,7 @@ class view_store_goods : Fragment() {
         val closeButton = dialogView.findViewById<Button>(R.id.detailCloseButton)
 
         // Sample option arrays — you can load these from Firestore if needed
-        val goodsNameOptions = arrayOf("Box","Electronics", "Toiletries","Tote/Barrel", "Furniture", "Other")
+        val goodsNameOptions = arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
         val locationOptions = arrayOf("Store A","Store B", "Store C")
 
         var selectedGoodsName = storeGood.name

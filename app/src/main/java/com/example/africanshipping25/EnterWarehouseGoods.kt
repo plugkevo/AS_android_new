@@ -231,7 +231,7 @@ class EnterWarehouseGoods : Fragment() {
     private fun clearInputFields() {
         editTextSenderName.text.clear()
         editTextPhoneNumber.text.clear() // Clear the phone number field
-        editTextDate.text.clear() // Clear the date field
+
 
         // Clear all dynamically added goods number fields and remove them
         goodsNumberEditTexts.clear()

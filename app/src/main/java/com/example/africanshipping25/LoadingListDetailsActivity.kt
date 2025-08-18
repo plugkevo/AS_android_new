@@ -17,7 +17,6 @@ class LoadingListDetailsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_loading_list_details)
 
         // Initialize UI elements using findViewById
