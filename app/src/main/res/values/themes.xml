@@ -133,5 +133,13 @@
         <item name="VsInputHintColor">@color/text_secondary</item>
 
     </style>
+    <!-- Full Screen Dialog Style -->
+    <style name="FullScreenDialogStyle" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@color/colorDarkBlue</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 
 </resources>

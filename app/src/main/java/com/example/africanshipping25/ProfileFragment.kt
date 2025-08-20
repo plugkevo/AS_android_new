@@ -1,0 +1,592 @@
+package com.example.africanshipping25
+
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import de.hdodenhof.circleimageview.CircleImageView
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+
+class ProfileFragment : Fragment() {
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var storage: FirebaseStorage
+    private lateinit var sharedPreferences: SharedPreferences
+
+    // UI Elements
+    private lateinit var profilePicture: CircleImageView
+    private lateinit var editProfilePicture: ImageView
+    private lateinit var userName: TextView
+    private lateinit var userEmail: TextView
+    private lateinit var userRole: TextView
+    private lateinit var totalShipments: TextView
+    private lateinit var activeShipments: TextView
+    private lateinit var deliveredShipments: TextView
+    private lateinit var notificationsSwitch: SwitchCompat
+    private lateinit var currentLanguage: TextView
+    private lateinit var currentTheme: TextView
+
+    private var currentPhotoPath: String? = null
+
+    // Permission launcher
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val cameraGranted = permissions[Manifest.permission.CAMERA] ?: false
+        val storageGranted = permissions[Manifest.permission.READ_EXTERNAL_STORAGE] ?: false
+
+        if (cameraGranted && storageGranted) {
+            showImagePickerDialog()
+        } else {
+            Toast.makeText(context, "Permissions required to access camera and gallery", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Image picker launchers
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val imageUri = result.data?.data
+            imageUri?.let {
+                displayImage(it)
+                uploadImageToFirebase(it)
+            }
+        }
+    }
+
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            currentPhotoPath?.let { path ->
+                val file = File(path)
+                val uri = Uri.fromFile(file)
+                displayImage(uri)
+                uploadImageToFirebase(uri)
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            // Handle any arguments passed to the fragment
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_profile, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Initialize Firebase
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+        storage = FirebaseStorage.getInstance()
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", 0)
+
+        // Initialize UI elements
+        initializeViews(view)
+
+        // Load user data
+        loadUserData()
+
+        // Set up click listeners
+        setupClickListeners()
+
+        // Load preferences
+        loadPreferences()
+    }
+
+    private fun initializeViews(view: View) {
+        profilePicture = view.findViewById(R.id.iv_profile_picture)
+        editProfilePicture = view.findViewById(R.id.iv_edit_profile_picture)
+        userName = view.findViewById(R.id.tv_user_name)
+        userEmail = view.findViewById(R.id.tv_user_email)
+        userRole = view.findViewById(R.id.tv_user_role)
+        totalShipments = view.findViewById(R.id.tv_total_shipments)
+        activeShipments = view.findViewById(R.id.tv_active_shipments)
+        deliveredShipments = view.findViewById(R.id.tv_delivered_shipments)
+        notificationsSwitch = view.findViewById(R.id.switch_notifications)
+        currentLanguage = view.findViewById(R.id.tv_current_language)
+        currentTheme = view.findViewById(R.id.tv_current_theme)
+    }
+
+    private fun setupClickListeners() {
+        // Profile picture edit
+        editProfilePicture.setOnClickListener {
+            checkPermissionsAndShowImagePicker()
+        }
+
+        // Profile picture click
+        profilePicture.setOnClickListener {
+            checkPermissionsAndShowImagePicker()
+        }
+
+        // Edit Profile - Launch the Edit Profile Dialog
+        view?.findViewById<View>(R.id.layout_edit_profile)?.setOnClickListener {
+            val editProfileDialog = EditProfileDialogFragment()
+            editProfileDialog.setOnProfileUpdatedListener(object : EditProfileDialogFragment.OnProfileUpdatedListener {
+                override fun onProfileUpdated() {
+                    loadUserData()
+                    Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                }
+            })
+            editProfileDialog.show(parentFragmentManager, "EditProfileDialog")
+        }
+
+        // Change Password
+        view?.findViewById<View>(R.id.layout_change_password)?.setOnClickListener {
+            showChangePasswordDialog()
+        }
+
+        // Address Book
+        view?.findViewById<View>(R.id.layout_address_book)?.setOnClickListener {
+            Toast.makeText(context, "Address Book clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        // Notifications toggle
+        notificationsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            saveNotificationPreference(isChecked)
+            Toast.makeText(context,
+                if (isChecked) "Notifications enabled" else "Notifications disabled",
+                Toast.LENGTH_SHORT).show()
+        }
+
+        // Language
+        view?.findViewById<View>(R.id.layout_language)?.setOnClickListener {
+            showLanguageDialog()
+        }
+
+        // Theme
+        view?.findViewById<View>(R.id.layout_theme)?.setOnClickListener {
+            showThemeDialog()
+        }
+
+        // Help & Support
+        view?.findViewById<View>(R.id.layout_help)?.setOnClickListener {
+            showHelpAndSupportDialog()
+        }
+
+        // Privacy Policy
+        view?.findViewById<View>(R.id.layout_privacy)?.setOnClickListener {
+            Toast.makeText(context, "Privacy Policy clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        // Terms of Service
+        view?.findViewById<View>(R.id.layout_terms)?.setOnClickListener {
+            Toast.makeText(context, "Terms of Service clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        // About
+        view?.findViewById<View>(R.id.layout_about)?.setOnClickListener {
+            showAboutDialog()
+        }
+    }
+
+    private fun checkPermissionsAndShowImagePicker() {
+        val cameraPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+        val storagePermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.CAMERA)
+        }
+
+        if (storagePermission != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+        } else {
+            showImagePickerDialog()
+        }
+    }
+
+    private fun showImagePickerDialog() {
+        val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Select Profile Picture")
+        builder.setItems(options) { dialog, which ->
+            when (which) {
+                0 -> openCamera()
+                1 -> openGallery()
+                2 -> dialog.dismiss()
+            }
+        }
+        builder.show()
+    }
+
+    private fun openCamera() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (intent.resolveActivity(requireContext().packageManager) != null) {
+            val photoFile = createImageFile()
+            photoFile?.let {
+                val photoURI = FileProvider.getUriForFile(
+                    requireContext(),
+                    "${requireContext().packageName}.fileprovider",
+                    it
+                )
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                cameraLauncher.launch(intent)
+            }
+        } else {
+            Toast.makeText(context, "Camera not available", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        galleryLauncher.launch(intent)
+    }
+
+    private fun createImageFile(): File? {
+        return try {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val imageFileName = "JPEG_${timeStamp}_"
+            val storageDir = File(requireContext().getExternalFilesDir(null), "Pictures")
+            if (!storageDir.exists()) {
+                storageDir.mkdirs()
+            }
+            val image = File.createTempFile(imageFileName, ".jpg", storageDir)
+            currentPhotoPath = image.absolutePath
+            image
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Error creating image file", Toast.LENGTH_SHORT).show()
+            null
+        }
+    }
+
+    private fun displayImage(uri: Uri) {
+        try {
+            Glide.with(this)
+                .load(uri)
+                .transform(CircleCrop())
+                .placeholder(R.drawable.default_profile_picture)
+                .error(R.drawable.default_profile_picture)
+                .into(profilePicture)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Error loading image", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun uploadImageToFirebase(uri: Uri) {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            val storageRef = storage.reference
+            val profileImagesRef = storageRef.child("profile_images/${user.uid}.jpg")
+
+            // Show loading
+            Toast.makeText(context, "Uploading image...", Toast.LENGTH_SHORT).show()
+
+            profileImagesRef.putFile(uri)
+                .addOnSuccessListener { taskSnapshot ->
+                    // Get download URL
+                    profileImagesRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                        // Save URL to Firestore
+                        val userRef = firestore.collection("users").document(user.uid)
+                        userRef.update("profilePictureUrl", downloadUri.toString())
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Profile picture updated!", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Error saving image URL: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(context, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+                .addOnProgressListener { taskSnapshot ->
+                    val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount)
+                    // You can show progress here if needed
+                }
+        }
+    }
+
+    private fun loadUserData() {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            userName.text = user.displayName ?: "User Name"
+            userEmail.text = user.email ?: "user@example.com"
+
+            // Load additional user data from Firestore
+            firestore.collection("users").document(user.uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        userRole.text = document.getString("role") ?: "Customer"
+
+                        // Update display name if we have first and last name
+                        val firstName = document.getString("firstName")
+                        val lastName = document.getString("lastName")
+                        if (!firstName.isNullOrEmpty() && !lastName.isNullOrEmpty()) {
+                            userName.text = "$firstName $lastName"
+                        }
+
+                        // Load profile picture
+                        val profilePictureUrl = document.getString("profilePictureUrl")
+                        if (!profilePictureUrl.isNullOrEmpty()) {
+                            loadProfileImage(profilePictureUrl)
+                        } else {
+                            // Set default image
+                            profilePicture.setImageResource(R.drawable.default_profile_picture)
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Toast.makeText(context, "Error loading profile: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    profilePicture.setImageResource(R.drawable.default_profile_picture)
+                }
+        }
+
+        loadShipmentStats()
+    }
+
+    private fun loadProfileImage(imageUrl: String) {
+        try {
+            Glide.with(this)
+                .load(imageUrl)
+                .transform(CircleCrop())
+                .placeholder(R.drawable.default_profile_picture)
+                .error(R.drawable.default_profile_picture)
+                .into(profilePicture)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            profilePicture.setImageResource(R.drawable.default_profile_picture)
+        }
+    }
+
+    private fun loadShipmentStats() {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            firestore.collection("shipments")
+                .whereEqualTo("userId", user.uid)
+                .get()
+                .addOnSuccessListener { documents ->
+                    var total = 0
+                    var active = 0
+                    var delivered = 0
+
+                    for (document in documents) {
+                        total++
+                        when (document.getString("status")) {
+                            "In Transit", "Processing", "Picked Up" -> active++
+                            "Delivered" -> delivered++
+                        }
+                    }
+
+                    totalShipments.text = total.toString()
+                    activeShipments.text = active.toString()
+                    deliveredShipments.text = delivered.toString()
+                }
+                .addOnFailureListener {
+                    totalShipments.text = "0"
+                    activeShipments.text = "0"
+                    deliveredShipments.text = "0"
+                }
+        } ?: run {
+            totalShipments.text = "0"
+            activeShipments.text = "0"
+            deliveredShipments.text = "0"
+        }
+    }
+
+    private fun loadPreferences() {
+        val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
+        notificationsSwitch.isChecked = notificationsEnabled
+
+        val language = sharedPreferences.getString("language", "English")
+        currentLanguage.text = language
+
+        val theme = sharedPreferences.getString("theme", "Light")
+        currentTheme.text = theme
+    }
+
+    private fun saveNotificationPreference(enabled: Boolean) {
+        sharedPreferences.edit()
+            .putBoolean("notifications_enabled", enabled)
+            .apply()
+    }
+
+    private fun showChangePasswordDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Change Password")
+        builder.setMessage("You will receive an email with instructions to reset your password.")
+        builder.setPositiveButton("Send Email") { _, _ ->
+            val currentUser = auth.currentUser
+            currentUser?.email?.let { email ->
+                auth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Toast.makeText(context, "Password reset email sent!", Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(context, "Error sending email: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+            }
+        }
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
+    private fun showLanguageDialog() {
+        val languages = arrayOf("English", "French", "Spanish", "Portuguese", "Arabic", "Swahili")
+        val currentLanguage = sharedPreferences.getString("language", "English")
+        var selectedIndex = languages.indexOf(currentLanguage)
+
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Select Language")
+        builder.setSingleChoiceItems(languages, selectedIndex) { _, which ->
+            selectedIndex = which
+        }
+        builder.setPositiveButton("OK") { _, _ ->
+            val selectedLanguage = languages[selectedIndex]
+            this.currentLanguage.text = selectedLanguage
+            sharedPreferences.edit()
+                .putString("language", selectedLanguage)
+                .apply()
+            Toast.makeText(context, "Language changed to $selectedLanguage", Toast.LENGTH_SHORT).show()
+        }
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
+    private fun showThemeDialog() {
+        val themes = arrayOf("Light", "Dark", "System Default")
+        val currentTheme = sharedPreferences.getString("theme", "Light")
+        var selectedIndex = themes.indexOf(currentTheme)
+
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Select Theme")
+        builder.setSingleChoiceItems(themes, selectedIndex) { _, which ->
+            selectedIndex = which
+        }
+        builder.setPositiveButton("OK") { _, _ ->
+            val selectedTheme = themes[selectedIndex]
+            this.currentTheme.text = selectedTheme
+            sharedPreferences.edit()
+                .putString("theme", selectedTheme)
+                .apply()
+            Toast.makeText(context, "Theme changed to $selectedTheme", Toast.LENGTH_SHORT).show()
+        }
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
+    private fun showHelpAndSupportDialog() {
+        val options = arrayOf("FAQ", "Contact Support", "User Guide", "Report a Problem")
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Help & Support")
+        builder.setItems(options) { _, which ->
+            when (which) {
+                0 -> Toast.makeText(context, "FAQ selected", Toast.LENGTH_SHORT).show()
+                1 -> showContactSupportDialog()
+                2 -> Toast.makeText(context, "User Guide selected", Toast.LENGTH_SHORT).show()
+                3 -> showReportProblemDialog()
+            }
+        }
+        builder.show()
+    }
+
+    private fun showContactSupportDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Contact Support")
+        builder.setMessage("Email: support@africanshipping.com\nPhone: +1 (555) 123-4567\nHours: Mon-Fri 9AM-6PM EST")
+        builder.setPositiveButton("Send Email") { _, _ ->
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:support@africanshipping.com")
+                putExtra(Intent.EXTRA_SUBJECT, "Support Request - African Shipping App")
+            }
+            if (intent.resolveActivity(requireContext().packageManager) != null) {
+                startActivity(intent)
+            }
+        }
+        builder.setNegativeButton("Close", null)
+        builder.show()
+    }
+
+    private fun showReportProblemDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Report a Problem")
+        builder.setMessage("Please describe the issue you're experiencing:")
+
+        val input = android.widget.EditText(requireContext())
+        input.hint = "Describe the problem..."
+        input.minLines = 3
+        builder.setView(input)
+
+        builder.setPositiveButton("Submit") { _, _ ->
+            val problemDescription = input.text.toString()
+            if (problemDescription.isNotEmpty()) {
+                Toast.makeText(context, "Problem report submitted. Thank you!", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Please describe the problem", Toast.LENGTH_SHORT).show()
+            }
+        }
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
+    private fun showAboutDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("About African Shipping")
+        builder.setMessage("""
+            African Shipping App
+            Version 1.0.0
+            
+            Your trusted partner for shipping and logistics across Africa.
+            
+            © 2024 African Shipping Company
+            All rights reserved.
+            
+            Built with ❤️ for Africa
+        """.trimIndent())
+        builder.setPositiveButton("OK", null)
+        builder.show()
+    }
+
+    fun refreshProfile() {
+        loadUserData()
+        loadPreferences()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshProfile()
+    }
+}

@@ -7,18 +7,21 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat // Import ContextCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.android.material.bottomnavigation.BottomNavigationView // Import BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton // Import FloatingActionButton
-import com.google.firebase.auth.FirebaseAuth // Import Firebase Auth
-import com.google.firebase.installations.FirebaseInstallations // Import FirebaseInstallations
-import com.google.firebase.messaging.FirebaseMessaging // Import FirebaseMessaging
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.installations.FirebaseInstallations
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,8 +38,8 @@ class MainActivity : AppCompatActivity() {
     // FAB
     private lateinit var fabNewShipment: FloatingActionButton // Declared here
 
-    // Logout
-    private lateinit var btnlogout: ImageView
+    // More Options Button (replaces logout)
+    private lateinit var btnMoreOptions: ImageButton
 
     // Firebase Auth
     private lateinit var auth: FirebaseAuth
@@ -73,11 +76,11 @@ class MainActivity : AppCompatActivity() {
         // Initialize other UI components
         bottomNavigation = findViewById(R.id.bottom_navigation)
         fabNewShipment = findViewById(R.id.fab_new_shipment) // Initialize FAB
-        btnlogout = findViewById(R.id.ic_logout) // Initialize logout icon
+        btnMoreOptions = findViewById(R.id.btn_more_options) // Initialize more options button
 
         // Set OnClickListeners
-        btnlogout.setOnClickListener {
-            performLogout()
+        btnMoreOptions.setOnClickListener { view ->
+            showMoreOptionsMenu(view)
         }
 
         // Changed to navigate to ViewNotificationsFragment directly
@@ -96,7 +99,8 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             // Only set if not launched from a notification intent, otherwise handleNotificationIntent
             // will take precedence and navigate.
-            if (intent?.extras?.containsKey("google.message_id") != true && intent?.extras?.containsKey("from") != true) {                bottomNavigation.selectedItemId = R.id.nav_home // This will trigger the listener and load HomeFragment
+            if (intent?.extras?.containsKey("google.message_id") != true && intent?.extras?.containsKey("from") != true) {
+                bottomNavigation.selectedItemId = R.id.nav_home // This will trigger the listener and load HomeFragment
             }
         }
 
@@ -128,6 +132,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     // --- Private Helper Methods ---
+
+    private fun showMoreOptionsMenu(view: View) {
+        val popupMenu = PopupMenu(this, view)
+        popupMenu.inflate(R.menu.menu_toolbar_options)
+
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_profile -> {
+                    navigateToProfile()
+                    true
+                }
+                R.id.action_logout -> {
+                    showLogoutConfirmation()
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
+    }
+
+    private fun navigateToProfile() {
+        // Create and navigate to ProfileFragment
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment !is ProfileFragment) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, ProfileFragment())
+                .addToBackStack("profile") // Add to back stack to allow going back
+                .commit()
+            supportActionBar?.title = "Profile" // Update toolbar title
+        }
+    }
+
+    private fun showLogoutConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to logout?")
+            .setPositiveButton("Logout") { _, _ ->
+                performLogout()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
 
     private fun performLogout() {
         auth.signOut() // Sign out the current user
@@ -242,6 +289,7 @@ class MainActivity : AppCompatActivity() {
                 is LoadingFragment -> supportActionBar?.title = "Loading List"
                 is PaymentFragment -> supportActionBar?.title = "Payment"
                 is ViewNotificationsFragment -> supportActionBar?.title = "Notifications"
+                is ProfileFragment -> supportActionBar?.title = "Profile"
                 else -> supportActionBar?.title = "African Shipping" // Default or app name
             }
         } else {

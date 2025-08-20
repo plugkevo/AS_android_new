@@ -100,4 +100,19 @@ dependencies {
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation("com.google.firebase:firebase-inappmessaging-display")
     implementation("com.google.firebase:firebase-analytics")
+    // Image loading library
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Firebase Storage
+    implementation ("com.google.firebase:firebase-storage:20.3.0")
+    // Image loading library
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Firebase Storage
+    implementation ("com.google.firebase:firebase-storage:20.3.0")
+
+    // Remove this line: implementation 'pub.devrel:easypermissions:3.0.0'
+
 }
