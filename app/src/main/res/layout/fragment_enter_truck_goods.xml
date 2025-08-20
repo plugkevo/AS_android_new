@@ -100,8 +100,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:hint="Goods Number"
-                app:boxStrokeColor="?attr/VsInputStrokeColor"
-                app:hintTextColor="?attr/VsInputHintColor"
+                app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                app:hintTextColor="?attr/inputHintColor"
                 app:layout_constraintTop_toBottomOf="@+id/goodsNumberLabel">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -109,8 +109,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:background="@drawable/payment_input_background"
-                    android:textColor="@color/text_primary"/>
+                    android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
 
 

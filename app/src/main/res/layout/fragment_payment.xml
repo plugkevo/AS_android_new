@@ -41,17 +41,26 @@
                 android:textColor="?attr/paymentLabelColor"
                 android:layout_marginBottom="8dp" />
 
-            <EditText
-                android:id="@+id/et_phone_number"
+
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="e.g., 0712345678"
-                android:textColorHint="?attr/paymentInputHintColor"
-                android:textColor="?attr/paymentInputTextColor"
-                android:inputType="phone"
-                android:padding="12dp"
-                android:background="@drawable/payment_input_background"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                app:hintTextColor="?attr/inputHintColor"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_phone_number"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="e.g., 0712345678"
+                    android:textColorHint="?attr/paymentInputHintColor"
+                    android:textColor="?attr/paymentInputTextColor"
+                    android:inputType="phone"
+                    android:padding="12dp"
+                    android:layout_marginBottom="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
 
             <TextView
                 android:layout_width="match_parent"
@@ -62,17 +71,26 @@
                 android:textColor="?attr/paymentLabelColor"
                 android:layout_marginBottom="8dp" />
 
-            <EditText
-                android:id="@+id/et_amount"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="e.g., 40000"
-                android:textColorHint="?attr/paymentInputHintColor"
-                android:textColor="?attr/paymentInputTextColor"
-                android:inputType="numberDecimal"
-                android:padding="12dp"
-                android:background="@drawable/payment_input_background"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                app:hintTextColor="?attr/inputHintColor"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="e.g., 40000"
+                    android:textColorHint="?attr/paymentInputHintColor"
+                    android:textColor="?attr/paymentInputTextColor"
+                    android:inputType="numberDecimal"
+                    android:padding="12dp"
+                    android:layout_marginBottom="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
 
             <Button
                 android:id="@+id/btn_track"

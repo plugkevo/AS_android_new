@@ -32,6 +32,7 @@
         <color name="secondary">#1976D2</color>
         <color name="secondary_dark">#004BA0</color>
         <color name="secondary_light">#63A4FF</color>
+        <color name="grey">#808080</color>
 
         <!-- Accent Colors -->
         <color name="accent">#2196F3</color>
