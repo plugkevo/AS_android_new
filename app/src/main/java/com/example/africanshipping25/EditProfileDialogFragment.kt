@@ -1,11 +1,14 @@
 package com.example.africanshipping25
 
+import android.Manifest
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,13 +19,19 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,6 +39,7 @@ class EditProfileDialogFragment : DialogFragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
+    private lateinit var storage: FirebaseStorage
 
     // UI Elements
     private lateinit var profilePicture: CircleImageView
@@ -52,16 +62,48 @@ class EditProfileDialogFragment : DialogFragment() {
     private lateinit var btnSave: Button
 
     private var selectedImageUri: Uri? = null
+    private var currentPhotoPath: String? = null
     private val calendar = Calendar.getInstance()
+    private val TAG = "EditProfileDialog"
 
-    // Image picker launcher
-    private val imagePickerLauncher = registerForActivityResult(
+    // Permission launcher
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val cameraGranted = permissions[Manifest.permission.CAMERA] ?: false
+        val storageGranted = permissions[Manifest.permission.READ_EXTERNAL_STORAGE] ?: false
+
+        if (cameraGranted && storageGranted) {
+            showImagePickerDialog()
+        } else {
+            Toast.makeText(context, "Permissions required to access camera and gallery", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Image picker launchers
+    private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             selectedImageUri = result.data?.data
             selectedImageUri?.let {
-                profilePicture.setImageURI(it)
+                Log.d(TAG, "Gallery image selected: $it")
+                displayImage(it)
+            }
+        }
+    }
+
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            currentPhotoPath?.let { path ->
+                val file = File(path)
+                selectedImageUri = Uri.fromFile(file)
+                selectedImageUri?.let {
+                    Log.d(TAG, "Camera image captured: $it")
+                    displayImage(it)
+                }
             }
         }
     }
@@ -95,6 +137,7 @@ class EditProfileDialogFragment : DialogFragment() {
         // Initialize Firebase
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
+        storage = FirebaseStorage.getInstance()
 
         // Initialize UI elements
         initializeViews(view)
@@ -169,7 +212,12 @@ class EditProfileDialogFragment : DialogFragment() {
         }
 
         changePhoto.setOnClickListener {
-            openImagePicker()
+            checkPermissionsAndShowImagePicker()
+        }
+
+        // Also allow clicking on the profile picture itself
+        profilePicture.setOnClickListener {
+            checkPermissionsAndShowImagePicker()
         }
 
         dateOfBirthInput.setOnClickListener {
@@ -177,21 +225,120 @@ class EditProfileDialogFragment : DialogFragment() {
         }
     }
 
-    private fun loadProfileImage(imageUrl: String) {
-        try {
-            Glide.with(this)
-                .load(imageUrl)
-                .transform(CircleCrop())
-                .placeholder(R.drawable.default_profile_picture)
-                .error(R.drawable.default_profile_picture)
-                .into(profilePicture)
+    private fun checkPermissionsAndShowImagePicker() {
+        val cameraPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+        val storagePermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.CAMERA)
+        }
+
+        if (storagePermission != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+        } else {
+            showImagePickerDialog()
+        }
+    }
+
+    private fun showImagePickerDialog() {
+        val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Select Profile Picture")
+        builder.setItems(options) { dialog, which ->
+            when (which) {
+                0 -> openCamera()
+                1 -> openGallery()
+                2 -> dialog.dismiss()
+            }
+        }
+        builder.show()
+    }
+
+    private fun openCamera() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (intent.resolveActivity(requireContext().packageManager) != null) {
+            val photoFile = createImageFile()
+            photoFile?.let {
+                val photoURI = FileProvider.getUriForFile(
+                    requireContext(),
+                    "${requireContext().packageName}.fileprovider",
+                    it
+                )
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                cameraLauncher.launch(intent)
+            }
+        } else {
+            Toast.makeText(context, "Camera not available", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        galleryLauncher.launch(intent)
+    }
+
+    private fun createImageFile(): File? {
+        return try {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val imageFileName = "JPEG_${timeStamp}_"
+            val storageDir = File(requireContext().getExternalFilesDir(null), "Pictures")
+            if (!storageDir.exists()) {
+                storageDir.mkdirs()
+            }
+            val image = File.createTempFile(imageFileName, ".jpg", storageDir)
+            currentPhotoPath = image.absolutePath
+            image
         } catch (e: Exception) {
             e.printStackTrace()
+            Toast.makeText(context, "Error creating image file", Toast.LENGTH_SHORT).show()
+            null
+        }
+    }
+
+    private fun displayImage(uri: Uri) {
+        try {
+            Log.d(TAG, "Displaying image: $uri")
+            if (isAdded && !isDetached) {
+                Glide.with(this)
+                    .load(uri)
+                    .apply(RequestOptions()
+                        .transform(CircleCrop())
+                        .placeholder(R.drawable.default_profile_picture)
+                        .error(R.drawable.default_profile_picture)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL))
+                    .into(profilePicture)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error displaying image", e)
+            Toast.makeText(context, "Error loading image", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadProfileImage(imageUrl: String) {
+        try {
+            Log.d(TAG, "Loading profile image from URL: $imageUrl")
+            if (isAdded && !isDetached) {
+                Glide.with(this)
+                    .load(imageUrl)
+                    .apply(RequestOptions()
+                        .transform(CircleCrop())
+                        .placeholder(R.drawable.default_profile_picture)
+                        .error(R.drawable.default_profile_picture)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL))
+                    .into(profilePicture)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading profile image", e)
             profilePicture.setImageResource(R.drawable.default_profile_picture)
         }
     }
 
-    // Update the loadCurrentUserData method to include image loading
     private fun loadCurrentUserData() {
         val currentUser = auth.currentUser
         currentUser?.let { user ->
@@ -214,22 +361,21 @@ class EditProfileDialogFragment : DialogFragment() {
                         companyNameInput.setText(document.getString("companyName") ?: "")
                         jobTitleInput.setText(document.getString("jobTitle") ?: "")
 
-
                         // Load profile picture
                         val profilePictureUrl = document.getString("profilePictureUrl")
+                        Log.d(TAG, "Profile picture URL from Firestore: $profilePictureUrl")
                         if (!profilePictureUrl.isNullOrEmpty()) {
                             loadProfileImage(profilePictureUrl)
+                        } else {
+                            profilePicture.setImageResource(R.drawable.default_profile_picture)
                         }
                     }
                 }
+                .addOnFailureListener { exception ->
+                    Log.e(TAG, "Error loading profile data", exception)
+                    Toast.makeText(context, "Error loading profile data: ${exception.message}", Toast.LENGTH_SHORT).show()
+                }
         }
-    }
-
-
-
-    private fun openImagePicker() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        imagePickerLauncher.launch(intent)
     }
 
     private fun showDatePicker() {
@@ -247,6 +393,35 @@ class EditProfileDialogFragment : DialogFragment() {
         datePickerDialog.show()
     }
 
+    private fun uploadImageToFirebase(uri: Uri, callback: (String?) -> Unit) {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            val storageRef = storage.reference
+            val profileImagesRef = storageRef.child("profile_images/${user.uid}.jpg")
+
+            Log.d(TAG, "Starting image upload to Firebase Storage")
+
+            profileImagesRef.putFile(uri)
+                .addOnSuccessListener { taskSnapshot ->
+                    Log.d(TAG, "Image uploaded successfully")
+                    // Get download URL
+                    profileImagesRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                        Log.d(TAG, "Download URL obtained: $downloadUri")
+                        callback(downloadUri.toString())
+                    }.addOnFailureListener { e ->
+                        Log.e(TAG, "Error getting download URL", e)
+                        callback(null)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Image upload failed", e)
+                    callback(null)
+                }
+        } ?: run {
+            callback(null)
+        }
+    }
+
     private fun saveProfile() {
         // Validate required fields
         if (!validateInputs()) {
@@ -259,51 +434,87 @@ class EditProfileDialogFragment : DialogFragment() {
 
         val currentUser = auth.currentUser
         currentUser?.let { user ->
-            val profileData = hashMapOf(
-                "firstName" to firstNameInput.text.toString().trim(),
-                "lastName" to lastNameInput.text.toString().trim(),
-                "phone" to phoneInput.text.toString().trim(),
-                "dateOfBirth" to dateOfBirthInput.text.toString().trim(),
-                "gender" to genderInput.text.toString().trim(),
-                "streetAddress" to streetAddressInput.text.toString().trim(),
-                "city" to cityInput.text.toString().trim(),
-                "state" to stateInput.text.toString().trim(),
-                "zipCode" to zipCodeInput.text.toString().trim(),
-                "country" to countryInput.text.toString().trim(),
-                "companyName" to companyNameInput.text.toString().trim(),
-                "jobTitle" to jobTitleInput.text.toString().trim(),
-                "updatedAt" to com.google.firebase.Timestamp.now()
-            )
 
-            // Save to Firestore
-            firestore.collection("users").document(user.uid)
-                .set(profileData, com.google.firebase.firestore.SetOptions.merge())
-                .addOnSuccessListener {
-                    // Update Firebase Auth display name
-                    val displayName = "${firstNameInput.text.toString().trim()} ${lastNameInput.text.toString().trim()}"
-                    val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
-                        .setDisplayName(displayName)
-                        .build()
+            // Function to save profile data
+            fun saveProfileData(profilePictureUrl: String? = null) {
+                val profileData = hashMapOf(
+                    "firstName" to firstNameInput.text.toString().trim(),
+                    "lastName" to lastNameInput.text.toString().trim(),
+                    "phone" to phoneInput.text.toString().trim(),
+                    "dateOfBirth" to dateOfBirthInput.text.toString().trim(),
+                    "gender" to genderInput.text.toString().trim(),
+                    "streetAddress" to streetAddressInput.text.toString().trim(),
+                    "city" to cityInput.text.toString().trim(),
+                    "state" to stateInput.text.toString().trim(),
+                    "zipCode" to zipCodeInput.text.toString().trim(),
+                    "country" to countryInput.text.toString().trim(),
+                    "companyName" to companyNameInput.text.toString().trim(),
+                    "jobTitle" to jobTitleInput.text.toString().trim(),
+                    "updatedAt" to com.google.firebase.Timestamp.now()
+                )
 
-                    user.updateProfile(profileUpdates)
-                        .addOnCompleteListener { task ->
-                            btnSave.isEnabled = true
-                            btnSave.text = "Save Changes"
+                // Add profile picture URL if provided
+                profilePictureUrl?.let {
+                    profileData["profilePictureUrl"] = it
+                }
 
-                            if (task.isSuccessful) {
-                                Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
-                                listener?.onProfileUpdated()
-                                dismiss()
-                            } else {
-                                Toast.makeText(context, "Error updating display name", Toast.LENGTH_SHORT).show()
+                // Save to Firestore
+                firestore.collection("users").document(user.uid)
+                    .set(profileData, com.google.firebase.firestore.SetOptions.merge())
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Profile data saved to Firestore")
+                        // Update Firebase Auth display name
+                        val displayName = "${firstNameInput.text.toString().trim()} ${lastNameInput.text.toString().trim()}"
+                        val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                            .setDisplayName(displayName)
+                            .build()
+
+                        user.updateProfile(profileUpdates)
+                            .addOnCompleteListener { task ->
+                                btnSave.isEnabled = true
+                                btnSave.text = "Save Changes"
+
+                                if (task.isSuccessful) {
+                                    Log.d(TAG, "Profile updated successfully")
+                                    Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                                    listener?.onProfileUpdated()
+                                    dismiss()
+                                } else {
+                                    Log.e(TAG, "Error updating display name", task.exception)
+                                    Toast.makeText(context, "Profile saved but error updating display name", Toast.LENGTH_SHORT).show()
+                                    listener?.onProfileUpdated()
+                                    dismiss()
+                                }
                             }
-                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e(TAG, "Error saving profile to Firestore", exception)
+                        btnSave.isEnabled = true
+                        btnSave.text = "Save Changes"
+                        Toast.makeText(context, "Error saving profile: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
+
+            // Check if user selected a new image
+            selectedImageUri?.let { imageUri ->
+                Log.d(TAG, "New image selected, uploading to Firebase Storage")
+                Toast.makeText(context, "Uploading image...", Toast.LENGTH_SHORT).show()
+
+                uploadImageToFirebase(imageUri) { downloadUrl ->
+                    if (downloadUrl != null) {
+                        Log.d(TAG, "Image upload successful, saving profile with new URL")
+                        saveProfileData(downloadUrl)
+                    } else {
+                        Log.e(TAG, "Image upload failed")
+                        Toast.makeText(context, "Error uploading image, saving profile without image update", Toast.LENGTH_LONG).show()
+                        saveProfileData()
+                    }
                 }
-                .addOnFailureListener { exception ->
-                    btnSave.isEnabled = true
-                    btnSave.text = "Save Changes"
-                    Toast.makeText(context, "Error saving profile: ${exception.message}", Toast.LENGTH_SHORT).show()
-                }
+            } ?: run {
+                // No new image selected, just save profile data
+                Log.d(TAG, "No new image selected, saving profile data only")
+                saveProfileData()
+            }
         }
     }
 
@@ -327,5 +538,13 @@ class EditProfileDialogFragment : DialogFragment() {
         }
 
         return isValid
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clear Glide to prevent memory leaks
+        if (isAdded) {
+            Glide.with(this).clear(profilePicture)
+        }
     }
 }

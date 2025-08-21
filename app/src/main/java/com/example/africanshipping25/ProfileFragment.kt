@@ -15,6 +15,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -134,9 +135,7 @@ class ProfileFragment : Fragment() {
         userName = view.findViewById(R.id.tv_user_name)
         userEmail = view.findViewById(R.id.tv_user_email)
         userRole = view.findViewById(R.id.tv_user_role)
-        totalShipments = view.findViewById(R.id.tv_total_shipments)
-        activeShipments = view.findViewById(R.id.tv_active_shipments)
-        deliveredShipments = view.findViewById(R.id.tv_delivered_shipments)
+
         notificationsSwitch = view.findViewById(R.id.switch_notifications)
         currentLanguage = view.findViewById(R.id.tv_current_language)
         currentTheme = view.findViewById(R.id.tv_current_theme)
@@ -392,40 +391,36 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadShipmentStats() {
-        val currentUser = auth.currentUser
-        currentUser?.let { user ->
-            firestore.collection("shipments")
-                .whereEqualTo("userId", user.uid)
-                .get()
-                .addOnSuccessListener { documents ->
-                    var total = 0
-                    var active = 0
-                    var delivered = 0
+        // Remove the user filter to get ALL shipments from the database
+        firestore.collection("shipments")
+            .get()  // Remove the .whereEqualTo("userId", user.uid) filter
+            .addOnSuccessListener { documents ->
+                var total = 0
+                var active = 0
+                var delivered = 0
 
-                    for (document in documents) {
-                        total++
-                        when (document.getString("status")) {
-                            "In Transit", "Processing", "Picked Up" -> active++
-                            "Delivered" -> delivered++
-                        }
+                for (document in documents) {
+                    total++
+                    when (document.getString("status")) {
+                        "In Transit", "Processing", "Picked Up", "Pending", "Out for Delivery" -> active++
+                        "Delivered" -> delivered++
                     }
+                }
 
-                    totalShipments.text = total.toString()
-                    activeShipments.text = active.toString()
-                    deliveredShipments.text = delivered.toString()
-                }
-                .addOnFailureListener {
-                    totalShipments.text = "0"
-                    activeShipments.text = "0"
-                    deliveredShipments.text = "0"
-                }
-        } ?: run {
-            totalShipments.text = "0"
-            activeShipments.text = "0"
-            deliveredShipments.text = "0"
-        }
+                // Find the TextViews and update them
+                view?.findViewById<TextView>(R.id.tv_total_shipments)?.text = total.toString()
+                view?.findViewById<TextView>(R.id.tv_active_shipments)?.text = active.toString()
+                view?.findViewById<TextView>(R.id.tv_delivered_shipments)?.text = delivered.toString()
+            }
+            .addOnFailureListener { exception ->
+                // Handle error case
+                view?.findViewById<TextView>(R.id.tv_total_shipments)?.text = "0"
+                view?.findViewById<TextView>(R.id.tv_active_shipments)?.text = "0"
+                view?.findViewById<TextView>(R.id.tv_delivered_shipments)?.text = "0"
+
+                Toast.makeText(context, "Error loading shipment stats: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
     }
-
     private fun loadPreferences() {
         val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
         notificationsSwitch.isChecked = notificationsEnabled
@@ -486,9 +481,11 @@ class ProfileFragment : Fragment() {
         builder.show()
     }
 
+// Add this method to your ProfileFragment class
+
     private fun showThemeDialog() {
         val themes = arrayOf("Light", "Dark", "System Default")
-        val currentTheme = sharedPreferences.getString("theme", "Light")
+        val currentTheme = sharedPreferences.getString("theme", "System Default")
         var selectedIndex = themes.indexOf(currentTheme)
 
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
@@ -502,12 +499,35 @@ class ProfileFragment : Fragment() {
             sharedPreferences.edit()
                 .putString("theme", selectedTheme)
                 .apply()
+
+            // Apply theme immediately
+            applyTheme(selectedTheme)
+
             Toast.makeText(context, "Theme changed to $selectedTheme", Toast.LENGTH_SHORT).show()
         }
         builder.setNegativeButton("Cancel", null)
         builder.show()
     }
 
+    private fun applyTheme(theme: String) {
+        when (theme) {
+            "Light" -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
+            "Dark" -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            }
+            "System Default" -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            }
+        }
+    }
+
+    // Add this to your onCreate or onViewCreated method
+    private fun loadSavedTheme() {
+        val savedTheme = sharedPreferences.getString("theme", "System Default")
+        savedTheme?.let { applyTheme(it) }
+    }
     private fun showHelpAndSupportDialog() {
         val options = arrayOf("FAQ", "Contact Support", "User Guide", "Report a Problem")
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
