@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="0dp">
-
+    android:padding="0dp"
+    android:background="?attr/colorBackground">
     <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -91,8 +91,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:boxStrokeColor="@color/colorLightBlue"
-                app:hintTextColor="@color/colorLightBlue"
+                app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                app:hintTextColor="?attr/inputHintColor"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -101,7 +101,8 @@
                     android:layout_height="wrap_content"
                     android:hint="First Name"
                     android:inputType="textPersonName"
-                    android:text="John" />
+                    android:text="John"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Last Name -->
@@ -119,7 +120,8 @@
                     android:layout_height="wrap_content"
                     android:hint="Last Name"
                     android:inputType="textPersonName"
-                    android:text="Doe" />
+                    android:text="Doe"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Email (Read-only) -->
@@ -158,7 +160,8 @@
                 android:layout_marginBottom="16dp"
                 app:boxStrokeColor="@color/colorLightBlue"
                 app:hintTextColor="@color/colorLightBlue"
-                app:prefixText="+1 "
+                app:prefixText="+1"
+                app:prefixTextColor="@color/colorTextSecondary"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -167,7 +170,8 @@
                     android:layout_height="wrap_content"
                     android:hint="Phone Number"
                     android:inputType="phone"
-                    android:text="(555) 123-4567" />
+                    android:text="(555) 123-4567"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Date of Birth -->
@@ -188,7 +192,8 @@
                     android:inputType="none"
                     android:focusable="false"
                     android:clickable="true"
-                    android:text="01/15/1990" />
+                    android:text="01/15/1990"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Gender -->
@@ -207,7 +212,8 @@
                     android:layout_height="wrap_content"
                     android:hint="Gender"
                     android:inputType="none"
-                    android:text="Male" />
+                    android:text="Male"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Address Information -->
@@ -235,7 +241,8 @@
                     android:layout_height="wrap_content"
                     android:hint="Street Address"
                     android:inputType="textPostalAddress"
-                    android:text="123 Main Street" />
+                    android:text="123 Main Street"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- City and State -->
@@ -260,7 +267,8 @@
                         android:layout_height="wrap_content"
                         android:hint="City"
                         android:inputType="textPostalAddress"
-                        android:text="New York" />
+                        android:text="New York"
+                        android:textColor="@color/text_primary"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -278,7 +286,8 @@
                         android:layout_height="wrap_content"
                         android:hint="State"
                         android:inputType="textPostalAddress"
-                        android:text="NY" />
+                        android:text="NY"
+                        android:textColor="@color/text_primary"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -304,7 +313,8 @@
                         android:layout_height="wrap_content"
                         android:hint="ZIP Code"
                         android:inputType="textPostalAddress"
-                        android:text="10001" />
+                        android:text="10001"
+                        android:textColor="@color/text_primary"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -323,7 +333,8 @@
                         android:layout_height="wrap_content"
                         android:hint="Country"
                         android:inputType="none"
-                        android:text="United States" />
+                        android:text="United States"
+                        android:textColor="@color/text_primary"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -351,7 +362,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Company Name"
-                    android:inputType="textCapWords" />
+                    android:inputType="textCapWords"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Job Title -->
@@ -368,7 +380,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Job Title"
-                    android:inputType="textCapWords" />
+                    android:inputType="textCapWords"
+                    android:textColor="@color/text_primary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Action Buttons -->
@@ -396,7 +409,7 @@
                     android:layout_height="wrap_content"
                     android:text="Save Changes"
                     android:textColor="@android:color/white"
-                    android:background="@drawable/button_primary"
+                    android:backgroundTint="?attr/buttonBackgroundTint"
                     android:padding="12dp"
                     android:minWidth="120dp" />
             </LinearLayout>
