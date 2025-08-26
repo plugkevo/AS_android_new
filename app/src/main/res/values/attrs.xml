@@ -106,6 +106,6 @@
     <attr name="VsInputBackgroundColor" format="color" />
     <attr name="VsInputStrokeColor" format="color" />
     <attr name="VsInputTextColor" format="color" />
-    <attr name="VsInputHintColor" format="color" />
+    <attr name="VsInputHintColor" format="color" />z
 
 </resources>

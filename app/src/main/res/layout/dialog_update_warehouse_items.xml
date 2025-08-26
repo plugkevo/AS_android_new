@@ -21,7 +21,9 @@
         android:layout_height="wrap_content"
         android:hint="Good Number (4 characters)"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="?attr/inputBoxStrokeColor"
+        app:hintTextColor="?attr/inputHintColor">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextUpdateGoodNo"
             android:layout_width="match_parent"
@@ -42,7 +44,9 @@
         android:layout_height="wrap_content"
         android:hint="Sender Name"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="?attr/inputBoxStrokeColor"
+        app:hintTextColor="?attr/inputHintColor">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextUpdateSenderName"
             android:layout_width="match_parent"
@@ -63,7 +67,9 @@
         android:layout_height="wrap_content"
         android:hint="Enter Phone Number"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="?attr/inputBoxStrokeColor"
+        app:hintTextColor="?attr/inputHintColor">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextUpdatePhoneNumber"
             android:layout_width="match_parent"

@@ -78,7 +78,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Enter Sender Name"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                        app:hintTextColor="?attr/inputHintColor">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextSenderName"
                             android:layout_width="match_parent"
@@ -103,13 +105,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Enter Sender's Phone Number"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                        app:hintTextColor="?attr/inputHintColor">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextPhoneNumber"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="phone"
-                            app:hintTextColor="?attr/VsInputHintColor"
                             />
                     </com.google.android.material.textfield.TextInputLayout>
                     <!-- End Phone Number Section -->
@@ -127,7 +130,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Select Date"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                        app:hintTextColor="?attr/inputHintColor">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextDate"
                             android:layout_width="match_parent"
@@ -135,7 +140,6 @@
                             android:focusable="false"
                             android:clickable="true"
                             android:inputType="none"
-                            app:hintTextColor="?attr/VsInputHintColor"
                             />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
