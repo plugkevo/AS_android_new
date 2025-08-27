@@ -16,6 +16,11 @@
     <attr name="linkTextColor" format="color" />
     <attr name="signupPromptColor" format="color" />
 
+    <attr name="colorSurface" format="color" />
+    <attr name="colorOnSurfaceVariant" format="color" />
+
+
+
     <!-- New custom attributes for HomeFragment theming -->
     <attr name="cardBgActive" format="color" />
     <attr name="cardBgDelivered" format="color" />
@@ -106,6 +111,6 @@
     <attr name="VsInputBackgroundColor" format="color" />
     <attr name="VsInputStrokeColor" format="color" />
     <attr name="VsInputTextColor" format="color" />
-    <attr name="VsInputHintColor" format="color" />z
+    <attr name="VsInputHintColor" format="color" />
 
 </resources>

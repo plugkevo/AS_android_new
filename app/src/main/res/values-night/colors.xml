@@ -22,6 +22,9 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 
+    <color name="colorSurface">#000000</color>
+    <color name="colorOnSurfaceVariant">#cac4d0</color>
+
     <color name="card_background">#1E1E1E</color> <!-- Default card background for dark theme -->
     <!-- App specific colors - Dark Theme -->
     <color name="app_background">#121212</color> <!-- Dark background -->

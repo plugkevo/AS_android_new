@@ -439,24 +439,8 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showChangePasswordDialog() {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Change Password")
-        builder.setMessage("You will receive an email with instructions to reset your password.")
-        builder.setPositiveButton("Send Email") { _, _ ->
-            val currentUser = auth.currentUser
-            currentUser?.email?.let { email ->
-                auth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(context, "Password reset email sent!", Toast.LENGTH_LONG).show()
-                        } else {
-                            Toast.makeText(context, "Error sending email: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                        }
-                    }
-            }
-        }
-        builder.setNegativeButton("Cancel", null)
-        builder.show()
+        val dialog = ChangePasswordDialogFragment()
+        dialog.show(parentFragmentManager, "ChangePasswordDialog")
     }
 
     private fun showLanguageDialog() {
@@ -481,7 +465,6 @@ class ProfileFragment : Fragment() {
         builder.show()
     }
 
-// Add this method to your ProfileFragment class
 
     private fun showThemeDialog() {
         val themes = arrayOf("Light", "Dark", "System Default")

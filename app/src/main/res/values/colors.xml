@@ -16,6 +16,9 @@
     <color name="green">#008000</color>
     <color name="red">#FF0000</color>
 
+    <color name="colorSurface">#ffffff</color>
+    <color name="colorOnSurfaceVariant">#cac4d0</color>
+
     <!-- Base colors -->
     <color name="dark_blue">#1A237E</color>
     <color name="medium_blue">#3949AB</color>

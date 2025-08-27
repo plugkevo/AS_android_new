@@ -38,6 +38,9 @@
             <item name="linkTextColor">@color/colorLightBlue</item>
             <item name="signupPromptColor">@color/text_secondary</item>
 
+            <item name="colorSurface">@color/colorSurface</item>
+            <item name="colorOnSurfaceVariant">@color/colorOnSurfaceVariant</item>
+
             <!-- HomeFragment specific colors - Dark Theme -->
             <item name="cardBgActive">@color/card_bg_active</item>
             <item name="cardBgDelivered">@color/card_bg_delivered</item>

@@ -39,6 +39,9 @@
         <item name="linkTextColor">@color/secondary</item>
         <item name="signupPromptColor">@color/text_secondary</item>
 
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurfaceVariant">@color/colorOnSurfaceVariant</item>
+
         <!-- HomeFragment specific colors - Light Theme -->
         <item name="cardBgActive">@color/card_bg_active</item>
         <item name="cardBgDelivered">@color/card_bg_delivered</item>
