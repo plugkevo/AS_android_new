@@ -184,7 +184,7 @@ class EditProfileDialogFragment : DialogFragment() {
 
     private fun setupDropdowns() {
         // Gender dropdown
-        val genderOptions = arrayOf("Male", "Female", "Other", "Prefer not to say")
+        val genderOptions = arrayOf("Male", "Female") //"Other", "Prefer not to say")
         val genderAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, genderOptions)
         genderInput.setAdapter(genderAdapter)
 
