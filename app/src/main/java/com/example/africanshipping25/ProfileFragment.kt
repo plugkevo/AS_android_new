@@ -529,7 +529,7 @@ class ProfileFragment : Fragment() {
     private fun showContactSupportDialog() {
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
         builder.setTitle("Contact Support")
-        builder.setMessage("Email: support@africanshipping.com\nPhone: +1 (555) 123-4567\nHours: Mon-Fri 9AM-6PM EST")
+        builder.setMessage("Email: support@africanshipping.com\nPhone: +254 790875188\nHours: Mon-Fri 9AM-6PM EAT")
         builder.setPositiveButton("Send Email") { _, _ ->
             val intent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:support@africanshipping.com")
