@@ -527,22 +527,9 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showContactSupportDialog() {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Contact Support")
-        builder.setMessage("Email: support@africanshipping.com\nPhone: +254 790875188\nHours: Mon-Fri 9AM-6PM EAT")
-        builder.setPositiveButton("Send Email") { _, _ ->
-            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:support@africanshipping.com")
-                putExtra(Intent.EXTRA_SUBJECT, "Support Request - African Shipping App")
-            }
-            if (intent.resolveActivity(requireContext().packageManager) != null) {
-                startActivity(intent)
-            }
-        }
-        builder.setNegativeButton("Close", null)
-        builder.show()
+        val dialog = SendEmailDialogFragment()
+        dialog.show(parentFragmentManager, "SendEmailDialog")
     }
-
     private fun showReportProblemDialog() {
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
         builder.setTitle("Report a Problem")
