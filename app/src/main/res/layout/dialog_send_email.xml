@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="?attr/colorBackground">
 
     <!-- Header -->
     <LinearLayout
@@ -22,7 +22,7 @@
             android:src="@drawable/ic_email"
             android:layout_marginEnd="12dp"
             android:contentDescription="Email Icon"
-            app:tint="@android:color/white" />
+             />
 
         <TextView
             android:layout_width="0dp"
@@ -41,7 +41,7 @@
             android:contentDescription="Close"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp"
-            app:tint="@android:color/white" />
+            />
     </LinearLayout>
 
     <!-- Content Container with Fixed Height -->
@@ -71,7 +71,7 @@
                     android:text="From:"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"
+                    android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp" />
 
                 <LinearLayout
@@ -98,7 +98,7 @@
                         android:layout_weight="1"
                         android:text="user@example.com"
                         android:textSize="16sp"
-                        android:textColor="#212121" />
+                        android:textColor="@color/text_primary" />
                 </LinearLayout>
 
                 <!-- To Field -->
@@ -146,8 +146,7 @@
                     android:text="Subject:"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="@color/text_primary"                    android:layout_marginBottom="8dp" />
 
                 <EditText
                     android:id="@+id/et_subject"
@@ -157,7 +156,7 @@
                     android:inputType="text"
                     android:maxLines="1"
                     android:padding="12dp"
-                    android:background="@drawable/edit_text_background"
+                    android:background="@drawable/email_field_background"
                     android:layout_marginBottom="16dp" />
 
                 <!-- Category -->
@@ -167,8 +166,9 @@
                     android:text="Category:"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp"
+                    />
 
                 <Spinner
                     android:id="@+id/spinner_category"
@@ -179,14 +179,14 @@
                     android:padding="12dp" />
 
                 <!-- Priority -->
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:text="Priority:"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#212121"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="@color/text_primary"                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
                 <RadioGroup
                     android:id="@+id/rg_priority"
@@ -231,8 +231,9 @@
                     android:text="Message:"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"
+                    android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp" />
+
 
                 <EditText
                     android:id="@+id/et_message"
@@ -263,8 +264,7 @@
                     android:layout_height="wrap_content"
                     android:text="Include device information"
                     android:textSize="14sp"
-                    android:textColor="#212121"
-                    android:checked="true"
+                    android:textColor="@color/text_primary"                    android:checked="true"
                     android:buttonTint="@color/colorDarkBlue"
                     android:layout_marginBottom="20dp" />
             </LinearLayout>
@@ -306,7 +306,7 @@
             android:orientation="horizontal"
             android:gravity="end"
             android:padding="20dp"
-            android:background="@android:color/white"
+            android:background="?attr/colorBackground"
             android:elevation="4dp">
 
             <Button
@@ -314,7 +314,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Cancel"
-                android:textColor="#212121"
+                android:textColor="@color/colorDarkBlue"
                 android:background="@android:color/transparent"
                 android:padding="12dp"
                 android:layout_marginEnd="8dp"
@@ -327,7 +327,7 @@
                 android:layout_height="wrap_content"
                 android:text="Send Email"
                 android:textColor="@android:color/white"
-                android:backgroundTint="@color/colorDarkBlue"
+                android:backgroundTint="?attr/buttonBackgroundTint"
                 android:padding="12dp"
                 android:minWidth="120dp" />
         </LinearLayout>
