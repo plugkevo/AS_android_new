@@ -529,6 +529,16 @@ class ProfileFragment : Fragment() {
     private fun showContactSupportDialog() {
         val dialog = SendEmailDialogFragment()
         dialog.show(parentFragmentManager, "SendEmailDialog")
+
+        view?.findViewById<View>(R.id.layout_privacy)?.setOnClickListener {
+            showPrivacyPolicyDialog()
+        }
+    }
+
+    // Add this new method
+    private fun showPrivacyPolicyDialog() {
+        val dialog = PrivacyPolicyDialogFragment()
+        dialog.show(parentFragmentManager, "PrivacyPolicyDialog")
     }
     private fun showReportProblemDialog() {
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
