@@ -197,9 +197,9 @@ class ProfileFragment : Fragment() {
             showHelpAndSupportDialog()
         }
 
-        // Privacy Policy
+        // Privacy Policy - FIXED: Now properly calls the dialog
         view?.findViewById<View>(R.id.layout_privacy)?.setOnClickListener {
-            Toast.makeText(context, "Privacy Policy clicked", Toast.LENGTH_SHORT).show()
+            showPrivacyPolicyDialog()
         }
 
         // Terms of Service
@@ -421,6 +421,7 @@ class ProfileFragment : Fragment() {
                 Toast.makeText(context, "Error loading shipment stats: ${exception.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
     private fun loadPreferences() {
         val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
         notificationsSwitch.isChecked = notificationsEnabled
@@ -464,7 +465,6 @@ class ProfileFragment : Fragment() {
         builder.setNegativeButton("Cancel", null)
         builder.show()
     }
-
 
     private fun showThemeDialog() {
         val themes = arrayOf("Light", "Dark", "System Default")
@@ -511,6 +511,7 @@ class ProfileFragment : Fragment() {
         val savedTheme = sharedPreferences.getString("theme", "System Default")
         savedTheme?.let { applyTheme(it) }
     }
+
     private fun showHelpAndSupportDialog() {
         val options = arrayOf("FAQ", "Contact Support", "User Guide", "Report a Problem")
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
@@ -526,20 +527,18 @@ class ProfileFragment : Fragment() {
         builder.show()
     }
 
+    // FIXED: Removed the misplaced privacy policy code
     private fun showContactSupportDialog() {
         val dialog = SendEmailDialogFragment()
         dialog.show(parentFragmentManager, "SendEmailDialog")
-
-        view?.findViewById<View>(R.id.layout_privacy)?.setOnClickListener {
-            showPrivacyPolicyDialog()
-        }
     }
 
-    // Add this new method
+    // This method is correctly defined and now properly called
     private fun showPrivacyPolicyDialog() {
         val dialog = PrivacyPolicyDialogFragment()
         dialog.show(parentFragmentManager, "PrivacyPolicyDialog")
     }
+
     private fun showReportProblemDialog() {
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
         builder.setTitle("Report a Problem")
