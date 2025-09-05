@@ -70,7 +70,8 @@ class PrivacyPolicyDialogFragment : DialogFragment() {
             <p><strong>Last Updated:</strong> $lastUpdated</p>
             
             <h3>1. Introduction</h3>
-            <p>Welcome to African Shipping ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services.</p>
+            <p>Welcome to African Shipping ("we," "our," or "us"). We are committed to protecting your privacy and ensuring the security of your personal information. 
+            This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services.</p>
             
             <h3>2. Information We Collect</h3>
             <h4>2.1 Personal Information</h4>
