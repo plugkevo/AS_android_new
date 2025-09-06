@@ -164,7 +164,7 @@ class PrivacyPolicyDialogFragment : DialogFragment() {
             <h3>11. Contact Us</h3>
             <p>If you have any questions about this Privacy Policy, please contact us:</p>
             <ul>
-                <li><strong>Email:</strong> privacy@africanshipping.com</li>
+                <li><strong>Email:</strong> support@africanshipping.com</li>
                 <li><strong>Phone:</strong> +254 790875188</li>
                 <li><strong>Address:</strong> African Shipping Company, Nairobi, Kenya</li>
             </ul>
