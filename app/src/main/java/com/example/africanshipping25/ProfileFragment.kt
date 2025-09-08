@@ -6,8 +6,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +26,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.File
@@ -35,6 +38,7 @@ class ProfileFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var storage: FirebaseStorage
+    private lateinit var messaging: FirebaseMessaging
     private lateinit var sharedPreferences: SharedPreferences
 
     // UI Elements
@@ -52,7 +56,25 @@ class ProfileFragment : Fragment() {
 
     private var currentPhotoPath: String? = null
 
-    // Permission launcher
+    companion object {
+        private const val TAG = "ProfileFragment"
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
+    }
+
+    // Permission launcher for notifications (Android 13+)
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            enableNotifications()
+        } else {
+            // Reset switch if permission denied
+            notificationsSwitch.isChecked = false
+            Toast.makeText(context, "Notification permission is required to enable notifications", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Permission launcher for camera and storage
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -114,6 +136,7 @@ class ProfileFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
         storage = FirebaseStorage.getInstance()
+        messaging = FirebaseMessaging.getInstance()
         sharedPreferences = requireContext().getSharedPreferences("app_preferences", 0)
 
         // Initialize UI elements
@@ -127,6 +150,9 @@ class ProfileFragment : Fragment() {
 
         // Load preferences
         loadPreferences()
+
+        // Initialize FCM
+        initializeFirebaseMessaging()
     }
 
     private fun initializeViews(view: View) {
@@ -174,12 +200,9 @@ class ProfileFragment : Fragment() {
             Toast.makeText(context, "Address Book clicked", Toast.LENGTH_SHORT).show()
         }
 
-        // Notifications toggle
+        // Notifications toggle - ENHANCED with FCM integration
         notificationsSwitch.setOnCheckedChangeListener { _, isChecked ->
-            saveNotificationPreference(isChecked)
-            Toast.makeText(context,
-                if (isChecked) "Notifications enabled" else "Notifications disabled",
-                Toast.LENGTH_SHORT).show()
+            handleNotificationToggle(isChecked)
         }
 
         // Language
@@ -197,7 +220,7 @@ class ProfileFragment : Fragment() {
             showHelpAndSupportDialog()
         }
 
-        // Privacy Policy - FIXED: Now properly calls the dialog
+        // Privacy Policy
         view?.findViewById<View>(R.id.layout_privacy)?.setOnClickListener {
             showPrivacyPolicyDialog()
         }
@@ -210,6 +233,137 @@ class ProfileFragment : Fragment() {
         // About
         view?.findViewById<View>(R.id.layout_about)?.setOnClickListener {
             showAboutDialog()
+        }
+    }
+
+    private fun initializeFirebaseMessaging() {
+        // Get FCM token
+        messaging.token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+            Log.d(TAG, "FCM Registration Token: $token")
+
+            // Save token to Firestore for the current user
+            saveTokenToFirestore(token)
+        }
+    }
+
+    private fun saveTokenToFirestore(token: String) {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            val userRef = firestore.collection("users").document(user.uid)
+            userRef.update("fcmToken", token)
+                .addOnSuccessListener {
+                    Log.d(TAG, "FCM token saved successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error saving FCM token", e)
+                }
+        }
+    }
+
+    private fun handleNotificationToggle(isChecked: Boolean) {
+        if (isChecked) {
+            // Check notification permission for Android 13+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    // Request notification permission
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    return
+                }
+            }
+            enableNotifications()
+        } else {
+            disableNotifications()
+        }
+    }
+
+    private fun enableNotifications() {
+        // Subscribe to general notifications topic
+        messaging.subscribeToTopic("general_notifications")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "Subscribed to general notifications")
+
+                    // Subscribe to user-specific topics
+                    val currentUser = auth.currentUser
+                    currentUser?.let { user ->
+                        messaging.subscribeToTopic("user_${user.uid}")
+                            .addOnCompleteListener { userTask ->
+                                if (userTask.isSuccessful) {
+                                    Log.d(TAG, "Subscribed to user-specific notifications")
+                                }
+                            }
+                    }
+
+                    // Save preference
+                    saveNotificationPreference(true)
+
+                    // Update Firestore
+                    updateNotificationPreferenceInFirestore(true)
+
+                    Toast.makeText(context, "Notifications enabled", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.e(TAG, "Failed to subscribe to notifications", task.exception)
+                    notificationsSwitch.isChecked = false
+                    Toast.makeText(context, "Failed to enable notifications", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun disableNotifications() {
+        // Unsubscribe from general notifications topic
+        messaging.unsubscribeFromTopic("general_notifications")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "Unsubscribed from general notifications")
+
+                    // Unsubscribe from user-specific topics
+                    val currentUser = auth.currentUser
+                    currentUser?.let { user ->
+                        messaging.unsubscribeFromTopic("user_${user.uid}")
+                            .addOnCompleteListener { userTask ->
+                                if (userTask.isSuccessful) {
+                                    Log.d(TAG, "Unsubscribed from user-specific notifications")
+                                }
+                            }
+                    }
+
+                    // Save preference
+                    saveNotificationPreference(false)
+
+                    // Update Firestore
+                    updateNotificationPreferenceInFirestore(false)
+
+                    Toast.makeText(context, "Notifications disabled", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.e(TAG, "Failed to unsubscribe from notifications", task.exception)
+                    notificationsSwitch.isChecked = true
+                    Toast.makeText(context, "Failed to disable notifications", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun updateNotificationPreferenceInFirestore(enabled: Boolean) {
+        val currentUser = auth.currentUser
+        currentUser?.let { user ->
+            val userRef = firestore.collection("users").document(user.uid)
+            userRef.update("notificationsEnabled", enabled)
+                .addOnSuccessListener {
+                    Log.d(TAG, "Notification preference updated in Firestore")
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error updating notification preference", e)
+                }
         }
     }
 
@@ -365,6 +519,14 @@ class ProfileFragment : Fragment() {
                             // Set default image
                             profilePicture.setImageResource(R.drawable.default_profile_picture)
                         }
+
+                        // Load notification preference from Firestore
+                        val notificationsEnabled = document.getBoolean("notificationsEnabled") ?: true
+                        // Update local preference if different
+                        if (notificationsEnabled != sharedPreferences.getBoolean("notifications_enabled", true)) {
+                            saveNotificationPreference(notificationsEnabled)
+                            notificationsSwitch.isChecked = notificationsEnabled
+                        }
                     }
                 }
                 .addOnFailureListener { exception ->
@@ -391,9 +553,8 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadShipmentStats() {
-        // Remove the user filter to get ALL shipments from the database
         firestore.collection("shipments")
-            .get()  // Remove the .whereEqualTo("userId", user.uid) filter
+            .get()
             .addOnSuccessListener { documents ->
                 var total = 0
                 var active = 0
@@ -506,7 +667,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // Add this to your onCreate or onViewCreated method
     private fun loadSavedTheme() {
         val savedTheme = sharedPreferences.getString("theme", "System Default")
         savedTheme?.let { applyTheme(it) }
@@ -527,13 +687,11 @@ class ProfileFragment : Fragment() {
         builder.show()
     }
 
-    // FIXED: Removed the misplaced privacy policy code
     private fun showContactSupportDialog() {
         val dialog = SendEmailDialogFragment()
         dialog.show(parentFragmentManager, "SendEmailDialog")
     }
 
-    // This method is correctly defined and now properly called
     private fun showPrivacyPolicyDialog() {
         val dialog = PrivacyPolicyDialogFragment()
         dialog.show(parentFragmentManager, "PrivacyPolicyDialog")
