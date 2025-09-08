@@ -606,27 +606,18 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showLanguageDialog() {
-        val languages = arrayOf("English", "French", "Spanish", "Portuguese", "Arabic", "Swahili")
-        val currentLanguage = sharedPreferences.getString("language", "English")
-        var selectedIndex = languages.indexOf(currentLanguage)
+        val languageDialog = LanguageSelectionDialogFragment()
+        languageDialog.setOnLanguageSelectedListener(object : LanguageSelectionDialogFragment.OnLanguageSelectedListener {
+            override fun onLanguageSelected(language: String) {
+                // Update the UI
+                currentLanguage.text = language
 
-        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Select Language")
-        builder.setSingleChoiceItems(languages, selectedIndex) { _, which ->
-            selectedIndex = which
-        }
-        builder.setPositiveButton("OK") { _, _ ->
-            val selectedLanguage = languages[selectedIndex]
-            this.currentLanguage.text = selectedLanguage
-            sharedPreferences.edit()
-                .putString("language", selectedLanguage)
-                .apply()
-            Toast.makeText(context, "Language changed to $selectedLanguage", Toast.LENGTH_SHORT).show()
-        }
-        builder.setNegativeButton("Cancel", null)
-        builder.show()
+                // Refresh the profile to reflect changes
+                refreshProfile()
+            }
+        })
+        languageDialog.show(parentFragmentManager, "LanguageSelectionDialog")
     }
-
     private fun showThemeDialog() {
         val themes = arrayOf("Light", "Dark", "System Default")
         val currentTheme = sharedPreferences.getString("theme", "System Default")
