@@ -41,6 +41,10 @@ class ProfileFragment : Fragment() {
     private lateinit var messaging: FirebaseMessaging
     private lateinit var sharedPreferences: SharedPreferences
 
+    // Translation components
+    private lateinit var translationManager: TranslationManager
+    private lateinit var translationHelper: TranslationHelper
+
     // UI Elements
     private lateinit var profilePicture: CircleImageView
     private lateinit var editProfilePicture: ImageView
@@ -70,7 +74,7 @@ class ProfileFragment : Fragment() {
         } else {
             // Reset switch if permission denied
             notificationsSwitch.isChecked = false
-            Toast.makeText(context, "Notification permission is required to enable notifications", Toast.LENGTH_LONG).show()
+            showTranslatedToast("Notification permission is required to enable notifications")
         }
     }
 
@@ -84,7 +88,7 @@ class ProfileFragment : Fragment() {
         if (cameraGranted && storageGranted) {
             showImagePickerDialog()
         } else {
-            Toast.makeText(context, "Permissions required to access camera and gallery", Toast.LENGTH_LONG).show()
+            showTranslatedToast("Permissions required to access camera and gallery")
         }
     }
 
@@ -139,6 +143,10 @@ class ProfileFragment : Fragment() {
         messaging = FirebaseMessaging.getInstance()
         sharedPreferences = requireContext().getSharedPreferences("app_preferences", 0)
 
+        // Initialize translation
+        translationManager = TranslationManager(requireContext())
+        translationHelper = TranslationHelper(translationManager)
+
         // Initialize UI elements
         initializeViews(view)
 
@@ -153,6 +161,13 @@ class ProfileFragment : Fragment() {
 
         // Initialize FCM
         initializeFirebaseMessaging()
+
+        // Initialize translation for current language
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationManager.initializeTranslator(currentLanguage) {
+            // Translate UI elements after model is ready
+            translateUIElements()
+        }
     }
 
     private fun initializeViews(view: View) {
@@ -165,6 +180,79 @@ class ProfileFragment : Fragment() {
         notificationsSwitch = view.findViewById(R.id.switch_notifications)
         currentLanguage = view.findViewById(R.id.tv_current_language)
         currentTheme = view.findViewById(R.id.tv_current_theme)
+    }
+
+    private fun translateUIElements() {
+        view?.let { v ->
+            // Translate profile section labels
+            v.findViewById<TextView>(R.id.tv_edit_profile_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Edit Profile")
+            }
+
+            v.findViewById<TextView>(R.id.tv_change_password_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Change Password")
+            }
+
+            v.findViewById<TextView>(R.id.tv_address_book_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Address Book")
+            }
+
+            // Translate settings section
+            v.findViewById<TextView>(R.id.tv_notifications_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Notifications")
+            }
+
+            v.findViewById<TextView>(R.id.tv_language_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Language")
+            }
+
+            v.findViewById<TextView>(R.id.tv_theme_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Theme")
+            }
+
+            // Translate support section
+            v.findViewById<TextView>(R.id.tv_help_support_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Help & Support")
+            }
+
+            v.findViewById<TextView>(R.id.tv_privacy_policy_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Privacy Policy")
+            }
+
+            v.findViewById<TextView>(R.id.tv_terms_service_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Terms of Service")
+            }
+
+            v.findViewById<TextView>(R.id.tv_about_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "About")
+            }
+
+            // Translate shipment stats labels
+            v.findViewById<TextView>(R.id.tv_total_shipments)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Total Shipments")
+            }
+
+            v.findViewById<TextView>(R.id.tv_active_shipments)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Active Shipments")
+            }
+
+            v.findViewById<TextView>(R.id.tv_delivered_shipments)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Delivered Shipments")
+            }
+
+            // Translate section headers
+            v.findViewById<TextView>(R.id.tv_profile_section_header)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Account Information")
+            }
+
+            v.findViewById<TextView>(R.id.tv_settings_section_header)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "App Settings")
+            }
+
+            v.findViewById<TextView>(R.id.tv_support_section_header)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Support & Information")
+            }
+        }
     }
 
     private fun setupClickListeners() {
@@ -184,7 +272,7 @@ class ProfileFragment : Fragment() {
             editProfileDialog.setOnProfileUpdatedListener(object : EditProfileDialogFragment.OnProfileUpdatedListener {
                 override fun onProfileUpdated() {
                     loadUserData()
-                    Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Profile updated successfully!")
                 }
             })
             editProfileDialog.show(parentFragmentManager, "EditProfileDialog")
@@ -197,7 +285,7 @@ class ProfileFragment : Fragment() {
 
         // Address Book
         view?.findViewById<View>(R.id.layout_address_book)?.setOnClickListener {
-            Toast.makeText(context, "Address Book clicked", Toast.LENGTH_SHORT).show()
+            showTranslatedToast("Address Book clicked")
         }
 
         // Notifications toggle - ENHANCED with FCM integration
@@ -227,7 +315,7 @@ class ProfileFragment : Fragment() {
 
         // Terms of Service
         view?.findViewById<View>(R.id.layout_terms)?.setOnClickListener {
-            Toast.makeText(context, "Terms of Service clicked", Toast.LENGTH_SHORT).show()
+            showTranslatedToast("Terms of Service clicked")
         }
 
         // About
@@ -311,11 +399,11 @@ class ProfileFragment : Fragment() {
                     // Update Firestore
                     updateNotificationPreferenceInFirestore(true)
 
-                    Toast.makeText(context, "Notifications enabled", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Notifications enabled")
                 } else {
                     Log.e(TAG, "Failed to subscribe to notifications", task.exception)
                     notificationsSwitch.isChecked = false
-                    Toast.makeText(context, "Failed to enable notifications", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Failed to enable notifications")
                 }
             }
     }
@@ -344,11 +432,11 @@ class ProfileFragment : Fragment() {
                     // Update Firestore
                     updateNotificationPreferenceInFirestore(false)
 
-                    Toast.makeText(context, "Notifications disabled", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Notifications disabled")
                 } else {
                     Log.e(TAG, "Failed to unsubscribe from notifications", task.exception)
                     notificationsSwitch.isChecked = true
-                    Toast.makeText(context, "Failed to disable notifications", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Failed to disable notifications")
                 }
             }
     }
@@ -391,7 +479,35 @@ class ProfileFragment : Fragment() {
     private fun showImagePickerDialog() {
         val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Select Profile Picture")
+
+        translationManager.translateText("Select Profile Picture") { translatedTitle ->
+            builder.setTitle(translatedTitle)
+        }
+
+        // Translate options
+        val translatedOptions = arrayOfNulls<String>(3)
+        var translationCount = 0
+
+        translationManager.translateText("Take Photo") { translated ->
+            translatedOptions[0] = translated
+            translationCount++
+            if (translationCount == 3) showDialogWithTranslatedOptions(builder, translatedOptions)
+        }
+
+        translationManager.translateText("Choose from Gallery") { translated ->
+            translatedOptions[1] = translated
+            translationCount++
+            if (translationCount == 3) showDialogWithTranslatedOptions(builder, translatedOptions)
+        }
+
+        translationManager.translateText("Cancel") { translated ->
+            translatedOptions[2] = translated
+            translationCount++
+            if (translationCount == 3) showDialogWithTranslatedOptions(builder, translatedOptions)
+        }
+    }
+
+    private fun showDialogWithTranslatedOptions(builder: androidx.appcompat.app.AlertDialog.Builder, options: Array<String?>) {
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> openCamera()
@@ -416,7 +532,7 @@ class ProfileFragment : Fragment() {
                 cameraLauncher.launch(intent)
             }
         } else {
-            Toast.makeText(context, "Camera not available", Toast.LENGTH_SHORT).show()
+            showTranslatedToast("Camera not available")
         }
     }
 
@@ -438,7 +554,7 @@ class ProfileFragment : Fragment() {
             image
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(context, "Error creating image file", Toast.LENGTH_SHORT).show()
+            showTranslatedToast("Error creating image file")
             null
         }
     }
@@ -453,7 +569,7 @@ class ProfileFragment : Fragment() {
                 .into(profilePicture)
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(context, "Error loading image", Toast.LENGTH_SHORT).show()
+            showTranslatedToast("Error loading image")
         }
     }
 
@@ -464,7 +580,7 @@ class ProfileFragment : Fragment() {
             val profileImagesRef = storageRef.child("profile_images/${user.uid}.jpg")
 
             // Show loading
-            Toast.makeText(context, "Uploading image...", Toast.LENGTH_SHORT).show()
+            showTranslatedToast("Uploading image...")
 
             profileImagesRef.putFile(uri)
                 .addOnSuccessListener { taskSnapshot ->
@@ -474,15 +590,15 @@ class ProfileFragment : Fragment() {
                         val userRef = firestore.collection("users").document(user.uid)
                         userRef.update("profilePictureUrl", downloadUri.toString())
                             .addOnSuccessListener {
-                                Toast.makeText(context, "Profile picture updated!", Toast.LENGTH_SHORT).show()
+                                showTranslatedToast("Profile picture updated!")
                             }
                             .addOnFailureListener { e ->
-                                Toast.makeText(context, "Error saving image URL: ${e.message}", Toast.LENGTH_SHORT).show()
+                                showTranslatedToast("Error saving image URL: ${e.message}")
                             }
                     }
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(context, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Upload failed: ${e.message}")
                 }
                 .addOnProgressListener { taskSnapshot ->
                     val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount)
@@ -530,7 +646,7 @@ class ProfileFragment : Fragment() {
                     }
                 }
                 .addOnFailureListener { exception ->
-                    Toast.makeText(context, "Error loading profile: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Error loading profile: ${exception.message}")
                     profilePicture.setImageResource(R.drawable.default_profile_picture)
                 }
         }
@@ -579,7 +695,7 @@ class ProfileFragment : Fragment() {
                 view?.findViewById<TextView>(R.id.tv_active_shipments)?.text = "0"
                 view?.findViewById<TextView>(R.id.tv_delivered_shipments)?.text = "0"
 
-                Toast.makeText(context, "Error loading shipment stats: ${exception.message}", Toast.LENGTH_SHORT).show()
+                showTranslatedToast("Error loading shipment stats: ${exception.message}")
             }
     }
 
@@ -612,36 +728,84 @@ class ProfileFragment : Fragment() {
                 // Update the UI
                 currentLanguage.text = language
 
+                // Clear translation cache
+                translationHelper.clearCache()
+
+                // Initialize translator for new language
+                translationManager.initializeTranslator(language) {
+                    // Retranslate UI elements after model is ready
+                    translateUIElements()
+                }
+
                 // Refresh the profile to reflect changes
                 refreshProfile()
             }
         })
         languageDialog.show(parentFragmentManager, "LanguageSelectionDialog")
     }
+
     private fun showThemeDialog() {
         val themes = arrayOf("Light", "Dark", "System Default")
         val currentTheme = sharedPreferences.getString("theme", "System Default")
         var selectedIndex = themes.indexOf(currentTheme)
 
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Select Theme")
-        builder.setSingleChoiceItems(themes, selectedIndex) { _, which ->
-            selectedIndex = which
-        }
-        builder.setPositiveButton("OK") { _, _ ->
-            val selectedTheme = themes[selectedIndex]
-            this.currentTheme.text = selectedTheme
-            sharedPreferences.edit()
-                .putString("theme", selectedTheme)
-                .apply()
 
-            // Apply theme immediately
-            applyTheme(selectedTheme)
-
-            Toast.makeText(context, "Theme changed to $selectedTheme", Toast.LENGTH_SHORT).show()
+        translationManager.translateText("Select Theme") { translatedTitle ->
+            builder.setTitle(translatedTitle)
         }
-        builder.setNegativeButton("Cancel", null)
-        builder.show()
+
+        // Translate theme options
+        val translatedThemes = arrayOfNulls<String>(3)
+        var translationCount = 0
+
+        translationManager.translateText("Light") { translated ->
+            translatedThemes[0] = translated
+            translationCount++
+            if (translationCount == 3) showThemeDialogWithTranslations(builder, translatedThemes, themes, selectedIndex)
+        }
+
+        translationManager.translateText("Dark") { translated ->
+            translatedThemes[1] = translated
+            translationCount++
+            if (translationCount == 3) showThemeDialogWithTranslations(builder, translatedThemes, themes, selectedIndex)
+        }
+
+        translationManager.translateText("System Default") { translated ->
+            translatedThemes[2] = translated
+            translationCount++
+            if (translationCount == 3) showThemeDialogWithTranslations(builder, translatedThemes, themes, selectedIndex)
+        }
+    }
+
+    private fun showThemeDialogWithTranslations(
+        builder: androidx.appcompat.app.AlertDialog.Builder,
+        translatedThemes: Array<String?>,
+        originalThemes: Array<String>,
+        selectedIndex: Int
+    ) {
+        builder.setSingleChoiceItems(translatedThemes, selectedIndex) { _, which ->
+            // Use original theme names for logic
+        }
+
+        translationManager.translateText("OK") { okText ->
+            translationManager.translateText("Cancel") { cancelText ->
+                builder.setPositiveButton(okText) { dialog, _ ->
+                    val selectedTheme = originalThemes[selectedIndex]
+                    this.currentTheme.text = selectedTheme
+                    sharedPreferences.edit()
+                        .putString("theme", selectedTheme)
+                        .apply()
+
+                    // Apply theme immediately
+                    applyTheme(selectedTheme)
+
+                    showTranslatedToast("Theme changed to $selectedTheme")
+                }
+                builder.setNegativeButton(cancelText, null)
+                builder.show()
+            }
+        }
     }
 
     private fun applyTheme(theme: String) {
@@ -666,12 +830,46 @@ class ProfileFragment : Fragment() {
     private fun showHelpAndSupportDialog() {
         val options = arrayOf("FAQ", "Contact Support", "User Guide", "Report a Problem")
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Help & Support")
+
+        translationManager.translateText("Help & Support") { translatedTitle ->
+            builder.setTitle(translatedTitle)
+        }
+
+        // Translate options
+        val translatedOptions = arrayOfNulls<String>(4)
+        var translationCount = 0
+
+        translationManager.translateText("FAQ") { translated ->
+            translatedOptions[0] = translated
+            translationCount++
+            if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
+        }
+
+        translationManager.translateText("Contact Support") { translated ->
+            translatedOptions[1] = translated
+            translationCount++
+            if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
+        }
+
+        translationManager.translateText("User Guide") { translated ->
+            translatedOptions[2] = translated
+            translationCount++
+            if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
+        }
+
+        translationManager.translateText("Report a Problem") { translated ->
+            translatedOptions[3] = translated
+            translationCount++
+            if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
+        }
+    }
+
+    private fun showHelpDialogWithTranslations(builder: androidx.appcompat.app.AlertDialog.Builder, options: Array<String?>) {
         builder.setItems(options) { _, which ->
             when (which) {
-                0 -> Toast.makeText(context, "FAQ selected", Toast.LENGTH_SHORT).show()
+                0 -> showTranslatedToast("FAQ selected")
                 1 -> showContactSupportDialog()
-                2 -> Toast.makeText(context, "User Guide selected", Toast.LENGTH_SHORT).show()
+                2 -> showTranslatedToast("User Guide selected")
                 3 -> showReportProblemDialog()
             }
         }
@@ -690,30 +888,46 @@ class ProfileFragment : Fragment() {
 
     private fun showReportProblemDialog() {
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("Report a Problem")
-        builder.setMessage("Please describe the issue you're experiencing:")
+
+        translationManager.translateText("Report a Problem") { translatedTitle ->
+            builder.setTitle(translatedTitle)
+        }
+
+        translationManager.translateText("Please describe the issue you're experiencing:") { translatedMessage ->
+            builder.setMessage(translatedMessage)
+        }
 
         val input = android.widget.EditText(requireContext())
-        input.hint = "Describe the problem..."
+        translationManager.translateText("Describe the problem...") { translatedHint ->
+            input.hint = translatedHint
+        }
         input.minLines = 3
         builder.setView(input)
 
-        builder.setPositiveButton("Submit") { _, _ ->
-            val problemDescription = input.text.toString()
-            if (problemDescription.isNotEmpty()) {
-                Toast.makeText(context, "Problem report submitted. Thank you!", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(context, "Please describe the problem", Toast.LENGTH_SHORT).show()
+        translationManager.translateText("Submit") { submitText ->
+            translationManager.translateText("Cancel") { cancelText ->
+                builder.setPositiveButton(submitText) { _, _ ->
+                    val problemDescription = input.text.toString()
+                    if (problemDescription.isNotEmpty()) {
+                        showTranslatedToast("Problem report submitted. Thank you!")
+                    } else {
+                        showTranslatedToast("Please describe the problem")
+                    }
+                }
+                builder.setNegativeButton(cancelText, null)
+                builder.show()
             }
         }
-        builder.setNegativeButton("Cancel", null)
-        builder.show()
     }
 
     private fun showAboutDialog() {
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        builder.setTitle("About African Shipping")
-        builder.setMessage("""
+
+        translationManager.translateText("About African Shipping") { translatedTitle ->
+            builder.setTitle(translatedTitle)
+        }
+
+        val aboutMessage = """
             African Shipping App
             Version 1.0.0
             
@@ -723,9 +937,23 @@ class ProfileFragment : Fragment() {
             All rights reserved.
             
             Built with ❤️ for Africa
-        """.trimIndent())
-        builder.setPositiveButton("OK", null)
-        builder.show()
+        """.trimIndent()
+
+        translationManager.translateText(aboutMessage) { translatedMessage ->
+            builder.setMessage(translatedMessage)
+        }
+
+        translationManager.translateText("OK") { okText ->
+            builder.setPositiveButton(okText, null)
+            builder.show()
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        translationManager.translateText(message) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun refreshProfile() {
@@ -736,5 +964,10 @@ class ProfileFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         refreshProfile()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        translationManager.cleanup()
     }
 }

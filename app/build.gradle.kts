@@ -113,6 +113,7 @@ dependencies {
     // Firebase Storage
     implementation ("com.google.firebase:firebase-storage:20.3.0")
 
-    // Remove this line: implementation 'pub.devrel:easypermissions:3.0.0'
+    // ML Kit Translation
+    implementation("com.google.mlkit:translate:17.0.1")
 
 }

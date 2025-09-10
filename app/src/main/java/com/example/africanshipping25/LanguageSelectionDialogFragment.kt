@@ -9,12 +9,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 
 class LanguageSelectionDialogFragment : DialogFragment() {
 
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: TranslationManager
+    private lateinit var translationHelper: TranslationHelper
     private var onLanguageSelectedListener: OnLanguageSelectedListener? = null
 
     interface OnLanguageSelectedListener {
@@ -38,13 +41,29 @@ class LanguageSelectionDialogFragment : DialogFragment() {
 
         sharedPreferences = requireContext().getSharedPreferences("app_preferences", 0)
 
+        // Initialize translation
+        translationManager = TranslationManager(requireContext())
+        translationHelper = TranslationHelper(translationManager)
+
         // Initialize UI elements
         val radioGroup = view.findViewById<RadioGroup>(R.id.radio_group_languages)
         val btnOk = view.findViewById<Button>(R.id.btn_ok)
         val btnCancel = view.findViewById<Button>(R.id.btn_cancel)
+        val titleText = view.findViewById<TextView>(R.id.dialog_title)
 
         // Set current language selection
         setCurrentLanguageSelection(radioGroup)
+
+        // Translate dialog elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationManager.initializeTranslator(currentLanguage) {
+            // Translate dialog title and buttons
+            titleText?.let {
+                translationHelper.translateAndSetText(it, "Select Language")
+            }
+            translationHelper.translateAndSetText(btnOk, "OK")
+            translationHelper.translateAndSetText(btnCancel, "Cancel")
+        }
 
         // Set up click listeners
         btnOk.setOnClickListener {
@@ -58,12 +77,17 @@ class LanguageSelectionDialogFragment : DialogFragment() {
                 // Notify listener
                 onLanguageSelectedListener?.onLanguageSelected(selectedLanguage)
 
-                // Show confirmation
-                Toast.makeText(context, "Language changed to $selectedLanguage", Toast.LENGTH_SHORT).show()
+                // Show confirmation with translation
+                val confirmationMessage = "Language changed to $selectedLanguage"
+                translationManager.translateText(confirmationMessage) { translatedMessage ->
+                    Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+                }
 
                 dismiss()
             } else {
-                Toast.makeText(context, "Please select a language", Toast.LENGTH_SHORT).show()
+                translationManager.translateText("Please select a language") { translatedMessage ->
+                    Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
@@ -114,5 +138,12 @@ class LanguageSelectionDialogFragment : DialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::translationManager.isInitialized) {
+            translationManager.cleanup()
+        }
     }
 }
