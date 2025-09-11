@@ -94,6 +94,7 @@
                 android:gravity="center">
 
                 <TextView
+                    android:id="@+id/tv_total_shipments"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="24"
@@ -102,7 +103,7 @@
                     android:textColor="@color/colorDarkBlue" />
 
                 <TextView
-                    android:id="@+id/tv_total_shipments"
+                    android:id="@+id/tv_total_shipments_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Total Shipments"
@@ -123,6 +124,7 @@
                 android:gravity="center">
 
                 <TextView
+                    android:id="@+id/tv_active_shipments"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="3"
@@ -131,7 +133,7 @@
                     android:textColor="@color/colorLightBlue" />
 
                 <TextView
-                    android:id="@+id/tv_active_shipments"
+                    android:id="@+id/tv_active_shipments_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Active"
@@ -152,6 +154,7 @@
                 android:gravity="center">
 
                 <TextView
+                    android:id="@+id/tv_delivered_shipments"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="21"
@@ -160,7 +163,7 @@
                     android:textColor="#4CAF50" />
 
                 <TextView
-                    android:id="@+id/tv_delivered_shipments"
+                    android:id="@+id/tv_delivered_shipments_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Delivered"
@@ -177,7 +180,7 @@
             android:layout_marginTop="8dp">
 
             <TextView
-                android:id="@+id/tv_profile_section_header"
+                android:id="@+id/tv_account_section_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
@@ -235,6 +238,7 @@
                              />
 
                             <TextView
+                                android:id="@+id/tv_edit_profile_desc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Update your personal information"
@@ -291,6 +295,7 @@
                                 />
 
                             <TextView
+                                android:id="@+id/tv_change_password_desc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Update your account password"
@@ -346,6 +351,7 @@
                                 />
 
                             <TextView
+                                android:id="@+id/tv_address_book_desc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Manage your saved addresses"
@@ -431,6 +437,7 @@
                                 />
 
                             <TextView
+                                android:id="@+id/tv_notifications_desc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Manage notification preferences"
@@ -759,6 +766,7 @@
                              />
 
                             <TextView
+                                android:id="@+id/tv_version_desc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Version 1.0.0"
@@ -779,6 +787,7 @@
 
         <!-- App Version -->
         <TextView
+            android:id="@+id/tv_app_version"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="African Shipping v1.0.0"
