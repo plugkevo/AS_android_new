@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var updateChecker: UpdateChecker
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         // Apply saved theme before calling super.onCreate()
@@ -68,6 +70,12 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        updateChecker = UpdateChecker(this)
+
+        // Check for updates when app starts
+        checkForUpdatesOnStart()
+
 
         // Set status bar color
         //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
@@ -125,6 +133,11 @@ class MainActivity : AppCompatActivity() {
         // Get FCM token and Installation ID
         getFCMToken()
         getFirebaseInstallationId()
+
+    }
+    private fun checkForUpdatesOnStart() {
+        // Always check for mandatory updates
+        updateChecker.checkForUpdatesOnAppStart(this)
     }
 
     override fun onResume() {
@@ -335,4 +348,6 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "Firebase Installation ID: $installationId")
             }
     }
+
+
 }
