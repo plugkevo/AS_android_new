@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -24,26 +25,39 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.installations.FirebaseInstallations
 import com.google.firebase.messaging.FirebaseMessaging
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     private val TAG = "MainActivity"
 
     // Toolbar and Notification Badge
     private lateinit var notificationBadge: TextView
-    private lateinit var notificationIconContainer: View // The FrameLayout for the icon and badge
-    private lateinit var btnNotificaations: ImageView // This is your bell icon
+    private lateinit var notificationIconContainer: View
+    private lateinit var btnNotificaations: ImageView
 
     // Bottom Navigation
     private lateinit var bottomNavigation: BottomNavigationView
 
     // FAB
-    private lateinit var fabNewShipment: FloatingActionButton // Declared here
+    private lateinit var fabNewShipment: FloatingActionButton
 
-    // More Options Button (replaces logout)
+    // More Options Button
     private lateinit var btnMoreOptions: ImageButton
 
     // Firebase Auth
     private lateinit var auth: FirebaseAuth
+
+    // Update Checker
+    private lateinit var updateChecker: UpdateChecker
+
+    // Fragment references for language communication
+    private var homeFragment: HomeFragment? = null
+    private var shipmentsFragment: ShipmentsFragment? = null
+    private var loadingFragment: LoadingFragment? = null
+    private var paymentFragment: PaymentFragment? = null
+    private var profileFragment: ProfileFragment? = null
+
+    // SharedPreferences for language changes
+    private lateinit var sharedPreferences: SharedPreferences
 
     // Receiver to update badge when count changes
     private val unseenCountReceiver = object : BroadcastReceiver() {
@@ -54,12 +68,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var updateChecker: UpdateChecker
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Initialize SharedPreferences first
+        sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
 
         // Apply saved theme before calling super.onCreate()
-        val sharedPreferences = getSharedPreferences("app_preferences", 0)
         val savedTheme = sharedPreferences.getString("theme", "System Default")
         when (savedTheme) {
             "Light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -67,60 +80,33 @@ class MainActivity : AppCompatActivity() {
             "System Default" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
 
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Register SharedPreferences listener for language changes
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this)
 
         updateChecker = UpdateChecker(this)
 
         // Check for updates when app starts
         checkForUpdatesOnStart()
 
-
-        // Set status bar color
-        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
-
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
 
-        // Initialize toolbar elements
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.title = "Dashboard" // Default title
+        // Initialize UI components
+        initializeUIComponents()
 
-        // Initialize notification icon and badge
-        notificationBadge = findViewById(R.id.tv_notification_badge)
-        notificationIconContainer = findViewById(R.id.notification_icon_container)
-        btnNotificaations = findViewById(R.id.iv_notifications) // Initialize the bell icon ImageView
-
-        // Initialize other UI components
-        bottomNavigation = findViewById(R.id.bottom_navigation)
-        fabNewShipment = findViewById(R.id.fab_new_shipment) // Initialize FAB
-        btnMoreOptions = findViewById(R.id.btn_more_options) // Initialize more options button
-
-        // Set OnClickListeners
-        btnMoreOptions.setOnClickListener { view ->
-            showMoreOptionsMenu(view)
-        }
-
-        // Changed to navigate to ViewNotificationsFragment directly
-        btnNotificaations.setOnClickListener {
-            navigateToNotificationsFragment()
-        }
-
-        fabNewShipment.setOnClickListener {
-            openNewShipmentForm()
-        }
+        // Set up click listeners
+        setupClickListeners()
 
         // Set up bottom navigation
         setupBottomNavigation()
 
         // Load the default fragment (Home) if starting fresh
         if (savedInstanceState == null) {
-            // Only set if not launched from a notification intent, otherwise handleNotificationIntent
-            // will take precedence and navigate.
             if (intent?.extras?.containsKey("google.message_id") != true && intent?.extras?.containsKey("from") != true) {
-                bottomNavigation.selectedItemId = R.id.nav_home // This will trigger the listener and load HomeFragment
+                bottomNavigation.selectedItemId = R.id.nav_home
             }
         }
 
@@ -133,30 +119,85 @@ class MainActivity : AppCompatActivity() {
         // Get FCM token and Installation ID
         getFCMToken()
         getFirebaseInstallationId()
-
     }
+
+    private fun initializeUIComponents() {
+        // Initialize toolbar elements
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.title = "Dashboard"
+
+        // Initialize notification icon and badge
+        notificationBadge = findViewById(R.id.tv_notification_badge)
+        notificationIconContainer = findViewById(R.id.notification_icon_container)
+        btnNotificaations = findViewById(R.id.iv_notifications)
+
+        // Initialize other UI components
+        bottomNavigation = findViewById(R.id.bottom_navigation)
+        fabNewShipment = findViewById(R.id.fab_new_shipment)
+        btnMoreOptions = findViewById(R.id.btn_more_options)
+    }
+
+    private fun setupClickListeners() {
+        btnMoreOptions.setOnClickListener { view ->
+            showMoreOptionsMenu(view)
+        }
+
+        btnNotificaations.setOnClickListener {
+            navigateToNotificationsFragment()
+        }
+
+        fabNewShipment.setOnClickListener {
+            openNewShipmentForm()
+        }
+    }
+
     private fun checkForUpdatesOnStart() {
-        // Always check for mandatory updates
         updateChecker.checkForUpdatesOnAppStart(this)
     }
 
     override fun onResume() {
         super.onResume()
-        // Register the BroadcastReceiver when the activity is resumed
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(unseenCountReceiver, IntentFilter(ViewNotificationsFragment.ACTION_UNSEEN_COUNT_UPDATED))
-
-        // Update badge in case unseen count changed while app was in background
         updateNotificationBadge()
     }
 
     override fun onPause() {
         super.onPause()
-        // Unregister the BroadcastReceiver when the activity is paused
         LocalBroadcastManager.getInstance(this).unregisterReceiver(unseenCountReceiver)
     }
 
-    // --- Private Helper Methods ---
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister SharedPreferences listener to prevent memory leaks
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
+    }
+
+    // SharedPreferences change listener for language updates
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        when (key) {
+            "selected_language" -> {
+                Log.d(TAG, "Language preference changed, notifying fragments")
+                notifyFragmentsOfLanguageChange()
+            }
+            "theme" -> {
+                // Handle theme changes if needed
+                Log.d(TAG, "Theme preference changed")
+            }
+        }
+    }
+
+    private fun notifyFragmentsOfLanguageChange() {
+        // Notify all active fragments about language change
+        homeFragment?.refreshTranslations()
+        //shipmentsFragment?.refreshTranslations()
+        //loadingFragment?.refreshTranslations()
+        //paymentFragment?.refreshTranslations()
+        //profileFragment?.refreshTranslations()
+
+        Log.d(TAG, "All fragments notified of language change")
+    }
 
     private fun showMoreOptionsMenu(view: View) {
         val popupMenu = PopupMenu(this, view)
@@ -179,14 +220,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToProfile() {
-        // Create and navigate to ProfileFragment
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (currentFragment !is ProfileFragment) {
+            if (profileFragment == null) {
+                profileFragment = ProfileFragment()
+            }
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, ProfileFragment())
-                .addToBackStack("profile") // Add to back stack to allow going back
+                .replace(R.id.fragment_container, profileFragment!!)
+                .addToBackStack("profile")
                 .commit()
-            supportActionBar?.title = "Profile" // Update toolbar title
+            supportActionBar?.title = "Profile"
         }
     }
 
@@ -202,13 +245,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performLogout() {
-        auth.signOut() // Sign out the current user
-
-        // After logging out, navigate to your login/splash/onboarding activity
-        val intent = Intent(this, login::class.java) // Replace LoginActivity with your actual login activity
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears activity stack
+        auth.signOut()
+        val intent = Intent(this, login::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
-        finish() // Finish MainActivity so the user can't navigate back to it
+        finish()
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
     }
 
@@ -216,44 +257,52 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    loadFragment(HomeFragment())
-                    // Update toolbar title when selecting from bottom nav
+                    if (homeFragment == null) {
+                        homeFragment = HomeFragment()
+                    }
+                    loadFragment(homeFragment!!)
                     supportActionBar?.title = "Dashboard"
                     true
                 }
                 R.id.nav_shipments -> {
-                    loadFragment(ShipmentsFragment())
+                    if (shipmentsFragment == null) {
+                        shipmentsFragment = ShipmentsFragment()
+                    }
+                    loadFragment(shipmentsFragment!!)
                     supportActionBar?.title = "Shipments"
                     true
                 }
                 R.id.nav_loading_list -> {
-                    loadFragment(LoadingFragment())
+                    if (loadingFragment == null) {
+                        loadingFragment = LoadingFragment()
+                    }
+                    loadFragment(loadingFragment!!)
                     supportActionBar?.title = "Loading List"
                     true
                 }
                 R.id.nav_payment -> {
-                    loadFragment(PaymentFragment())
+                    if (paymentFragment == null) {
+                        paymentFragment = PaymentFragment()
+                    }
+                    loadFragment(paymentFragment!!)
                     supportActionBar?.title = "Payment"
                     true
                 }
-                else -> false // Should not happen if menu items are correctly mapped
+                else -> false
             }
         }
     }
 
     private fun loadFragment(fragment: Fragment) {
-        // Check if the fragment is already the current fragment to avoid unnecessary replacements
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (currentFragment?.javaClass != fragment.javaClass) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragment)
-                // Do not add to back stack for main bottom nav items to avoid deep nesting
                 .commit()
         }
     }
 
     private fun openNewShipmentForm() {
-        // Instantiate and show your NewShipmentDialogFragment
         val dialog = NewShipmentDialogFragment()
         dialog.show(supportFragmentManager, "NewShipmentDialog")
     }
@@ -268,26 +317,20 @@ class MainActivity : AppCompatActivity() {
                     val value = extras.getString(key)
                     Log.d(TAG, "  Key: $key, Value: $value")
                 }
-
-                // If launched from a notification, directly go to the notifications list
                 navigateToNotificationsFragment()
-                // Ensure the bottom navigation doesn't interfere if it has a notifications item.
-                // For now, assuming notification list is accessed only via the toolbar icon.
             }
         }
-        // Clear the intent's data after processing to prevent it from being re-processed
         intent?.replaceExtras(Bundle())
     }
 
-    // Public method to allow fragments to request navigation
     fun navigateToNotificationsFragment() {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (currentFragment !is ViewNotificationsFragment) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, ViewNotificationsFragment())
-                .addToBackStack("notifications_list") // Add to back stack to allow going back
+                .addToBackStack("notifications_list")
                 .commit()
-            supportActionBar?.title = "Notifications" // Update toolbar title
+            supportActionBar?.title = "Notifications"
         }
     }
 
@@ -303,10 +346,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // If there are fragments in the back stack (e.g., from navigating to notifications), pop them
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()
-            // After popping, update toolbar title based on the fragment now visible
             val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
             when (currentFragment) {
                 is HomeFragment -> supportActionBar?.title = "Dashboard"
@@ -315,15 +356,13 @@ class MainActivity : AppCompatActivity() {
                 is PaymentFragment -> supportActionBar?.title = "Payment"
                 is ViewNotificationsFragment -> supportActionBar?.title = "Notifications"
                 is ProfileFragment -> supportActionBar?.title = "Profile"
-                else -> supportActionBar?.title = "African Shipping" // Default or app name
+                else -> supportActionBar?.title = "African Shipping"
             }
         } else {
-            // If no fragments in back stack, let system handle back press (exit app)
             super.onBackPressed()
         }
     }
 
-    // New method to get the FCM token
     private fun getFCMToken() {
         FirebaseMessaging.getInstance().getToken()
             .addOnCompleteListener { task ->
@@ -336,7 +375,6 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    // New method to get the Firebase Installation ID
     private fun getFirebaseInstallationId() {
         FirebaseInstallations.getInstance().getId()
             .addOnCompleteListener { task ->
@@ -349,5 +387,7 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-
+    // Public method to get fragment references (useful for testing or external access)
+    fun getHomeFragment(): HomeFragment? = homeFragment
+    fun getProfileFragment(): ProfileFragment? = profileFragment
 }

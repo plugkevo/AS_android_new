@@ -2,6 +2,7 @@ package com.example.africanshipping25
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -44,6 +45,7 @@ class ProfileFragment : Fragment() {
     // Translation components
     private lateinit var translationManager: GoogleTranslationManager
     private lateinit var translationHelper: GoogleTranslationHelper
+    private var currentLanguage: String = "en"
 
     // UI Elements
     private lateinit var profilePicture: CircleImageView
@@ -55,7 +57,7 @@ class ProfileFragment : Fragment() {
     private lateinit var activeShipments: TextView
     private lateinit var deliveredShipments: TextView
     private lateinit var notificationsSwitch: SwitchCompat
-    private lateinit var currentLanguage: TextView
+    private lateinit var currentLanguageDisplay: TextView
     private lateinit var currentTheme: TextView
 
     private var currentPhotoPath: String? = null
@@ -72,7 +74,6 @@ class ProfileFragment : Fragment() {
         if (isGranted) {
             enableNotifications()
         } else {
-            // Reset switch if permission denied
             notificationsSwitch.isChecked = false
             showTranslatedToast("Notification permission is required to enable notifications")
         }
@@ -141,11 +142,14 @@ class ProfileFragment : Fragment() {
         firestore = FirebaseFirestore.getInstance()
         storage = FirebaseStorage.getInstance()
         messaging = FirebaseMessaging.getInstance()
-        sharedPreferences = requireContext().getSharedPreferences("app_preferences", 0)
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
 
         // Initialize translation
         translationManager = GoogleTranslationManager(requireContext())
         translationHelper = GoogleTranslationHelper(translationManager)
+
+        // Load current language preference
+        loadLanguagePreference()
 
         // Initialize UI elements
         initializeViews(view)
@@ -163,8 +167,12 @@ class ProfileFragment : Fragment() {
         initializeFirebaseMessaging()
 
         // Translate UI elements based on current language
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        translateUIElements(currentLanguage)
+        translateUIElements()
+    }
+
+    private fun loadLanguagePreference() {
+        currentLanguage = sharedPreferences.getString("selected_language", "en") ?: "en"
+        Log.d(TAG, "Loaded language preference: $currentLanguage")
     }
 
     private fun initializeViews(view: View) {
@@ -175,102 +183,109 @@ class ProfileFragment : Fragment() {
         userRole = view.findViewById(R.id.tv_user_role)
 
         notificationsSwitch = view.findViewById(R.id.switch_notifications)
-        currentLanguage = view.findViewById(R.id.tv_current_language)
+        currentLanguageDisplay = view.findViewById(R.id.tv_current_language)
         currentTheme = view.findViewById(R.id.tv_current_theme)
     }
 
-    private fun translateUIElements(targetLanguage: String) {
+    private fun translateUIElements() {
+        if (currentLanguage == "en") {
+            // No translation needed for English
+            return
+        }
+
+        Log.d(TAG, "Translating UI elements to: $currentLanguage")
+
         view?.let { v ->
-            // Translate section headers (you'll need to add these IDs to your XML)
+            // Translate section headers
             v.findViewById<TextView>(R.id.tv_account_section_header)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Account Information", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Account Information", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_settings_section_header)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "App Settings", targetLanguage)
+                translationHelper.translateAndSetText(textView, "App Settings", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_support_section_header)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Support & Information", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Support & Information", currentLanguage)
             }
 
-            // Translate menu items (you'll need to add these IDs to your XML)
+            // Translate menu items
             v.findViewById<TextView>(R.id.tv_edit_profile_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Edit Profile", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Edit Profile", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_change_password_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Change Password", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Change Password", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_address_book_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Address Book", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Address Book", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_notifications_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Notifications", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Notifications", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_language_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Language", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Language", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_theme_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Theme", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Theme", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_help_support_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Help & Support", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Help & Support", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_privacy_policy_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Privacy Policy", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Privacy Policy", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_terms_service_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Terms of Service", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Terms of Service", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_about_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "About", targetLanguage)
+                translationHelper.translateAndSetText(textView, "About", currentLanguage)
             }
 
             // Translate descriptions
             v.findViewById<TextView>(R.id.tv_edit_profile_desc)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Update your personal information", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Update your personal information", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_change_password_desc)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Update your account password", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Update your account password", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_address_book_desc)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Manage your saved addresses", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Manage your saved addresses", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_notifications_desc)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Manage notification preferences", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Manage notification preferences", currentLanguage)
             }
 
             // Translate shipment stats labels
             v.findViewById<TextView>(R.id.tv_total_shipments_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Total Shipments", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Total Shipments", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_active_shipments_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Active", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Active", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_delivered_shipments_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Delivered", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Delivered", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_version_desc)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Version 1.0.0", targetLanguage)
+                translationHelper.translateAndSetText(textView, "Version 1.0.0", currentLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_app_version)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "African Shipping v1.0.0", targetLanguage)
+                translationHelper.translateAndSetText(textView, "African Shipping v1.0.0", currentLanguage)
             }
         }
     }
@@ -497,11 +512,10 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showImagePickerDialog() {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
-        translationHelper.translateText("Select Profile Picture", currentLanguage) { translatedTitle ->
+        translationManager.translateText("Select Profile Picture", currentLanguage) { translatedTitle ->
             builder.setTitle(translatedTitle)
         }
 
@@ -509,19 +523,19 @@ class ProfileFragment : Fragment() {
         val translatedOptions = arrayOfNulls<String>(3)
         var translationCount = 0
 
-        translationHelper.translateText("Take Photo", currentLanguage) { translated ->
+        translationManager.translateText("Take Photo", currentLanguage) { translated ->
             translatedOptions[0] = translated
             translationCount++
             if (translationCount == 3) showDialogWithTranslatedOptions(builder, translatedOptions)
         }
 
-        translationHelper.translateText("Choose from Gallery", currentLanguage) { translated ->
+        translationManager.translateText("Choose from Gallery", currentLanguage) { translated ->
             translatedOptions[1] = translated
             translationCount++
             if (translationCount == 3) showDialogWithTranslatedOptions(builder, translatedOptions)
         }
 
-        translationHelper.translateText("Cancel", currentLanguage) { translated ->
+        translationManager.translateText("Cancel", currentLanguage) { translated ->
             translatedOptions[2] = translated
             translationCount++
             if (translationCount == 3) showDialogWithTranslatedOptions(builder, translatedOptions)
@@ -724,11 +738,27 @@ class ProfileFragment : Fragment() {
         val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
         notificationsSwitch.isChecked = notificationsEnabled
 
-        val language = sharedPreferences.getString("language", "English")
-        currentLanguage.text = language
+        val language = getLanguageDisplayName(currentLanguage)
+        currentLanguageDisplay.text = language
 
         val theme = sharedPreferences.getString("theme", "Light")
         currentTheme.text = theme
+    }
+
+    private fun getLanguageDisplayName(languageCode: String): String {
+        return when (languageCode) {
+            "en" -> "English"
+            "fr" -> "Français"
+            "es" -> "Español"
+            "pt" -> "Português"
+            "ar" -> "العربية"
+            "sw" -> "Kiswahili"
+            "am" -> "አማርኛ"
+            "ha" -> "Hausa"
+            "yo" -> "Yoruba"
+            "ig" -> "Igbo"
+            else -> "English"
+        }
     }
 
     private fun saveNotificationPreference(enabled: Boolean) {
@@ -745,32 +775,40 @@ class ProfileFragment : Fragment() {
     private fun showLanguageDialog() {
         val languageDialog = LanguageSelectionDialogFragment()
         languageDialog.setOnLanguageSelectedListener(object : LanguageSelectionDialogFragment.OnLanguageSelectedListener {
-            override fun onLanguageSelected(language: String) {
-                // Update the UI
-                currentLanguage.text = language
+            override fun onLanguageSelected(languageCode: String, languageName: String) {
+                Log.d(TAG, "Language selected: $languageCode ($languageName)")
+
+                // Save the language preference (this will trigger MainActivity's listener)
+                sharedPreferences.edit()
+                    .putString("selected_language", languageCode)
+                    .apply()
+
+                // Update current language
+                currentLanguage = languageCode
+
+                // Update the display
+                currentLanguageDisplay.text = languageName
 
                 // Clear translation cache
                 translationHelper.clearCache()
 
-                // Retranslate UI elements
-                translateUIElements(language)
+                // Note: MainActivity will handle notifying all fragments via SharedPreferences listener
+                // So we don't need to manually call translateUIElements() here
 
-                // Refresh the profile to reflect changes
-                refreshProfile()
+                showTranslatedToast("Language changed to $languageName")
             }
         })
         languageDialog.show(parentFragmentManager, "LanguageSelectionDialog")
     }
 
     private fun showThemeDialog() {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         val themes = arrayOf("Light", "Dark", "System Default")
         val currentTheme = sharedPreferences.getString("theme", "System Default")
         var selectedIndex = themes.indexOf(currentTheme)
 
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
-        translationHelper.translateText("Select Theme", currentLanguage) { translatedTitle ->
+        translationManager.translateText("Select Theme", currentLanguage) { translatedTitle ->
             builder.setTitle(translatedTitle)
         }
 
@@ -778,19 +816,19 @@ class ProfileFragment : Fragment() {
         val translatedThemes = arrayOfNulls<String>(3)
         var translationCount = 0
 
-        translationHelper.translateText("Light", currentLanguage) { translated ->
+        translationManager.translateText("Light", currentLanguage) { translated ->
             translatedThemes[0] = translated
             translationCount++
             if (translationCount == 3) showThemeDialogWithTranslations(builder, translatedThemes, themes, selectedIndex)
         }
 
-        translationHelper.translateText("Dark", currentLanguage) { translated ->
+        translationManager.translateText("Dark", currentLanguage) { translated ->
             translatedThemes[1] = translated
             translationCount++
             if (translationCount == 3) showThemeDialogWithTranslations(builder, translatedThemes, themes, selectedIndex)
         }
 
-        translationHelper.translateText("System Default", currentLanguage) { translated ->
+        translationManager.translateText("System Default", currentLanguage) { translated ->
             translatedThemes[2] = translated
             translationCount++
             if (translationCount == 3) showThemeDialogWithTranslations(builder, translatedThemes, themes, selectedIndex)
@@ -803,15 +841,14 @@ class ProfileFragment : Fragment() {
         originalThemes: Array<String>,
         selectedIndex: Int
     ) {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         var currentSelectedIndex = selectedIndex
 
         builder.setSingleChoiceItems(translatedThemes, selectedIndex) { _, which ->
             currentSelectedIndex = which
         }
 
-        translationHelper.translateText("OK", currentLanguage) { okText ->
-            translationHelper.translateText("Cancel", currentLanguage) { cancelText ->
+        translationManager.translateText("OK", currentLanguage) { okText ->
+            translationManager.translateText("Cancel", currentLanguage) { cancelText ->
                 builder.setPositiveButton(okText) { dialog, _ ->
                     val selectedTheme = originalThemes[currentSelectedIndex]
                     this.currentTheme.text = selectedTheme
@@ -844,17 +881,11 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun loadSavedTheme() {
-        val savedTheme = sharedPreferences.getString("theme", "System Default")
-        savedTheme?.let { applyTheme(it) }
-    }
-
     private fun showHelpAndSupportDialog() {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         val options = arrayOf("FAQ", "Contact Support", "User Guide", "Report a Problem")
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
-        translationHelper.translateText("Help & Support", currentLanguage) { translatedTitle ->
+        translationManager.translateText("Help & Support", currentLanguage) { translatedTitle ->
             builder.setTitle(translatedTitle)
         }
 
@@ -862,25 +893,25 @@ class ProfileFragment : Fragment() {
         val translatedOptions = arrayOfNulls<String>(4)
         var translationCount = 0
 
-        translationHelper.translateText("FAQ", currentLanguage) { translated ->
+        translationManager.translateText("FAQ", currentLanguage) { translated ->
             translatedOptions[0] = translated
             translationCount++
             if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
         }
 
-        translationHelper.translateText("Contact Support", currentLanguage) { translated ->
+        translationManager.translateText("Contact Support", currentLanguage) { translated ->
             translatedOptions[1] = translated
             translationCount++
             if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
         }
 
-        translationHelper.translateText("User Guide", currentLanguage) { translated ->
+        translationManager.translateText("User Guide", currentLanguage) { translated ->
             translatedOptions[2] = translated
             translationCount++
             if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
         }
 
-        translationHelper.translateText("Report a Problem", currentLanguage) { translated ->
+        translationManager.translateText("Report a Problem", currentLanguage) { translated ->
             translatedOptions[3] = translated
             translationCount++
             if (translationCount == 4) showHelpDialogWithTranslations(builder, translatedOptions)
@@ -910,26 +941,25 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showReportProblemDialog() {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
-        translationHelper.translateText("Report a Problem", currentLanguage) { translatedTitle ->
+        translationManager.translateText("Report a Problem", currentLanguage) { translatedTitle ->
             builder.setTitle(translatedTitle)
         }
 
-        translationHelper.translateText("Please describe the issue you're experiencing:", currentLanguage) { translatedMessage ->
+        translationManager.translateText("Please describe the issue you're experiencing:", currentLanguage) { translatedMessage ->
             builder.setMessage(translatedMessage)
         }
 
         val input = android.widget.EditText(requireContext())
-        translationHelper.translateText("Describe the problem...", currentLanguage) { translatedHint ->
+        translationManager.translateText("Describe the problem...", currentLanguage) { translatedHint ->
             input.hint = translatedHint
         }
         input.minLines = 3
         builder.setView(input)
 
-        translationHelper.translateText("Submit", currentLanguage) { submitText ->
-            translationHelper.translateText("Cancel", currentLanguage) { cancelText ->
+        translationManager.translateText("Submit", currentLanguage) { submitText ->
+            translationManager.translateText("Cancel", currentLanguage) { cancelText ->
                 builder.setPositiveButton(submitText) { _, _ ->
                     val problemDescription = input.text.toString()
                     if (problemDescription.isNotEmpty()) {
@@ -945,10 +975,9 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showAboutDialog() {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
-        translationHelper.translateText("About African Shipping", currentLanguage) { translatedTitle ->
+        translationManager.translateText("About African Shipping", currentLanguage) { translatedTitle ->
             builder.setTitle(translatedTitle)
         }
 
@@ -964,11 +993,11 @@ class ProfileFragment : Fragment() {
             Built with ❤️ for Africa
         """.trimIndent()
 
-        translationHelper.translateText(aboutMessage, currentLanguage) { translatedMessage ->
+        translationManager.translateText(aboutMessage, currentLanguage) { translatedMessage ->
             builder.setMessage(translatedMessage)
         }
 
-        translationHelper.translateText("OK", currentLanguage) { okText ->
+        translationManager.translateText("OK", currentLanguage) { okText ->
             builder.setPositiveButton(okText, null)
             builder.show()
         }
@@ -976,10 +1005,21 @@ class ProfileFragment : Fragment() {
 
     // Helper method to translate toast messages
     private fun showTranslatedToast(message: String) {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
-            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        if (currentLanguage == "en") {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        } else {
+            translationManager.translateText(message, currentLanguage) { translatedMessage ->
+                Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+            }
         }
+    }
+
+    // Public method called by MainActivity when language changes
+    fun refreshTranslations() {
+        Log.d(TAG, "Refreshing translations...")
+        loadLanguagePreference()
+        translateUIElements()
+        loadPreferences() // Refresh language display
     }
 
     fun refreshProfile() {

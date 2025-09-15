@@ -1,7 +1,7 @@
-// com.example.africanshipping25/HomeFragment.kt
 package com.example.africanshipping25
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -20,14 +20,26 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.FieldValue
 
-// Implement the OnShipmentItemClickListener interface
-class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { // <<< Make sure this is here
+class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
 
     private lateinit var firestore: FirebaseFirestore
     private lateinit var tvActiveCount: TextView
     private lateinit var tvDeliveredCount: TextView
     private lateinit var rvAllShipments: RecyclerView
     private lateinit var homeShipmentAdapter: HomeShipmentAdapter
+
+    // Google Translation components
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
+    private var currentLanguage: String = "en"
+
+    // UI elements for translation
+    private lateinit var tvWelcome: TextView
+    private lateinit var tvOverview: TextView
+    private lateinit var tvActiveLabel: TextView
+    private lateinit var tvDeliveredLabel: TextView
+    private lateinit var tvQuickActions: TextView
+    private lateinit var tvRecentShipments: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,18 +54,46 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
 
         firestore = FirebaseFirestore.getInstance()
 
-        tvActiveCount = view.findViewById(R.id.tv_active_count)
-        tvDeliveredCount = view.findViewById(R.id.tv_delivered_count)
-        rvAllShipments = view.findViewById(R.id.rv_all_shipments)
+        // Initialize Google Translation components
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
 
-        // Initialize HomeShipmentAdapter and pass 'this' as the itemClickListener
-        homeShipmentAdapter = HomeShipmentAdapter(mutableListOf(), this) // <<< Pass 'this'
+        // Load saved language preference
+        loadLanguagePreference()
+
+        // Initialize UI elements
+        initializeViews(view)
+
+        // Apply translations
+        translateUIElements()
+
+        // Initialize adapter and load data
+        homeShipmentAdapter = HomeShipmentAdapter(mutableListOf(), this)
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
         rvAllShipments.adapter = homeShipmentAdapter
 
         loadShipmentCounts()
         loadLatestShipments()
 
+        // Set up click listeners
+        setupClickListeners(view)
+    }
+
+    private fun initializeViews(view: View) {
+        tvActiveCount = view.findViewById(R.id.tv_active_count)
+        tvDeliveredCount = view.findViewById(R.id.tv_delivered_count)
+        rvAllShipments = view.findViewById(R.id.rv_all_shipments)
+
+        // Initialize text views for translation
+        tvWelcome = view.findViewById(R.id.tv_welcome)
+        tvOverview = view.findViewById(R.id.tv_overview)
+        tvActiveLabel = view.findViewById(R.id.tv_active_label)
+        tvDeliveredLabel = view.findViewById(R.id.tv_delivered_label)
+        tvQuickActions = view.findViewById(R.id.tv_quick_actions)
+        tvRecentShipments = view.findViewById(R.id.tv_recent_shipments)
+    }
+
+    private fun setupClickListeners(view: View) {
         val showCreateShipmentDialogButton = view.findViewById<CardView>(R.id.card_create_shipment)
         showCreateShipmentDialogButton?.setOnClickListener {
             showCreateShipmentDialog()
@@ -69,8 +109,47 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
             val intent = Intent(requireContext(), MapsActivity::class.java)
             startActivity(intent)
         }
+    }
 
+    private fun loadLanguagePreference() {
+        val sharedPrefs = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        currentLanguage = sharedPrefs.getString("selected_language", "en") ?: "en"
+        Log.d("HomeFragment", "Loaded language preference: $currentLanguage")
+    }
 
+    private fun translateUIElements() {
+        if (currentLanguage == "en") {
+            // No translation needed for English
+            return
+        }
+
+        Log.d("HomeFragment", "Translating UI elements to: $currentLanguage")
+
+        // Translate main text elements using GoogleTranslationHelper
+        translationHelper.translateAndSetText(tvWelcome, "Welcome back", currentLanguage)
+        translationHelper.translateAndSetText(tvOverview, "Here's your shipping overview", currentLanguage)
+        translationHelper.translateAndSetText(tvActiveLabel, "Active Shipments", currentLanguage)
+        translationHelper.translateAndSetText(tvDeliveredLabel, "Delivered This Month", currentLanguage)
+        translationHelper.translateAndSetText(tvQuickActions, "Quick Actions", currentLanguage)
+        translationHelper.translateAndSetText(tvRecentShipments, "Recent Shipments", currentLanguage)
+
+        // Translate card action labels
+        translateCardLabels()
+    }
+
+    private fun translateCardLabels() {
+        // Translate the action card labels
+        view?.findViewById<TextView>(R.id.tv_create_shipment_label)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Create Shipment", currentLanguage)
+        }
+
+        view?.findViewById<TextView>(R.id.tv_loading_list_label)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Loading List", currentLanguage)
+        }
+
+        view?.findViewById<TextView>(R.id.tv_track_shipment_label)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Track Shipment", currentLanguage)
+        }
     }
 
     private fun loadShipmentCounts() {
@@ -120,7 +199,7 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
             }
             .addOnFailureListener { e ->
                 Log.e("HomeFragment", "Error getting latest shipments: ", e)
-                Toast.makeText(requireContext(), "Error loading recent shipments: ${e.message}", Toast.LENGTH_SHORT).show()
+                showTranslatedToast("Error loading recent shipments: ${e.message}")
             }
     }
 
@@ -129,6 +208,10 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_new_shipment, null)
         builder.setView(dialogView)
         val dialog = builder.create()
+
+        // Translate dialog elements
+        translateCreateShipmentDialog(dialogView)
+
         dialog.show()
 
         val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
@@ -145,38 +228,83 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
             val weightStr = weightEditText.text.toString().trim()
 
             if (name.isEmpty() || origin.isEmpty() || destination.isEmpty() || weightStr.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill in all the details", Toast.LENGTH_SHORT).show()
+                showTranslatedToast("Please fill in all the details")
                 return@setOnClickListener
             }
 
-            val weight = weightStr // treat it as a string
-
+            val weight = weightStr
 
             val shipment = hashMapOf(
                 "name" to name,
                 "origin" to origin,
                 "destination" to destination,
-                "weight" to weight,  // now it's a string
+                "weight" to weight,
                 "status" to "Active",
                 "createdAt" to FieldValue.serverTimestamp()
             )
 
-
             firestore.collection("shipments")
                 .add(shipment)
                 .addOnSuccessListener { documentReference ->
-                    Toast.makeText(requireContext(), "Shipment created successfully!", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Shipment created successfully!")
                     dialog.dismiss()
                     loadShipmentCounts()
                     loadLatestShipments()
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Error creating shipment: ${e.message}", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Error creating shipment: ${e.message}")
                 }
         }
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
+        }
+    }
+
+    private fun translateCreateShipmentDialog(dialogView: View) {
+        if (currentLanguage == "en") return
+
+        // Translate dialog title
+        dialogView.findViewById<TextView>(R.id.tv_dialog_title)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Create New Shipment", currentLanguage)
+        }
+
+        // Translate buttons
+        dialogView.findViewById<Button>(R.id.btn_create)?.let { button ->
+            translationManager.translateText("Create", currentLanguage) { translatedText ->
+                button.text = translatedText
+            }
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_cancel)?.let { button ->
+            translationManager.translateText("Cancel", currentLanguage) { translatedText ->
+                button.text = translatedText
+            }
+        }
+
+        // Translate EditText hints
+        dialogView.findViewById<EditText>(R.id.et_name)?.let { editText ->
+            translationManager.translateText("Enter shipment name", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_origin)?.let { editText ->
+            translationManager.translateText("Enter origin", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_destination)?.let { editText ->
+            translationManager.translateText("Enter destination", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_details)?.let { editText ->
+            translationManager.translateText("Enter weight/details", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
         }
     }
 
@@ -186,6 +314,10 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
         builder.setView(dialogView)
 
         val dialog = builder.create()
+
+        // Translate dialog elements
+        translateCreateLoadingDialog(dialogView)
+
         dialog.show()
 
         val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
@@ -202,7 +334,7 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
             val extraDetails = extraDetailsEditText.text.toString().trim()
 
             if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
-                Toast.makeText(requireContext(), "Name, Origin, and Destination are required.", Toast.LENGTH_SHORT).show()
+                showTranslatedToast("Name, Origin, and Destination are required.")
                 return@setOnClickListener
             }
 
@@ -218,24 +350,87 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener { /
             firestore.collection("loading_lists")
                 .add(loadingList)
                 .addOnSuccessListener { documentReference ->
-                    Toast.makeText(requireContext(), "Loading List created successfully!", Toast.LENGTH_SHORT).show()
+                    showTranslatedToast("Loading List created successfully!")
                     Log.d("HomeFragment", "Loading List Document added with ID: ${documentReference.id}")
                     dialog.dismiss()
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Error creating loading list: ${e.message}", Toast.LENGTH_LONG).show()
+                    showTranslatedToast("Error creating loading list: ${e.message}")
                     Log.e("HomeFragment", "Error adding loading list document", e)
                 }
         }
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
-            Toast.makeText(requireContext(), "Loading list creation cancelled.", Toast.LENGTH_SHORT).show()
+            showTranslatedToast("Loading list creation cancelled.")
         }
     }
 
+    private fun translateCreateLoadingDialog(dialogView: View) {
+        if (currentLanguage == "en") return
+
+        // Translate dialog title
+        dialogView.findViewById<TextView>(R.id.tv_dialog_title)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Create Loading List", currentLanguage)
+        }
+
+        // Translate buttons
+        dialogView.findViewById<Button>(R.id.btn_create)?.let { button ->
+            translationManager.translateText("Create", currentLanguage) { translatedText ->
+                button.text = translatedText
+            }
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_cancel)?.let { button ->
+            translationManager.translateText("Cancel", currentLanguage) { translatedText ->
+                button.text = translatedText
+            }
+        }
+
+        // Translate EditText hints
+        dialogView.findViewById<EditText>(R.id.et_name)?.let { editText ->
+            translationManager.translateText("Enter loading list name", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_origin)?.let { editText ->
+            translationManager.translateText("Enter origin", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_destination)?.let { editText ->
+            translationManager.translateText("Enter destination", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_details)?.let { editText ->
+            translationManager.translateText("Enter extra details", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+    }
+
+    private fun showTranslatedToast(message: String) {
+        if (currentLanguage == "en") {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+        } else {
+            translationManager.translateText(message, currentLanguage) { translatedMessage ->
+                Toast.makeText(requireContext(), translatedMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Public method to refresh translations when language changes
+    fun refreshTranslations() {
+        loadLanguagePreference()
+        translateUIElements()
+    }
+
     // Implement the onShipmentItemClick method for HomeFragment
-    override fun onShipmentItemClick(shipment: Shipment) { // <<< This method handles the click
+    override fun onShipmentItemClick(shipment: Shipment) {
         val intent = Intent(requireContext(), ViewShipment::class.java)
         intent.putExtra("shipmentId", shipment.id)
         intent.putExtra("shipmentName", shipment.name)
