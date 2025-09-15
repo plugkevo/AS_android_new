@@ -19,14 +19,17 @@
             android:padding="24dp"
             android:gravity="center_horizontal">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_logo"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:layout_marginTop="40dp"
                 android:layout_marginBottom="24dp"
                 android:src="@drawable/as_logo"
-                android:contentDescription="Company Logo" />
+                android:contentDescription="Company Logo"
+                app:civ_border_color="@android:color/white"
+                app:civ_border_width="3dp"
+                />
 
             <TextView
                 android:layout_width="match_parent"
