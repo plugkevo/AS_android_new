@@ -179,7 +179,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         when (key) {
             "selected_language" -> {
                 Log.d(TAG, "Language preference changed, notifying fragments")
-                notifyFragmentsOfLanguageChange()
+                // Add a small delay to ensure the preference is fully saved
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    notifyFragmentsOfLanguageChange()
+                }, 100)
             }
             "theme" -> {
                 // Handle theme changes if needed
@@ -189,12 +192,29 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     }
 
     private fun notifyFragmentsOfLanguageChange() {
-        // Notify all active fragments about language change
-        homeFragment?.refreshTranslations()
-        //shipmentsFragment?.refreshTranslations()
-        //loadingFragment?.refreshTranslations()
-        //paymentFragment?.refreshTranslations()
-        //profileFragment?.refreshTranslations()
+        Log.d(TAG, "Notifying fragments of language change...")
+
+        // Get current fragment and notify it specifically
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+
+        when (currentFragment) {
+            is HomeFragment -> {
+                Log.d(TAG, "Refreshing HomeFragment translations")
+                currentFragment.refreshTranslations()
+            }
+
+            // Add other fragments as needed
+        }
+
+        // Also notify stored fragment references if they exist
+        homeFragment?.let {
+            if (it.isAdded && it.view != null) {
+                Log.d(TAG, "Refreshing stored HomeFragment reference")
+                it.refreshTranslations()
+            }
+        }
+
+
 
         Log.d(TAG, "All fragments notified of language change")
     }
