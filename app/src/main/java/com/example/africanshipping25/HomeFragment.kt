@@ -3,9 +3,8 @@ package com.example.africanshipping25
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -31,11 +30,11 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
     private lateinit var tvDeliveredCount: TextView
     private lateinit var rvAllShipments: RecyclerView
     private lateinit var homeShipmentAdapter: HomeShipmentAdapter
+    private lateinit var sharedPreferences: SharedPreferences
 
-    // Google Translation components - using same approach as ProfileFragment
+    // Translation components - exactly like ProfileFragment
     private lateinit var translationManager: GoogleTranslationManager
     private lateinit var translationHelper: GoogleTranslationHelper
-    private var currentLanguage: String = "en"
 
     // UI elements for translation
     private lateinit var tvWelcome: TextView
@@ -59,13 +58,11 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         Log.d(TAG, "onViewCreated called")
 
         firestore = FirebaseFirestore.getInstance()
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
 
-        // Initialize Google Translation components - same as ProfileFragment
+        // Initialize translation components - exactly like ProfileFragment
         translationManager = GoogleTranslationManager(requireContext())
         translationHelper = GoogleTranslationHelper(translationManager)
-
-        // Load saved language preference
-        loadLanguagePreference()
 
         // Initialize UI elements
         initializeViews(view)
@@ -81,10 +78,11 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         // Set up click listeners
         setupClickListeners(view)
 
-        // Apply translations - using ProfileFragment approach
-        translateUIElements()
+        // Translate UI elements based on current language - exactly like ProfileFragment
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
 
-        Log.d(TAG, "HomeFragment setup completed with language: $currentLanguage")
+        Log.d(TAG, "HomeFragment setup completed")
     }
 
     private fun initializeViews(view: View) {
@@ -105,6 +103,32 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         Log.d(TAG, "Views initialized successfully")
     }
 
+    // Translation method - exactly like ProfileFragment
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate main UI elements using the same pattern as ProfileFragment
+            translationHelper.translateAndSetText(tvWelcome, "Welcome back", targetLanguage)
+            translationHelper.translateAndSetText(tvOverview, "Here's your shipping overview", targetLanguage)
+            translationHelper.translateAndSetText(tvActiveLabel, "Active Shipments", targetLanguage)
+            translationHelper.translateAndSetText(tvDeliveredLabel, "Delivered This Month", targetLanguage)
+            translationHelper.translateAndSetText(tvQuickActions, "Quick Actions", targetLanguage)
+            translationHelper.translateAndSetText(tvRecentShipments, "Recent Shipments", targetLanguage)
+
+            // Translate card labels using the same pattern as ProfileFragment
+            v.findViewById<TextView>(R.id.tv_create_shipment_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Create Shipment", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tv_loading_list_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Loading List", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tv_track_shipment_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Track Shipment", targetLanguage)
+            }
+        }
+    }
+
     private fun setupClickListeners(view: View) {
         val showCreateShipmentDialogButton = view.findViewById<CardView>(R.id.card_create_shipment)
         showCreateShipmentDialogButton?.setOnClickListener {
@@ -120,65 +144,6 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         mapsbtn.setOnClickListener {
             val intent = Intent(requireContext(), MapsActivity::class.java)
             startActivity(intent)
-        }
-    }
-
-    private fun loadLanguagePreference() {
-        val sharedPrefs = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-        currentLanguage = sharedPrefs.getString("selected_language", "en") ?: "en"
-        Log.d(TAG, "Loaded language preference: $currentLanguage")
-    }
-
-    private fun translateUIElements() {
-        if (currentLanguage == "en") {
-            Log.d(TAG, "Language is English, no translation needed")
-            return
-        }
-
-        Log.d(TAG, "Translating UI elements to: $currentLanguage")
-
-        // Check if views are still valid
-        if (!isAdded || view == null) {
-            Log.w(TAG, "Fragment not attached or view is null, skipping translation")
-            return
-        }
-
-        try {
-            // Use the same approach as ProfileFragment - direct translationHelper calls
-            translationHelper.translateAndSetText(tvWelcome, "Welcome back", currentLanguage)
-            translationHelper.translateAndSetText(tvOverview, "Here's your shipping overview", currentLanguage)
-            translationHelper.translateAndSetText(tvActiveLabel, "Active Shipments", currentLanguage)
-            translationHelper.translateAndSetText(tvDeliveredLabel, "Delivered This Month", currentLanguage)
-            translationHelper.translateAndSetText(tvQuickActions, "Quick Actions", currentLanguage)
-            translationHelper.translateAndSetText(tvRecentShipments, "Recent Shipments", currentLanguage)
-
-            // Translate card action labels
-            translateCardLabels()
-
-            Log.d(TAG, "Translation completed successfully")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error during translation", e)
-        }
-    }
-
-    private fun translateCardLabels() {
-        if (!isAdded || view == null) return
-
-        try {
-            // Use the same approach as ProfileFragment
-            view?.findViewById<TextView>(R.id.tv_create_shipment_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Create Shipment", currentLanguage)
-            }
-
-            view?.findViewById<TextView>(R.id.tv_loading_list_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Loading List", currentLanguage)
-            }
-
-            view?.findViewById<TextView>(R.id.tv_track_shipment_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Track Shipment", currentLanguage)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error translating card labels", e)
         }
     }
 
@@ -239,7 +204,7 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         builder.setView(dialogView)
         val dialog = builder.create()
 
-        // Translate dialog elements
+        // Translate dialog elements using ProfileFragment pattern
         translateCreateShipmentDialog(dialogView)
 
         dialog.show()
@@ -292,46 +257,46 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
     }
 
     private fun translateCreateShipmentDialog(dialogView: View) {
-        if (currentLanguage == "en") return
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
 
-        // Use the same approach as ProfileFragment
+        // Use the same translation pattern as ProfileFragment
         dialogView.findViewById<TextView>(R.id.tv_dialog_title)?.let { textView ->
             translationHelper.translateAndSetText(textView, "Create New Shipment", currentLanguage)
         }
 
         dialogView.findViewById<Button>(R.id.btn_create)?.let { button ->
-            translationManager.translateText("Create", currentLanguage) { translatedText ->
+            translationHelper.translateText("Create", currentLanguage) { translatedText ->
                 button.text = translatedText
             }
         }
 
         dialogView.findViewById<Button>(R.id.btn_cancel)?.let { button ->
-            translationManager.translateText("Cancel", currentLanguage) { translatedText ->
+            translationHelper.translateText("Cancel", currentLanguage) { translatedText ->
                 button.text = translatedText
             }
         }
 
         // Translate EditText hints
         dialogView.findViewById<EditText>(R.id.et_name)?.let { editText ->
-            translationManager.translateText("Enter shipment name", currentLanguage) { translatedText ->
+            translationHelper.translateText("Enter shipment name", currentLanguage) { translatedText ->
                 editText.hint = translatedText
             }
         }
 
         dialogView.findViewById<EditText>(R.id.et_origin)?.let { editText ->
-            translationManager.translateText("Enter origin", currentLanguage) { translatedText ->
+            translationHelper.translateText("Enter origin", currentLanguage) { translatedText ->
                 editText.hint = translatedText
             }
         }
 
         dialogView.findViewById<EditText>(R.id.et_destination)?.let { editText ->
-            translationManager.translateText("Enter destination", currentLanguage) { translatedText ->
+            translationHelper.translateText("Enter destination", currentLanguage) { translatedText ->
                 editText.hint = translatedText
             }
         }
 
         dialogView.findViewById<EditText>(R.id.et_details)?.let { editText ->
-            translationManager.translateText("Enter weight/details", currentLanguage) { translatedText ->
+            translationHelper.translateText("Enter weight/details", currentLanguage) { translatedText ->
                 editText.hint = translatedText
             }
         }
@@ -344,7 +309,7 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
 
         val dialog = builder.create()
 
-        // Translate dialog elements
+        // Translate dialog elements using ProfileFragment pattern
         translateCreateLoadingDialog(dialogView)
 
         dialog.show()
@@ -396,38 +361,35 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
     }
 
     private fun translateCreateLoadingDialog(dialogView: View) {
-        if (currentLanguage == "en") return
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
 
-        // Use the same approach as ProfileFragment
+        // Use the same translation pattern as ProfileFragment
         dialogView.findViewById<TextView>(R.id.tv_dialog_title)?.let { textView ->
             translationHelper.translateAndSetText(textView, "Create Loading List", currentLanguage)
         }
 
         dialogView.findViewById<Button>(R.id.btn_create)?.let { button ->
-            translationManager.translateText("Create", currentLanguage) { translatedText ->
+            translationHelper.translateText("Create", currentLanguage) { translatedText ->
                 button.text = translatedText
             }
         }
 
         dialogView.findViewById<Button>(R.id.btn_cancel)?.let { button ->
-            translationManager.translateText("Cancel", currentLanguage) { translatedText ->
+            translationHelper.translateText("Cancel", currentLanguage) { translatedText ->
                 button.text = translatedText
             }
         }
     }
 
-    // Helper method to translate toast messages - same as ProfileFragment
+    // Helper method to translate toast messages - exactly like ProfileFragment
     private fun showTranslatedToast(message: String) {
-        if (currentLanguage == "en") {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        } else {
-            translationManager.translateText(message, currentLanguage) { translatedMessage ->
-                Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
-            }
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Public method to refresh translations when language changes
+    // Public method to refresh translations when language changes - exactly like ProfileFragment
     fun refreshTranslations() {
         Log.d(TAG, "refreshTranslations() called")
 
@@ -436,8 +398,13 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
             return
         }
 
-        loadLanguagePreference()
-        translateUIElements()
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+
+        // Clear translation cache like ProfileFragment
+        translationHelper.clearCache()
+
+        // Retranslate UI elements
+        translateUIElements(currentLanguage)
 
         Log.d(TAG, "Translation refresh completed")
     }

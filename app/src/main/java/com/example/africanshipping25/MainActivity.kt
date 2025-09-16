@@ -59,6 +59,13 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     // SharedPreferences for language changes
     private lateinit var sharedPreferences: SharedPreferences
 
+    // Translation components - exactly like ProfileFragment
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
+
+    // UI elements that need translation
+    private lateinit var toolbarTitle: TextView
+
     // Receiver to update badge when count changes
     private val unseenCountReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -82,6 +89,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize translation components - exactly like ProfileFragment
+        translationManager = GoogleTranslationManager(this)
+        translationHelper = GoogleTranslationHelper(translationManager)
 
         // Register SharedPreferences listener for language changes
         sharedPreferences.registerOnSharedPreferenceChangeListener(this)
@@ -119,6 +130,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         // Get FCM token and Installation ID
         getFCMToken()
         getFirebaseInstallationId()
+
+        // Translate UI elements based on current language - exactly like ProfileFragment
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
     }
 
     private fun initializeUIComponents() {
@@ -136,6 +151,55 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         bottomNavigation = findViewById(R.id.bottom_navigation)
         fabNewShipment = findViewById(R.id.fab_new_shipment)
         btnMoreOptions = findViewById(R.id.btn_more_options)
+
+        // Find the toolbar title TextView (you may need to add this to your XML)
+        // For now, we'll handle it through supportActionBar
+    }
+
+    // Translation method - exactly like ProfileFragment
+    private fun translateUIElements(targetLanguage: String) {
+        // Translate the current toolbar title
+        val currentTitle = supportActionBar?.title?.toString() ?: "Dashboard"
+        translateToolbarTitle(currentTitle, targetLanguage)
+
+        // Translate bottom navigation items (this requires updating the menu items)
+        translateBottomNavigationItems(targetLanguage)
+    }
+
+    private fun translateToolbarTitle(title: String, targetLanguage: String) {
+        translationHelper.translateText(title, targetLanguage) { translatedTitle ->
+            supportActionBar?.title = translatedTitle
+        }
+    }
+
+    private fun translateBottomNavigationItems(targetLanguage: String) {
+        // Get the menu from bottom navigation
+        val menu = bottomNavigation.menu
+
+        // Translate each menu item
+        menu.findItem(R.id.nav_home)?.let { item ->
+            translationHelper.translateText("Home", targetLanguage) { translatedText ->
+                item.title = translatedText
+            }
+        }
+
+        menu.findItem(R.id.nav_shipments)?.let { item ->
+            translationHelper.translateText("Shipments", targetLanguage) { translatedText ->
+                item.title = translatedText
+            }
+        }
+
+        menu.findItem(R.id.nav_loading_list)?.let { item ->
+            translationHelper.translateText("Loading List", targetLanguage) { translatedText ->
+                item.title = translatedText
+            }
+        }
+
+        menu.findItem(R.id.nav_payment)?.let { item ->
+            translationHelper.translateText("Payment", targetLanguage) { translatedText ->
+                item.title = translatedText
+            }
+        }
     }
 
     private fun setupClickListeners() {
@@ -172,15 +236,21 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         super.onDestroy()
         // Unregister SharedPreferences listener to prevent memory leaks
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
+
+        // Cleanup translation manager
+        if (::translationManager.isInitialized) {
+            translationManager.cleanup()
+        }
     }
 
     // SharedPreferences change listener for language updates
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
             "selected_language" -> {
-                Log.d(TAG, "Language preference changed, notifying fragments")
+                Log.d(TAG, "Language preference changed, updating MainActivity and notifying fragments")
                 // Add a small delay to ensure the preference is fully saved
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    refreshTranslations()
                     notifyFragmentsOfLanguageChange()
                 }, 100)
             }
@@ -189,6 +259,21 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 Log.d(TAG, "Theme preference changed")
             }
         }
+    }
+
+    // Public method to refresh translations - exactly like ProfileFragment
+    private fun refreshTranslations() {
+        Log.d(TAG, "refreshTranslations() called")
+
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+
+        // Clear translation cache like ProfileFragment
+        translationHelper.clearCache()
+
+        // Retranslate UI elements
+        translateUIElements(currentLanguage)
+
+        Log.d(TAG, "MainActivity translation refresh completed")
     }
 
     private fun notifyFragmentsOfLanguageChange() {
@@ -202,8 +287,11 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 Log.d(TAG, "Refreshing HomeFragment translations")
                 currentFragment.refreshTranslations()
             }
-
-            // Add other fragments as needed
+            is ProfileFragment -> {
+                Log.d(TAG, "Refreshing ProfileFragment translations")
+                currentFragment.refreshProfile()
+            }
+            // Add other fragments as needed when they implement translation
         }
 
         // Also notify stored fragment references if they exist
@@ -214,7 +302,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             }
         }
 
-
+        profileFragment?.let {
+            if (it.isAdded && it.view != null) {
+                Log.d(TAG, "Refreshing stored ProfileFragment reference")
+                it.refreshProfile()
+            }
+        }
 
         Log.d(TAG, "All fragments notified of language change")
     }
@@ -222,6 +315,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private fun showMoreOptionsMenu(view: View) {
         val popupMenu = PopupMenu(this, view)
         popupMenu.inflate(R.menu.menu_toolbar_options)
+
+        // Translate menu items before showing
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translatePopupMenu(popupMenu, currentLanguage)
 
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -239,6 +336,22 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         popupMenu.show()
     }
 
+    private fun translatePopupMenu(popupMenu: PopupMenu, targetLanguage: String) {
+        val menu = popupMenu.menu
+
+        menu.findItem(R.id.action_profile)?.let { item ->
+            translationHelper.translateText("Profile", targetLanguage) { translatedText ->
+                item.title = translatedText
+            }
+        }
+
+        menu.findItem(R.id.action_logout)?.let { item ->
+            translationHelper.translateText("Logout", targetLanguage) { translatedText ->
+                item.title = translatedText
+            }
+        }
+    }
+
     private fun navigateToProfile() {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (currentFragment !is ProfileFragment) {
@@ -249,19 +362,35 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 .replace(R.id.fragment_container, profileFragment!!)
                 .addToBackStack("profile")
                 .commit()
-            supportActionBar?.title = "Profile"
+
+            // Translate and set toolbar title
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            translateToolbarTitle("Profile", currentLanguage)
         }
     }
 
     private fun showLogoutConfirmation() {
-        AlertDialog.Builder(this)
-            .setTitle("Logout")
-            .setMessage("Are you sure you want to logout?")
-            .setPositiveButton("Logout") { _, _ ->
-                performLogout()
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        val builder = AlertDialog.Builder(this)
+
+        // Translate dialog elements using ProfileFragment pattern
+        translationHelper.translateText("Logout", currentLanguage) { translatedTitle ->
+            builder.setTitle(translatedTitle)
+        }
+
+        translationHelper.translateText("Are you sure you want to logout?", currentLanguage) { translatedMessage ->
+            builder.setMessage(translatedMessage)
+        }
+
+        translationHelper.translateText("Logout", currentLanguage) { logoutText ->
+            translationHelper.translateText("Cancel", currentLanguage) { cancelText ->
+                builder.setPositiveButton(logoutText) { _, _ ->
+                    performLogout()
+                }
+                builder.setNegativeButton(cancelText, null)
+                builder.show()
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
     }
 
     private fun performLogout() {
@@ -270,7 +399,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
-        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+        showTranslatedToast("Logged out successfully")
     }
 
     private fun setupBottomNavigation() {
@@ -281,7 +410,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                         homeFragment = HomeFragment()
                     }
                     loadFragment(homeFragment!!)
-                    supportActionBar?.title = "Dashboard"
+                    val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                    translateToolbarTitle("Dashboard", currentLanguage)
                     true
                 }
                 R.id.nav_shipments -> {
@@ -289,7 +419,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                         shipmentsFragment = ShipmentsFragment()
                     }
                     loadFragment(shipmentsFragment!!)
-                    supportActionBar?.title = "Shipments"
+                    val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                    translateToolbarTitle("Shipments", currentLanguage)
                     true
                 }
                 R.id.nav_loading_list -> {
@@ -297,7 +428,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                         loadingFragment = LoadingFragment()
                     }
                     loadFragment(loadingFragment!!)
-                    supportActionBar?.title = "Loading List"
+                    val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                    translateToolbarTitle("Loading List", currentLanguage)
                     true
                 }
                 R.id.nav_payment -> {
@@ -305,7 +437,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                         paymentFragment = PaymentFragment()
                     }
                     loadFragment(paymentFragment!!)
-                    supportActionBar?.title = "Payment"
+                    val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                    translateToolbarTitle("Payment", currentLanguage)
                     true
                 }
                 else -> false
@@ -350,7 +483,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 .replace(R.id.fragment_container, ViewNotificationsFragment())
                 .addToBackStack("notifications_list")
                 .commit()
-            supportActionBar?.title = "Notifications"
+
+            // Translate and set toolbar title
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            translateToolbarTitle("Notifications", currentLanguage)
         }
     }
 
@@ -369,17 +505,27 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()
             val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+
             when (currentFragment) {
-                is HomeFragment -> supportActionBar?.title = "Dashboard"
-                is ShipmentsFragment -> supportActionBar?.title = "Shipments"
-                is LoadingFragment -> supportActionBar?.title = "Loading List"
-                is PaymentFragment -> supportActionBar?.title = "Payment"
-                is ViewNotificationsFragment -> supportActionBar?.title = "Notifications"
-                is ProfileFragment -> supportActionBar?.title = "Profile"
-                else -> supportActionBar?.title = "African Shipping"
+                is HomeFragment -> translateToolbarTitle("Dashboard", currentLanguage)
+                is ShipmentsFragment -> translateToolbarTitle("Shipments", currentLanguage)
+                is LoadingFragment -> translateToolbarTitle("Loading List", currentLanguage)
+                is PaymentFragment -> translateToolbarTitle("Payment", currentLanguage)
+                is ViewNotificationsFragment -> translateToolbarTitle("Notifications", currentLanguage)
+                is ProfileFragment -> translateToolbarTitle("Profile", currentLanguage)
+                else -> translateToolbarTitle("African Shipping", currentLanguage)
             }
         } else {
             super.onBackPressed()
+        }
+    }
+
+    // Helper method to translate toast messages - exactly like ProfileFragment
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(this, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
 
