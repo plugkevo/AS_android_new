@@ -36,21 +36,42 @@
                 android:layout_gravity="center" />
         </androidx.cardview.widget.CardView>
 
-        <EditText
-            android:id="@+id/searchEditText"
+        <LinearLayout
+            android:id="@+id/searchExportLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="Search store inventory..."
-            android:padding="12dp"
-            android:drawableStart="@android:drawable/ic_menu_search"
-            android:drawablePadding="8dp"
-            android:background="@drawable/search_bar_background"
-            android:singleLine="true"
-            android:imeOptions="actionSearch"
+            android:orientation="horizontal"
             android:layout_marginTop="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/headerCard" />
+            app:layout_constraintTop_toBottomOf="@+id/headerCard">
+
+            <EditText
+                android:id="@+id/searchEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Search store inventory..."
+                android:padding="12dp"
+                android:drawableStart="@android:drawable/ic_menu_search"
+                android:drawablePadding="8dp"
+                android:background="@drawable/search_bar_background"
+                android:singleLine="true"
+                android:imeOptions="actionSearch"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/exportButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Export"
+                android:textSize="12sp"
+                android:padding="8dp"
+                android:minWidth="80dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
 
         <!-- Lottie animation view for the LOADING state -->
         <com.airbnb.lottie.LottieAnimationView
@@ -64,7 +85,7 @@
             app:lottie_loop="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintTop_toBottomOf="@+id/searchExportLayout"
             app:layout_constraintBottom_toTopOf="@id/storeInventoryRecyclerView"
             app:layout_constraintVertical_bias="0.2" />
 
@@ -80,7 +101,7 @@
             app:lottie_loop="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintTop_toBottomOf="@+id/searchExportLayout"
             app:layout_constraintBottom_toTopOf="@id/emptyView"
             app:layout_constraintVertical_bias="0.2" />
 
@@ -106,9 +127,9 @@
             android:nestedScrollingEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/searchEditText"
+            app:layout_constraintTop_toBottomOf="@+id/searchExportLayout"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:listitem="@layout/store_goods_list_view" /> <!-- Assuming this is the list item layout -->
+            tools:listitem="@layout/store_goods_list_view" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

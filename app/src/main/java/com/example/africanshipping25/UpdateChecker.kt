@@ -20,7 +20,8 @@ class UpdateChecker(private val context: Context) {
     fun checkForUpdatesOnAppStart(activity: Activity) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                updateManager.checkForUpdates { updateInfo ->
+                updateManager.
+                checkForUpdates { updateInfo ->
                     updateInfo?.let {
                         if (it.isUpdateRequired) {
                             // Mandatory update - block app
