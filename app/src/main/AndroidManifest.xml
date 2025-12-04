@@ -33,7 +33,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/as_logo"
-        android:label="AS"
+        android:label="AFS"
         android:roundIcon="@drawable/as_logo"
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.AfricanShipping25">

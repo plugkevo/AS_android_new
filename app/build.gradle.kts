@@ -13,8 +13,8 @@ android {
         applicationId = "com.example.africanshipping25"
         minSdk = 24
         targetSdk = 34 // Use stable API level
-        versionCode = 2
-        versionName = "1.3.0"
+        versionCode = 6 //next 7
+        versionName = "1.1.6" //next 1.1.7
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

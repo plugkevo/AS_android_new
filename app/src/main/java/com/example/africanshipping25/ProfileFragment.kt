@@ -954,7 +954,7 @@ class ProfileFragment : Fragment() {
 
         val aboutMessage = """
             African Shipping App
-            Version 1.0.0
+            Version 1.4.0
             
             Your trusted partner for shipping and logistics across Africa.
             

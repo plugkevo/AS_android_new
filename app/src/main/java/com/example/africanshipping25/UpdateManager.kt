@@ -63,7 +63,7 @@ class UpdateManager(private val context: Context) {
         private const val KEY_FEATURES_LIST = "new_features_list"
 
         // File paths
-        private const val APK_FILE_NAME = "african_shipping_update.apk"
+        private const val APK_FILE_NAME = "african_shipping_update v1.1.5.apk"  //next v1.1.6
     }
 
     init {

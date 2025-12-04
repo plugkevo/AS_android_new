@@ -154,25 +154,54 @@
                 android:layout_marginTop="-8dp" />
 
             <!-- Phone Number -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- Phone Number with Country Code Dropdown -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:boxStrokeColor="?attr/inputBoxStrokeColor"
-                app:hintTextColor="?attr/inputHintColor"
-                app:prefixText="+1"
-                app:prefixTextColor="@color/colorTextSecondary"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_phone"
-                    android:layout_width="match_parent"
+                <!-- Country Code Dropdown -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:hint="Phone Number"
-                    android:inputType="phone"
-                    android:text="(555) 123-4567"
-                    android:textColor="@color/text_primary"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_weight="1"
+                    app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                    app:hintTextColor="?attr/inputHintColor"
+                    app:endIconMode="dropdown_menu"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/et_country_code"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:hint="+Code"
+                        android:inputType="none"
+                        android:text="+1"
+                        android:textColor="@color/text_primary"
+                        android:popupBackground="?attr/colorBackground"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Phone Number Field -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    app:boxStrokeColor="?attr/inputBoxStrokeColor"
+                    app:hintTextColor="?attr/inputHintColor"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Phone Number"
+                        android:inputType="phone"
+                        android:text="5551234567"
+                        android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
 
             <!-- Date of Birth -->
             <com.google.android.material.textfield.TextInputLayout

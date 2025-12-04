@@ -188,14 +188,38 @@ class EditProfileDialogFragment : DialogFragment() {
         val genderAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, genderOptions)
         genderInput.setAdapter(genderAdapter)
 
-        // Country dropdown
         val countryOptions = arrayOf(
+            "Kenya",
             "United States", "Canada", "United Kingdom", "Germany", "France",
             "Spain", "Italy", "Netherlands", "Belgium", "Switzerland", "Australia",
-            "New Zealand", "Japan", "South Korea", "Singapore", "Other"
+            "New Zealand", "Japan", "South Korea", "Singapore", "India", "China",
+            "Brazil", "Mexico", "South Africa", "Nigeria", "Ghana", "Egypt",
+            "Turkey", "United Arab Emirates", "Saudi Arabia", "Argentina", "Chile",
+            "Sweden", "Norway", "Denmark", "Finland", "Poland", "Portugal",
+            "Greece", "Ireland", "Austria", "Czech Republic", "Hungary", "Russia",
+            "Thailand", "Malaysia", "Philippines", "Vietnam", "Indonesia",
+            "Colombia", "Peru", "Pakistan", "Bangladesh",
+            "Other"
         )
         val countryAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, countryOptions)
         countryInput.setAdapter(countryAdapter)
+
+        val countryCodes = arrayOf(
+            "+254 (Kenya)", "+1 (United States)", "+1 (Canada)", "+44 (United Kingdom)",
+            "+49 (Germany)", "+33 (France)", "+34 (Spain)", "+39 (Italy)", "+31 (Netherlands)",
+            "+32 (Belgium)", "+41 (Switzerland)", "+61 (Australia)", "+64 (New Zealand)",
+            "+81 (Japan)", "+82 (South Korea)", "+65 (Singapore)", "+91 (India)", "+86 (China)",
+            "+55 (Brazil)", "+52 (Mexico)", "+27 (South Africa)", "+234 (Nigeria)",
+            "+233 (Ghana)", "+20 (Egypt)", "+90 (Turkey)", "+971 (UAE)", "+966 (Saudi Arabia)",
+            "+54 (Argentina)", "+56 (Chile)", "+46 (Sweden)", "+47 (Norway)", "+45 (Denmark)",
+            "+358 (Finland)", "+48 (Poland)", "+351 (Portugal)", "+30 (Greece)", "+353 (Ireland)",
+            "+43 (Austria)", "+420 (Czech Republic)", "+36 (Hungary)", "+7 (Russia)",
+            "+66 (Thailand)", "+60 (Malaysia)", "+63 (Philippines)", "+84 (Vietnam)", "+62 (Indonesia)",
+            "+57 (Colombia)", "+51 (Peru)", "+92 (Pakistan)", "+880 (Bangladesh)", "Other"
+        )
+        val codeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, countryCodes)
+        val countryCodeInput: AutoCompleteTextView = requireView().findViewById(R.id.et_country_code)
+        countryCodeInput.setAdapter(codeAdapter)
     }
 
     private fun setupClickListeners() {
@@ -532,7 +556,7 @@ class EditProfileDialogFragment : DialogFragment() {
         }
 
         val phone = phoneInput.text.toString().trim()
-        if (phone.isNotEmpty() && phone.length < 10) {
+        if (phone.isNotEmpty() && phone.length < 9) {
             phoneInput.error = "Please enter a valid phone number"
             isValid = false
         }
