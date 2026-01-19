@@ -17,11 +17,9 @@
 
     <!-- Required permissions for in-app updates -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <!-- This is the missing permission causing the crash -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+
 
     <!-- For downloading files -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -43,7 +41,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize"/>
         <activity
-            android:name=".LoadingListDetailsActivity"
+            android:name="com.kevann.africanshipping25.loadinglists.LoadingListDetailsActivity"
             android:exported="false"
             android:theme="@style/Theme.AfricanShipping25"
             android:windowSoftInputMode="adjustResize"
@@ -60,7 +58,7 @@
             android:value="AIzaSyBwkHaDN56urDjlq0791LoeMSfShDRsidY" />
 
         <activity
-            android:name=".ViewShipment"
+            android:name="com.kevann.africanshipping25.shipments.ViewShipment"
             android:exported="false"
             android:theme="@style/Theme.AfricanShipping25"
             android:windowSoftInputMode="adjustResize"

@@ -71,6 +71,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20925324301:android:106c8e446e4b94dd43c944",
+        "android_client_info": {
+          "package_name": "com.kevann.africanshipping25"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "20925324301-pibcrfbe1bpe472h0b8llge8rocddgpi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAj0p3C9PmZKMRZkvK7YgCgx7I9ZlXhBA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "20925324301-pibcrfbe1bpe472h0b8llge8rocddgpi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

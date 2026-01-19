@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.africanshipping25"
+    namespace = "com.kevann.africanshipping25"
     compileSdk = 35
     // Use stable API level
 
@@ -13,8 +13,8 @@ android {
         applicationId = "com.example.africanshipping25"
         minSdk = 24
         targetSdk = 34 // Use stable API level
-        versionCode = 6 //next 7
-        versionName = "1.1.6" //next 1.1.7
+        versionCode = 1 //next 7
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
