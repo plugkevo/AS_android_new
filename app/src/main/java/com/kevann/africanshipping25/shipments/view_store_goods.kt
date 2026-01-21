@@ -213,47 +213,62 @@ class view_store_goods : Fragment() {
             exportButton.setText("Exporting...")
 
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val filename = "StoreInventory_${currentShipmentId}_$timestamp.xls"
+            val filename = "StoreInventory_${currentShipmentId}_$timestamp.csv"
 
-            val htmlContent = buildString {
-                appendLine("<html><body>")
-                appendLine("<table border='1'>")
-                appendLine("<tr style='background-color: lightgreen; font-weight: bold;'>")
-                appendLine("<td>Goods Number</td><td>Goods Name</td><td>Store Location</td><td>Export Date</td><td>Shipment ID</td>")
-                appendLine("</tr>")
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            val currentDate = dateFormat.format(Date())
 
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                val currentDate = dateFormat.format(Date())
+            val csvContent = buildString {
+                // Add BOM for Excel to recognize UTF-8
+                append("\uFEFF")
+                // Header row
+                append("Goods Number,Goods Name,Store Location,Export Date,Shipment ID\n")
 
+                // Data rows
                 allStoreGoods.forEach { storeGood ->
-                    appendLine("<tr>")
-                    appendLine("<td>${storeGood.goodsNumber ?: ""}</td>")
-                    appendLine("<td>${storeGood.name ?: ""}</td>")
-                    appendLine("<td>${storeGood.storeLocation ?: ""}</td>")
-                    appendLine("<td>$currentDate</td>")
-                    appendLine("<td>${currentShipmentId ?: ""}</td>")
-                    appendLine("</tr>")
+                    append("\"${escapeCsvField(storeGood.goodsNumber?.toString() ?: "")}\",")
+                    append("\"${escapeCsvField(storeGood.name ?: "")}\",")
+                    append("\"${escapeCsvField(storeGood.storeLocation ?: "")}\",")
+                    append("\"$currentDate\",")
+                    append("\"${escapeCsvField(currentShipmentId ?: "")}\"\n")
                 }
-
-                appendLine("</table>")
-                appendLine("</body></html>")
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                saveHTMLToDownloads(htmlContent, filename)
+                val resolver = requireContext().contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                uri?.let {
+                    resolver.openOutputStream(it)?.use { outputStream ->
+                        outputStream.write(csvContent.toByteArray(Charsets.UTF_8))
+                        Toast.makeText(requireContext(), "File exported to Downloads: $filename\nOpen with Excel or Google Sheets", Toast.LENGTH_LONG).show()
+                    }
+                }
             } else {
-                saveHTMLToExternalStorage(htmlContent, filename)
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloadsDir.exists()) downloadsDir.mkdirs()
+
+                File(downloadsDir, filename).writeText(csvContent, Charsets.UTF_8)
+                Toast.makeText(requireContext(), "File exported to Downloads: $filename\nOpen with Excel or Google Sheets", Toast.LENGTH_LONG).show()
             }
 
         } catch (e: Exception) {
-            Log.e("ExportExcel", "Error exporting to Excel", e)
-            Toast.makeText(requireContext(), "Error exporting file: ${e.message}", Toast.LENGTH_LONG).show()
+            Log.e("ExportExcel", "Error exporting", e)
+            Toast.makeText(requireContext(), "Error exporting: ${e.message}", Toast.LENGTH_LONG).show()
         } finally {
             exportButton.isEnabled = true
             exportButton.setText("Export")
         }
     }
 
+    private fun escapeCsvField(field: String): String {
+        return field.replace("\"", "\"\"")
+    }
     private fun saveCSVToDownloads(content: String, filename: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val resolver = requireContext().contentResolver

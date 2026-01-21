@@ -219,29 +219,67 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
 
         val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
         val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
+        val originLatEditText = dialogView.findViewById<EditText>(R.id.et_origin_lat)
+        val originLngEditText = dialogView.findViewById<EditText>(R.id.et_origin_lng)
         val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
-        val weightEditText = dialogView.findViewById<EditText>(R.id.et_details)
+        val destLatEditText = dialogView.findViewById<EditText>(R.id.et_dest_lat)
+        val destLngEditText = dialogView.findViewById<EditText>(R.id.et_dest_lng)
+        val detailsEditText = dialogView.findViewById<EditText>(R.id.et_details)
         val createButton = dialogView.findViewById<Button>(R.id.btn_create)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
         createButton.setOnClickListener {
             val name = nameEditText.text.toString().trim()
             val origin = originEditText.text.toString().trim()
+            val originLatStr = originLatEditText.text.toString().trim()
+            val originLngStr = originLngEditText.text.toString().trim()
             val destination = destinationEditText.text.toString().trim()
-            val weightStr = weightEditText.text.toString().trim()
+            val destLatStr = destLatEditText.text.toString().trim()
+            val destLngStr = destLngEditText.text.toString().trim()
+            val details = detailsEditText.text.toString().trim()
 
-            if (name.isEmpty() || origin.isEmpty() || destination.isEmpty() || weightStr.isEmpty()) {
-                showTranslatedToast("Please fill in all the details")
+            // Validate required fields
+            if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
+                showTranslatedToast("Please fill in name, origin and destination")
                 return@setOnClickListener
             }
 
-            val weight = weightStr
+            // Validate coordinates
+            val originLat = originLatStr.toDoubleOrNull()
+            val originLng = originLngStr.toDoubleOrNull()
+            val destLat = destLatStr.toDoubleOrNull()
+            val destLng = destLngStr.toDoubleOrNull()
+
+            if (originLat == null || originLng == null) {
+                showTranslatedToast("Please enter valid origin coordinates")
+                return@setOnClickListener
+            }
+
+            if (destLat == null || destLng == null) {
+                showTranslatedToast("Please enter valid destination coordinates")
+                return@setOnClickListener
+            }
+
+            // Validate coordinate ranges
+            if (originLat < -90 || originLat > 90 || destLat < -90 || destLat > 90) {
+                showTranslatedToast("Latitude must be between -90 and 90")
+                return@setOnClickListener
+            }
+
+            if (originLng < -180 || originLng > 180 || destLng < -180 || destLng > 180) {
+                showTranslatedToast("Longitude must be between -180 and 180")
+                return@setOnClickListener
+            }
 
             val shipment = hashMapOf(
                 "name" to name,
                 "origin" to origin,
+                "originLat" to originLat,
+                "originLng" to originLng,
                 "destination" to destination,
-                "weight" to weight,
+                "destLat" to destLat,
+                "destLng" to destLng,
+                "weight" to details,
                 "status" to "Active",
                 "createdAt" to FieldValue.serverTimestamp()
             )
@@ -267,9 +305,24 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
     private fun translateCreateShipmentDialog(dialogView: View) {
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
 
-        // Use the same translation pattern as ProfileFragment
         dialogView.findViewById<TextView>(R.id.tv_dialog_title)?.let { textView ->
             translationHelper.translateAndSetText(textView, "Create New Shipment", currentLanguage)
+        }
+
+        dialogView.findViewById<TextView>(R.id.tv_name_label)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Name", currentLanguage)
+        }
+
+        dialogView.findViewById<TextView>(R.id.tv_origin_label)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Origin", currentLanguage)
+        }
+
+        dialogView.findViewById<TextView>(R.id.tv_destination_label)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Destination", currentLanguage)
+        }
+
+        dialogView.findViewById<TextView>(R.id.tv_details_label)?.let { textView ->
+            translationHelper.translateAndSetText(textView, "Package Details", currentLanguage)
         }
 
         dialogView.findViewById<Button>(R.id.btn_create)?.let { button ->
@@ -292,19 +345,43 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         }
 
         dialogView.findViewById<EditText>(R.id.et_origin)?.let { editText ->
-            translationHelper.translateText("Enter origin", currentLanguage) { translatedText ->
+            translationHelper.translateText("Enter origin name (e.g., Mombasa Port)", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_origin_lat)?.let { editText ->
+            translationHelper.translateText("Origin Latitude", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_origin_lng)?.let { editText ->
+            translationHelper.translateText("Origin Longitude", currentLanguage) { translatedText ->
                 editText.hint = translatedText
             }
         }
 
         dialogView.findViewById<EditText>(R.id.et_destination)?.let { editText ->
-            translationHelper.translateText("Enter destination", currentLanguage) { translatedText ->
+            translationHelper.translateText("Enter destination name (e.g., Kampala)", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_dest_lat)?.let { editText ->
+            translationHelper.translateText("Dest Latitude", currentLanguage) { translatedText ->
+                editText.hint = translatedText
+            }
+        }
+
+        dialogView.findViewById<EditText>(R.id.et_dest_lng)?.let { editText ->
+            translationHelper.translateText("Dest Longitude", currentLanguage) { translatedText ->
                 editText.hint = translatedText
             }
         }
 
         dialogView.findViewById<EditText>(R.id.et_details)?.let { editText ->
-            translationHelper.translateText("Enter weight/details", currentLanguage) { translatedText ->
+            translationHelper.translateText("Enter details", currentLanguage) { translatedText ->
                 editText.hint = translatedText
             }
         }

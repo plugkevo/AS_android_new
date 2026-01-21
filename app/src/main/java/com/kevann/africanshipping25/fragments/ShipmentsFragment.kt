@@ -82,9 +82,10 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         rvAllShipments.visibility = View.GONE
 
         firestore.collection("shipments")
+            .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)  // Order by timestamp, newest first
             .get()
             .addOnCompleteListener { task ->
-                lottieLoadingAnimation.cancelAnimation() // Stop loading animation when fetch completes
+                lottieLoadingAnimation.cancelAnimation()
 
                 if (task.isSuccessful) {
                     allShipmentsList.clear()
@@ -101,14 +102,12 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                     shipmentAdapter.notifyDataSetChanged()
 
                     if (allShipmentsList.isEmpty()) {
-                        // If no data in DB, show no data Lottie and message
                         lottieNoDataAnimation.visibility = View.VISIBLE
                         lottieNoDataAnimation.playAnimation()
                         tvNoDataMessage.visibility = View.VISIBLE
-                        tvNoDataMessage.text = "No shipments found in the database." // Initial no data message
+                        tvNoDataMessage.text = "No shipments found in the database."
                         rvAllShipments.visibility = View.GONE
                     } else {
-                        // Data exists, hide Lottie and message, show RecyclerView
                         lottieNoDataAnimation.visibility = View.GONE
                         lottieNoDataAnimation.cancelAnimation()
                         tvNoDataMessage.visibility = View.GONE
@@ -117,18 +116,15 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                 } else {
                     Log.w("AllShipmentsFragment", "Error getting documents.", task.exception)
                     Toast.makeText(requireContext(), "Error loading shipments: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                    // On error, show a message indicating failure
-                    lottieNoDataAnimation.visibility = View.GONE // No specific error Lottie, so hide it
+                    lottieNoDataAnimation.visibility = View.GONE
                     lottieNoDataAnimation.cancelAnimation()
-                    tvNoDataMessage.text = "Failed to load shipments. Please try again." // Specific error message
+                    tvNoDataMessage.text = "Failed to load shipments. Please try again."
                     tvNoDataMessage.visibility = View.VISIBLE
                     rvAllShipments.visibility = View.GONE
                 }
-                // Always hide loading animation here, regardless of success/failure
                 lottieLoadingAnimation.visibility = View.GONE
             }
     }
-
     private fun setupSearchAndFilters() {
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

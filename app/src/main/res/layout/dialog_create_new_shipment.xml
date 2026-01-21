@@ -1,135 +1,210 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="?attr/colorBackground">
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/tv_dialog_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create New Shipment"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="?attr/titleColor"
-        android:layout_marginBottom="16dp" />
-    <!-- Name -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Name"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="?attr/tvColor"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/et_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter shipment name"
-        android:inputType="text"
-        android:padding="12dp"
-        android:textColor="?attr/InputTextColor"
-        android:textColorHint="?attr/InputHintColor"
-        android:background="@drawable/payment_input_background"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Origin -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Origin"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="?attr/tvColor"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/et_origin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter origin address"
-        android:inputType="text"
-        android:padding="12dp"
-        android:textColor="?attr/InputTextColor"
-        android:textColorHint="?attr/InputHintColor"
-        android:background="@drawable/payment_input_background"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Destination -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Destination"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="?attr/tvColor"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/et_destination"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter destination address"
-        android:inputType="text"
-        android:padding="12dp"
-        android:textColor="?attr/InputTextColor"
-        android:textColorHint="?attr/InputHintColor"
-        android:background="@drawable/payment_input_background"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Package Details -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Package Details"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="?attr/tvColor"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/et_details"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter details"
-        android:inputType="text"
-        android:padding="12dp"
-        android:textColor="?attr/InputTextColor"
-        android:textColorHint="?attr/InputHintColor"
-        android:background="@drawable/payment_input_background"
-        android:layout_marginBottom="8dp" />
-
-
-
-    <!-- Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="?attr/colorBackground">
 
-        <Button
-            android:id="@+id/btn_cancel"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tv_dialog_title"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Cancel"
-            android:textColor="@color/colorDarkBlue"
-            android:background="@android:color/transparent"
+            android:text="Create New Shipment"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?attr/titleColor"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Name -->
+        <TextView
+            android:id="@+id/tv_name_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/tvColor"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter shipment name"
+            android:inputType="text"
             android:padding="12dp"
-            android:layout_marginEnd="8dp" />
+            android:textColor="?attr/InputTextColor"
+            android:textColorHint="?attr/InputHintColor"
+            android:background="@drawable/payment_input_background"
+            android:layout_marginBottom="16dp" />
 
-        <Button
-            android:id="@+id/btn_create"
-            android:layout_width="wrap_content"
+        <!-- Origin Section -->
+        <TextView
+            android:id="@+id/tv_origin_label"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Create"
-            android:backgroundTint="?attr/buttonBackgroundTint"
-            android:textColor="?attr/buttonTextColor"
-            android:padding="12dp" />
+            android:text="Origin"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/tvColor"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_origin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter origin name (e.g., Mombasa Port)"
+            android:inputType="text"
+            android:padding="12dp"
+            android:textColor="?attr/InputTextColor"
+            android:textColorHint="?attr/InputHintColor"
+            android:background="@drawable/payment_input_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Origin Coordinates -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/et_origin_lat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Origin Latitude"
+                android:inputType="numberDecimal|numberSigned"
+                android:padding="12dp"
+                android:textColor="?attr/InputTextColor"
+                android:textColorHint="?attr/InputHintColor"
+                android:background="@drawable/payment_input_background"
+                android:layout_marginEnd="8dp" />
+
+            <EditText
+                android:id="@+id/et_origin_lng"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Origin Longitude"
+                android:inputType="numberDecimal|numberSigned"
+                android:padding="12dp"
+                android:textColor="?attr/InputTextColor"
+                android:textColorHint="?attr/InputHintColor"
+                android:background="@drawable/payment_input_background" />
+        </LinearLayout>
+
+        <!-- Destination Section -->
+        <TextView
+            android:id="@+id/tv_destination_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Destination"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/tvColor"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_destination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter destination name (e.g., Kampala)"
+            android:inputType="text"
+            android:padding="12dp"
+            android:textColor="?attr/InputTextColor"
+            android:textColorHint="?attr/InputHintColor"
+            android:background="@drawable/payment_input_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Destination Coordinates -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/et_dest_lat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Dest Latitude"
+                android:inputType="numberDecimal|numberSigned"
+                android:padding="12dp"
+                android:textColor="?attr/InputTextColor"
+                android:textColorHint="?attr/InputHintColor"
+                android:background="@drawable/payment_input_background"
+                android:layout_marginEnd="8dp" />
+
+            <EditText
+                android:id="@+id/et_dest_lng"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Dest Longitude"
+                android:inputType="numberDecimal|numberSigned"
+                android:padding="12dp"
+                android:textColor="?attr/InputTextColor"
+                android:textColorHint="?attr/InputHintColor"
+                android:background="@drawable/payment_input_background" />
+        </LinearLayout>
+
+        <!-- Package Details -->
+        <TextView
+            android:id="@+id/tv_details_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Package Details"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/tvColor"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter details"
+            android:inputType="text"
+            android:padding="12dp"
+            android:textColor="?attr/InputTextColor"
+            android:textColorHint="?attr/InputHintColor"
+            android:background="@drawable/payment_input_background"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btn_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:textColor="@color/colorDarkBlue"
+                android:background="@android:color/transparent"
+                android:padding="12dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_create"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create"
+                android:backgroundTint="?attr/buttonBackgroundTint"
+                android:textColor="?attr/buttonTextColor"
+                android:padding="12dp" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

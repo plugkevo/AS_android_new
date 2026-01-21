@@ -17,4 +17,8 @@
         android:id="@+id/viewStoreGoods"
         android:icon="@drawable/ic_truck_view"
         android:title="View Store" />
+    <item
+        android:id="@+id/tracking"
+        android:icon="@drawable/ic_tracking"
+        android:title="Tracking" />
 </menu>

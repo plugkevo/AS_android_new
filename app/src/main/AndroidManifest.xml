@@ -36,7 +36,7 @@
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.AfricanShipping25">
         <activity
-            android:name=".NotificationsActivity"
+            android:name="com.kevann.africanshipping25.notifications.NotificationsActivity"
             android:theme="@style/Theme.AfricanShipping25"
             android:exported="false"
             android:windowSoftInputMode="adjustResize"/>
@@ -47,7 +47,7 @@
             android:windowSoftInputMode="adjustResize"
             />
         <activity
-            android:name=".MapsActivity"
+            android:name="com.kevann.africanshipping25.fragments.MapsActivity"
             android:exported="false"
             android:theme="@style/Theme.AfricanShipping25"
             android:windowSoftInputMode="adjustResize"

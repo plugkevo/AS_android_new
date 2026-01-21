@@ -119,7 +119,7 @@ dependencies {
 
     implementation("com.google.firebase:firebase-storage:20.3.0")
 
-
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     implementation("com.google.firebase:firebase-config-ktx:22.0.0")
 }

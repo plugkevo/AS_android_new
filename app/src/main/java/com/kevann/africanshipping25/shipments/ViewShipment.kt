@@ -5,8 +5,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.kevann.africanshipping25.R  // Add this import
-
+import com.kevann.africanshipping25.R
 
 class ViewShipment : AppCompatActivity() {
 
@@ -31,8 +30,6 @@ class ViewShipment : AppCompatActivity() {
                 loadFragment(enter_truck_goods.newInstance(currentShipmentId!!))
             } else {
                 Toast.makeText(this, "No Shipment ID was passed.", Toast.LENGTH_SHORT).show()
-                // You might also want to load a very basic default fragment here
-
             }
         }
     }
@@ -41,7 +38,7 @@ class ViewShipment : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.enterTruckGoods -> {
-                    currentShipmentId?.let { //passing id
+                    currentShipmentId?.let {
                         loadFragment(enter_truck_goods.newInstance(it))
                         return@setOnItemSelectedListener true
                     }
@@ -50,9 +47,15 @@ class ViewShipment : AppCompatActivity() {
                 }
                 R.id.viewTruckGoods -> {
                     currentShipmentId?.let {
-                    // Load your view truck goods fragment without passing shipmentId initially
                         loadFragment(view_truck_goods.newInstance(it))
-
+                        return@setOnItemSelectedListener true
+                    }
+                    Toast.makeText(this, "No Shipment selected.", Toast.LENGTH_SHORT).show()
+                    return@setOnItemSelectedListener false
+                }
+                R.id.tracking -> {
+                    currentShipmentId?.let {
+                        loadFragment(TrackingFragment.newInstance(it))
                         return@setOnItemSelectedListener true
                     }
                     Toast.makeText(this, "No Shipment selected.", Toast.LENGTH_SHORT).show()
@@ -68,9 +71,7 @@ class ViewShipment : AppCompatActivity() {
                 }
                 R.id.viewStoreGoods -> {
                     currentShipmentId?.let {
-                        // Load your view truck goods fragment without passing shipmentId initially
                         loadFragment(view_store_goods.newInstance(it))
-
                         return@setOnItemSelectedListener true
                     }
                     Toast.makeText(this, "No Shipment selected.", Toast.LENGTH_SHORT).show()
@@ -83,7 +84,7 @@ class ViewShipment : AppCompatActivity() {
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment) // Ensure this ID exists in activity_view_shipment.xml
+            .replace(R.id.fragment_container, fragment)
             .commit()
     }
 }
