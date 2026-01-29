@@ -767,7 +767,7 @@
                                 android:id="@+id/tv_version_desc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Version 1.0.0"
+                                android:text="Version 1.3.0"
                                 android:textSize="12sp"
                                 android:textColor="@color/colorTextSecondary" />
                         </LinearLayout>
@@ -788,10 +788,20 @@
             android:id="@+id/tv_app_version"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="African Shipping v1.4.0"
+            android:text="African Shipping v1.3.0"
             android:textSize="12sp"
             android:textColor="@color/colorTextSecondary"
             android:gravity="center"
             android:padding="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Developed by Kevann Technologies ❤️"
+            android:textSize="12sp"
+            android:textColor="?attr/textColorSecondary"
+            android:gravity="center"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp" />
     </LinearLayout>
 </ScrollView>

@@ -81,6 +81,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "20925324301-jv7f5stmdn7425jgjsqeliodvjohnq5l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kevann.africanshipping25",
+            "certificate_hash": "88e8209d978de414cf3ef9dde6386e188454a7b8"
+          }
+        },
+        {
           "client_id": "20925324301-pibcrfbe1bpe472h0b8llge8rocddgpi.apps.googleusercontent.com",
           "client_type": 3
         }

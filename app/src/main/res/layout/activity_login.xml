@@ -179,6 +179,15 @@
                 android:textColor="?attr/linkTextColor"
                 android:textStyle="bold" />
             </LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Developed by Kevann Technologies ❤️"
+                android:textSize="12sp"
+                android:textColor="?attr/textColorSecondary"
+                android:gravity="center"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp" />
         </LinearLayout>
     </ScrollView>
 
