@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.kevann.africanshipping25.R
 import com.kevann.africanshipping25.search.GlobalSearchFragment
 
@@ -58,9 +59,8 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         loadingAnimationView = view.findViewById(R.id.loading_animation_view) // Initialize LottieAnimationView
         contentLayout = view.findViewById(R.id.content_layout) // Initialize contentLayout
 
-        // Initialize buttons
-        val btnCreateLoadingList = view.findViewById<Button>(R.id.btn_create_loading_list)
-        val btnSearchAllGoods = view.findViewById<Button>(R.id.btn_search_all_goods)
+        // Initialize FAB
+        val fabCreateLoadingList = view.findViewById<FloatingActionButton>(R.id.fab_create_loading_list)
 
         // Now that all views are initialized, proceed with other setup
         rvAllLoadingLists.layoutManager = LinearLayoutManager(requireContext())
@@ -70,13 +70,9 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         fetchLoadingLists() // This is now safe to call as loadingAnimationView is initialized
         setupSearch()
 
-        // Set up button click listeners
-        btnCreateLoadingList.setOnClickListener {
+        // Set up FAB click listener
+        fabCreateLoadingList.setOnClickListener {
             showCreateLoadingListDialog()
-        }
-
-        btnSearchAllGoods.setOnClickListener {
-            navigateToGlobalSearch()
         }
     }
 
@@ -300,16 +296,6 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         cancelButton.setOnClickListener {
             dialog.dismiss()
             Toast.makeText(requireContext(), "Loading list creation cancelled.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun navigateToGlobalSearch() {
-        val currentFragment = parentFragmentManager.findFragmentById(R.id.fragment_container)
-        if (currentFragment !is GlobalSearchFragment) {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, GlobalSearchFragment())
-                .addToBackStack("global_search")
-                .commit()
         }
     }
 }

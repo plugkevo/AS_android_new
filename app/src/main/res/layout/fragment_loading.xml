@@ -22,33 +22,14 @@
             android:textColor="?attr/homeTitleColor"
             android:layout_marginBottom="16dp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_create_loading_list"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"
-            android:spacing="8dp">
-
-            <Button
-                android:id="@+id/btn_create_loading_list"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Create Loading List"
-                android:textColor="?attr/colorOnPrimary"
-                android:background="?attr/colorPrimary"
-                android:layout_marginEnd="8dp" />
-
-            <Button
-                android:id="@+id/btn_search_all_goods"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Search All Goods"
-                android:textColor="?attr/colorOnSecondary"
-                android:background="?attr/colorSecondary" />
-        </LinearLayout>
+            android:layout_margin="16dp"
+            app:srcCompat="@drawable/ic_add"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -59,31 +40,31 @@
             android:layout_marginBottom="16dp">
 
             <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_search"
-                android:layout_marginEnd="8dp"
-                android:contentDescription="Search"
-                app:tint="?attr/searchIconTint" />
-
-            <EditText
-                android:id="@+id/et_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@null"
-                android:hint="Search loading lists..."
-                android:textColorHint="?attr/searchHintColor"
-                android:textColor="?attr/searchTextColor"
-                android:inputType="text"
-                android:padding="8dp"
-                android:textSize="16sp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_search"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="Search"
+                    app:tint="?attr/searchIconTint" />
+
+                <EditText
+                    android:id="@+id/et_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:hint="Search loading lists..."
+                    android:textColorHint="?attr/searchHintColor"
+                    android:textColor="?attr/searchTextColor"
+                    android:inputType="text"
+                    android:padding="8dp"
+                    android:textSize="16sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
