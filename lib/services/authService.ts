@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth'
-import { auth } from './firebase'
+import { auth } from '@/lib/firebase'
 
 export interface AuthUser extends User {
   displayName?: string | null
@@ -18,42 +18,73 @@ export interface AuthUser extends User {
 
 export const authService = {
   async signUp(email: string, password: string, displayName: string) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-    await updateProfile(userCredential.user, { displayName })
-    return userCredential.user
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      await updateProfile(userCredential.user, { displayName })
+      return userCredential.user
+    } catch (error) {
+      console.error('[Auth] Sign up failed:', error)
+      throw error
+    }
   },
 
   async signIn(email: string, password: string) {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password)
-    return userCredential.user
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      return userCredential.user
+    } catch (error) {
+      console.error('[Auth] Sign in failed:', error)
+      throw error
+    }
   },
 
   async signInWithGoogle() {
-    const provider = new GoogleAuthProvider()
-    const result = await signInWithPopup(auth, provider)
-    return result.user
+    try {
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      return result.user
+    } catch (error) {
+      console.error('[Auth] Google sign in failed:', error)
+      throw error
+    }
   },
 
   async logout() {
-    await signOut(auth)
+    try {
+      await signOut(auth)
+    } catch (error) {
+      console.error('[Auth] Logout failed:', error)
+      throw error
+    }
   },
 
   onAuthStateChanged(callback: (user: AuthUser | null) => void) {
-    return onAuthStateChanged(auth, (user) => {
-      callback(user as AuthUser | null)
-    })
+    try {
+      return onAuthStateChanged(auth, (user) => {
+        callback(user as AuthUser | null)
+      })
+    } catch (error) {
+      console.error('[Auth] State change listener failed:', error)
+      callback(null)
+    }
   },
 
   getCurrentUser(): AuthUser | null {
+    if (!auth) return null
     return auth.currentUser as AuthUser | null
   },
 
   async updateUserProfile(displayName: string, photoURL?: string) {
-    if (auth.currentUser) {
-      await updateProfile(auth.currentUser, {
-        displayName,
-        photoURL,
-      })
+    try {
+      if (auth && auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName,
+          photoURL,
+        })
+      }
+    } catch (error) {
+      console.error('[Auth] Update profile failed:', error)
+      throw error
     }
   },
 }
