@@ -112,7 +112,9 @@
     <color name="nav_icon_selected">#64B5F6</color>
     <color name="nav_icon_unselected">#1A237E</color>
 
-
+    <!-- Global Search Colors -->
+    <color name="category_store">#4CAF50</color>
+    <color name="category_truck">#FF9800</color>
 
 
 

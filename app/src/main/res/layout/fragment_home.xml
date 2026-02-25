@@ -152,7 +152,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/card_loading"
+                android:id="@+id/card_search_goods"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -170,13 +170,13 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginBottom="8dp"
-                        android:contentDescription="Reports"
-                        android:src="@drawable/ic_list_add_color" />
+                        android:contentDescription="Search Goods"
+                        android:src="@drawable/ic_search" />
                     <TextView
-                        android:id="@+id/tv_loading_list_label"
+                        android:id="@+id/tv_search_goods_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Loading List"
+                        android:text="Search Goods"
                         android:textColor="?attr/actionCardTextColor"
                         android:textSize="14sp" />
                 </LinearLayout>

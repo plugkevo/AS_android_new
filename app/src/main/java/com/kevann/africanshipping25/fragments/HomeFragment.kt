@@ -27,7 +27,8 @@ import com.kevann.africanshipping25.shipments.ShipmentAdapter
 import com.kevann.africanshipping25.shipments.ViewShipment
 import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import com.kevann.africanshipping25.translation.GoogleTranslationManager
-import com.kevann.africanshipping25.R  // Add this import
+import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.search.GlobalSearchFragment
 
 class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
 
@@ -127,8 +128,8 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
                 translationHelper.translateAndSetText(textView, "Create Shipment", targetLanguage)
             }
 
-            v.findViewById<TextView>(R.id.tv_loading_list_label)?.let { textView ->
-                translationHelper.translateAndSetText(textView, "Loading List", targetLanguage)
+            v.findViewById<TextView>(R.id.tv_search_goods_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Search Goods", targetLanguage)
             }
 
             v.findViewById<TextView>(R.id.tv_track_shipment_label)?.let { textView ->
@@ -143,9 +144,9 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
             showCreateShipmentDialog()
         }
 
-        val showCreateLoadingListDialogButton = view.findViewById<CardView>(R.id.card_loading)
-        showCreateLoadingListDialogButton?.setOnClickListener {
-            showCreateLoadingListDialog()
+        val searchGoodsButton = view.findViewById<CardView>(R.id.card_search_goods)
+        searchGoodsButton?.setOnClickListener {
+            navigateToGlobalSearch()
         }
 
         val mapsbtn = view.findViewById<CardView>(R.id.card_track_shipment)
@@ -387,64 +388,6 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         }
     }
 
-    private fun showCreateLoadingListDialog() {
-        val builder = AlertDialog.Builder(requireContext())
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_loading, null)
-        builder.setView(dialogView)
-
-        val dialog = builder.create()
-
-        // Translate dialog elements using ProfileFragment pattern
-        translateCreateLoadingDialog(dialogView)
-
-        dialog.show()
-
-        val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
-        val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
-        val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
-        val extraDetailsEditText = dialogView.findViewById<EditText>(R.id.et_details)
-        val createButton = dialogView.findViewById<Button>(R.id.btn_create)
-        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
-
-        createButton.setOnClickListener {
-            val name = nameEditText.text.toString().trim()
-            val origin = originEditText.text.toString().trim()
-            val destination = destinationEditText.text.toString().trim()
-            val extraDetails = extraDetailsEditText.text.toString().trim()
-
-            if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
-                showTranslatedToast("Name, Origin, and Destination are required.")
-                return@setOnClickListener
-            }
-
-            val loadingList = hashMapOf(
-                "name" to name,
-                "origin" to origin,
-                "destination" to destination,
-                "extraDetails" to extraDetails,
-                "status" to "New",
-                "createdAt" to FieldValue.serverTimestamp()
-            )
-
-            firestore.collection("loading_lists")
-                .add(loadingList)
-                .addOnSuccessListener { documentReference ->
-                    showTranslatedToast("Loading List created successfully!")
-                    Log.d(TAG, "Loading List Document added with ID: ${documentReference.id}")
-                    dialog.dismiss()
-                }
-                .addOnFailureListener { e ->
-                    showTranslatedToast("Error creating loading list: ${e.message}")
-                    Log.e(TAG, "Error adding loading list document", e)
-                }
-        }
-
-        cancelButton.setOnClickListener {
-            dialog.dismiss()
-            showTranslatedToast("Loading list creation cancelled.")
-        }
-    }
-
     private fun translateCreateLoadingDialog(dialogView: View) {
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
 
@@ -515,6 +458,16 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
         super.onDestroy()
         if (::translationManager.isInitialized) {
             translationManager.cleanup()
+        }
+    }
+
+    private fun navigateToGlobalSearch() {
+        val currentFragment = parentFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment !is GlobalSearchFragment) {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, GlobalSearchFragment())
+                .addToBackStack("global_search")
+                .commit()
         }
     }
 }

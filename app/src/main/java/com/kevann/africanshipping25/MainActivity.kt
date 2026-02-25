@@ -29,6 +29,7 @@ import com.kevann.africanshipping25.fragments.ProfileFragment
 import com.kevann.africanshipping25.fragments.ShipmentsFragment
 import com.kevann.africanshipping25.loadinglists.LoadingFragment
 import com.kevann.africanshipping25.notifications.ViewNotificationsFragment
+import com.kevann.africanshipping25.search.GlobalSearchFragment
 import com.kevann.africanshipping25.shipments.NewShipmentDialogFragment
 import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import com.kevann.africanshipping25.translation.GoogleTranslationManager
@@ -504,6 +505,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 is PaymentFragment -> translateToolbarTitle("Payment", currentLanguage)
                 is ViewNotificationsFragment -> translateToolbarTitle("Notifications", currentLanguage)
                 is ProfileFragment -> translateToolbarTitle("Profile", currentLanguage)
+                is GlobalSearchFragment -> translateToolbarTitle("Search Goods", currentLanguage)
             }
         } else {
             super.onBackPressed()

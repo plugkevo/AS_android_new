@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.FirebaseFirestore
 import com.airbnb.lottie.LottieAnimationView
 import com.kevann.africanshipping25.shipments.Shipment
@@ -64,12 +65,19 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         lottieNoDataAnimation = view.findViewById(R.id.lottie_no_data_animation) // Initialize no data Lottie
         tvNoDataMessage = view.findViewById(R.id.tv_no_data_message)
 
+        val fabCreateShipment = view.findViewById<FloatingActionButton>(R.id.fab_create_shipment)
+
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
         shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this)
         rvAllShipments.adapter = shipmentAdapter
 
         fetchShipments()
         setupSearchAndFilters()
+
+        // Set up FAB click listener
+        fabCreateShipment.setOnClickListener {
+            showCreateShipmentDialog()
+        }
     }
 
     private fun fetchShipments() {
@@ -289,6 +297,81 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             tvNoDataMessage.visibility = View.GONE
             tvNoDataMessage.text = "No shipments found in the database." // Reset to default for next potential no data
             rvAllShipments.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showCreateShipmentDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_new_shipment, null)
+        builder.setView(dialogView)
+        val dialog = builder.create()
+        dialog.show()
+
+        val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
+        val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
+        val originLatEditText = dialogView.findViewById<EditText>(R.id.et_origin_lat)
+        val originLngEditText = dialogView.findViewById<EditText>(R.id.et_origin_lng)
+        val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
+        val destLatEditText = dialogView.findViewById<EditText>(R.id.et_dest_lat)
+        val destLngEditText = dialogView.findViewById<EditText>(R.id.et_dest_lng)
+        val detailsEditText = dialogView.findViewById<EditText>(R.id.et_details)
+        val createButton = dialogView.findViewById<Button>(R.id.btn_create)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
+
+        createButton.setOnClickListener {
+            val name = nameEditText.text.toString().trim()
+            val origin = originEditText.text.toString().trim()
+            val originLatStr = originLatEditText.text.toString().trim()
+            val originLngStr = originLngEditText.text.toString().trim()
+            val destination = destinationEditText.text.toString().trim()
+            val destLatStr = destLatEditText.text.toString().trim()
+            val destLngStr = destLngEditText.text.toString().trim()
+            val details = detailsEditText.text.toString().trim()
+
+            if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
+                Toast.makeText(requireContext(), "Please fill in name, origin and destination", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val originLat = originLatStr.toDoubleOrNull()
+            val originLng = originLngStr.toDoubleOrNull()
+            val destLat = destLatStr.toDoubleOrNull()
+            val destLng = destLngStr.toDoubleOrNull()
+
+            if (originLat == null || originLng == null || destLat == null || destLng == null) {
+                Toast.makeText(requireContext(), "Invalid coordinates. Please enter valid latitude and longitude.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val newShipment = hashMapOf(
+                "name" to name,
+                "origin" to origin,
+                "originLat" to originLat,
+                "originLng" to originLng,
+                "destination" to destination,
+                "destLat" to destLat,
+                "destLng" to destLng,
+                "details" to details,
+                "status" to "Active",
+                "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+            )
+
+            firestore.collection("shipments")
+                .add(newShipment)
+                .addOnSuccessListener { documentReference ->
+                    Toast.makeText(requireContext(), "Shipment created successfully!", Toast.LENGTH_SHORT).show()
+                    Log.d("ShipmentsFragment", "Shipment added with ID: ${documentReference.id}")
+                    dialog.dismiss()
+                    fetchShipments()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Error creating shipment: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("ShipmentsFragment", "Error adding shipment", e)
+                }
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
         }
     }
 }
