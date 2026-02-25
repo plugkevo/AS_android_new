@@ -1,9 +1,12 @@
-import { LoginForm } from '@/components/auth/LoginForm'
+'use client'
 
-export default function LoginPage() {
+import { AppLayout } from '@/components/AppLayout'
+import { NotificationsList } from '@/components/notifications/NotificationsList'
+
+export default function NotificationsPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <LoginForm />
-    </div>
+    <AppLayout>
+      <NotificationsList />
+    </AppLayout>
   )
 }

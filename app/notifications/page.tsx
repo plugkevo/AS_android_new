@@ -1,12 +1,12 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
-import { NotificationsList } from '@/components/notifications/NotificationsList'
+import { PaymentManagement } from '@/components/payments/PaymentManagement'
 
-export default function NotificationsPage() {
+export default function PaymentsPage() {
   return (
     <AppLayout>
-      <NotificationsList />
+      <PaymentManagement />
     </AppLayout>
   )
 }
