@@ -1,0 +1,52 @@
+# Android app files (not needed for web deployment)
+android/
+*.apk
+*.aab
+.gradle/
+build/
+local.properties
+
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Git and CI files
+.git/
+.github/
+.gitignore
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Documentation files (optional, comment out if you want them)
+# *.md
+
+# Dependencies caches
+node_modules/
+.pnp
+.cache/
+.npm/
+
+# Build and output
+.next/
+out/
+dist/
+build/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment (secrets shouldn't be deployed)
+.env
+.env.local
+.env.*.local
+
+# Other
+*.log
+lerna-debug.log*
