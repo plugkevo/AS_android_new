@@ -460,4 +460,14 @@ class HomeFragment : Fragment(), ShipmentAdapter.OnShipmentItemClickListener {
             translationManager.cleanup()
         }
     }
+
+    private fun navigateToGlobalSearch() {
+        val currentFragment = parentFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment !is GlobalSearchFragment) {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, GlobalSearchFragment())
+                .addToBackStack("global_search")
+                .commit()
+        }
+    }
 }
