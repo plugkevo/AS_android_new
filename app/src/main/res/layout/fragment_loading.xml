@@ -22,6 +22,34 @@
             android:textColor="?attr/homeTitleColor"
             android:layout_marginBottom="16dp" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:spacing="8dp">
+
+            <Button
+                android:id="@+id/btn_create_loading_list"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Create Loading List"
+                android:textColor="?attr/colorOnPrimary"
+                android:background="?attr/colorPrimary"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_search_all_goods"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Search All Goods"
+                android:textColor="?attr/colorOnSecondary"
+                android:background="?attr/colorSecondary" />
+        </LinearLayout>
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

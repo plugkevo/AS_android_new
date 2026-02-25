@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.search.GlobalSearchFragment
 
 // Ensure LoadingListItem data class is defined in LoadingListItem.kt
 // Ensure OnLoadingListItemClickListener interface is defined in LoadingListAdapter.kt
@@ -57,6 +58,10 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         loadingAnimationView = view.findViewById(R.id.loading_animation_view) // Initialize LottieAnimationView
         contentLayout = view.findViewById(R.id.content_layout) // Initialize contentLayout
 
+        // Initialize buttons
+        val btnCreateLoadingList = view.findViewById<Button>(R.id.btn_create_loading_list)
+        val btnSearchAllGoods = view.findViewById<Button>(R.id.btn_search_all_goods)
+
         // Now that all views are initialized, proceed with other setup
         rvAllLoadingLists.layoutManager = LinearLayoutManager(requireContext())
         loadingListAdapter = LoadingListAdapter(filteredLoadingLists, this)
@@ -64,6 +69,15 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
 
         fetchLoadingLists() // This is now safe to call as loadingAnimationView is initialized
         setupSearch()
+
+        // Set up button click listeners
+        btnCreateLoadingList.setOnClickListener {
+            showCreateLoadingListDialog()
+        }
+
+        btnSearchAllGoods.setOnClickListener {
+            navigateToGlobalSearch()
+        }
     }
 
     private fun showLoading() {
@@ -232,6 +246,70 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         cancelButton.setOnClickListener {
             dialog.dismiss()
             Toast.makeText(requireContext(), "Update cancelled.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showCreateLoadingListDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_loading, null)
+        builder.setView(dialogView)
+        val dialog = builder.create()
+        dialog.show()
+
+        val nameEditText = dialogView.findViewById<EditText>(R.id.et_name)
+        val originEditText = dialogView.findViewById<EditText>(R.id.et_origin)
+        val destinationEditText = dialogView.findViewById<EditText>(R.id.et_destination)
+        val extraDetailsEditText = dialogView.findViewById<EditText>(R.id.et_details)
+        val createButton = dialogView.findViewById<Button>(R.id.btn_create)
+        val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
+
+        createButton.setOnClickListener {
+            val name = nameEditText.text.toString().trim()
+            val origin = originEditText.text.toString().trim()
+            val destination = destinationEditText.text.toString().trim()
+            val extraDetails = extraDetailsEditText.text.toString().trim()
+
+            if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
+                Toast.makeText(requireContext(), "Name, Origin, and Destination are required.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val loadingList = hashMapOf(
+                "name" to name,
+                "origin" to origin,
+                "destination" to destination,
+                "extraDetails" to extraDetails,
+                "status" to "New",
+                "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+            )
+
+            firestore.collection("loading_lists")
+                .add(loadingList)
+                .addOnSuccessListener { documentReference ->
+                    Toast.makeText(requireContext(), "Loading List created successfully!", Toast.LENGTH_SHORT).show()
+                    Log.d("LoadingFragment", "Loading List Document added with ID: ${documentReference.id}")
+                    dialog.dismiss()
+                    fetchLoadingLists() // Refresh the list
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Error creating loading list: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("LoadingFragment", "Error adding loading list document", e)
+                }
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+            Toast.makeText(requireContext(), "Loading list creation cancelled.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun navigateToGlobalSearch() {
+        val currentFragment = parentFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment !is GlobalSearchFragment) {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, GlobalSearchFragment())
+                .addToBackStack("global_search")
+                .commit()
         }
     }
 }

@@ -32,7 +32,6 @@ import com.kevann.africanshipping25.notifications.ViewNotificationsFragment
 import com.kevann.africanshipping25.shipments.NewShipmentDialogFragment
 import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import com.kevann.africanshipping25.translation.GoogleTranslationManager
-import com.kevann.africanshipping25.search.GlobalSearchFragment
 
 class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -321,10 +320,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                     showLogoutConfirmation()
                     true
                 }
-                R.id.action_global_search -> {
-                    navigateToGlobalSearch()
-                    true
-                }
                 else -> false
             }
         }
@@ -345,12 +340,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 item.title = translatedText
             }
         }
-
-        menu.findItem(R.id.action_global_search)?.let { item ->
-            translationHelper.translateText("Search All Goods", targetLanguage) { translatedText ->
-                item.title = translatedText
-            }
-        }
     }
 
     private fun navigateToProfile() {
@@ -367,20 +356,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             // Translate and set toolbar title
             val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
             translateToolbarTitle("Profile", currentLanguage)
-        }
-    }
-
-    private fun navigateToGlobalSearch() {
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
-        if (currentFragment !is GlobalSearchFragment) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, GlobalSearchFragment())
-                .addToBackStack("global_search")
-                .commit()
-
-            // Translate and set toolbar title
-            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-            translateToolbarTitle("Search Goods", currentLanguage)
         }
     }
 
