@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.FirebaseFirestore
 import com.airbnb.lottie.LottieAnimationView
 import com.kevann.africanshipping25.shipments.Shipment
@@ -64,12 +65,20 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         lottieNoDataAnimation = view.findViewById(R.id.lottie_no_data_animation) // Initialize no data Lottie
         tvNoDataMessage = view.findViewById(R.id.tv_no_data_message)
 
+        val fabCreateShipment = view.findViewById<FloatingActionButton>(R.id.fab_create_shipment)
+
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
         shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this)
         rvAllShipments.adapter = shipmentAdapter
 
         fetchShipments()
         setupSearchAndFilters()
+
+        // Set up FAB click listener
+        fabCreateShipment.setOnClickListener {
+            val intent = Intent(requireContext(), com.kevann.africanshipping25.shipments.NewShipment::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun fetchShipments() {
