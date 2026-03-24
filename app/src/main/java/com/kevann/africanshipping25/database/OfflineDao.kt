@@ -81,3 +81,27 @@ interface LoadingListDao {
     @Query("SELECT * FROM loading_lists_offline WHERE name LIKE '%' || :searchTerm || '%' ORDER BY createdAt DESC")
     fun searchLoadingLists(searchTerm: String): Flow<List<LoadingListEntity>>
 }
+
+@Dao
+interface WarehouseGoodsDao {
+    @Insert
+    suspend fun insert(warehouseGoods: WarehouseGoodsEntity)
+
+    @Update
+    suspend fun update(warehouseGoods: WarehouseGoodsEntity)
+
+    @Delete
+    suspend fun delete(warehouseGoods: WarehouseGoodsEntity)
+
+    @Query("SELECT * FROM warehouse_goods_offline WHERE loadingListId = :loadingListId")
+    fun getWarehouseGoodsByLoadingList(loadingListId: String): Flow<List<WarehouseGoodsEntity>>
+
+    @Query("SELECT * FROM warehouse_goods_offline WHERE isSynced = 0")
+    suspend fun getUnsyncedWarehouseGoods(): List<WarehouseGoodsEntity>
+
+    @Query("UPDATE warehouse_goods_offline SET isSynced = 1 WHERE id = :id")
+    suspend fun markAsSynced(id: Int)
+
+    @Query("DELETE FROM warehouse_goods_offline WHERE id = :id")
+    suspend fun deleteById(id: Int)
+}

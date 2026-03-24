@@ -1,6 +1,10 @@
 package com.kevann.africanshipping25.loadinglists
 
 import android.app.DatePickerDialog
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -21,6 +25,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.database.OfflineDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 // Define a constant for the argument key
 private const val ARG_LOADING_LIST_ID = "loadingListId"
@@ -140,6 +148,21 @@ class EnterWarehouseGoods : Fragment() {
         dpd.show()
     }
 
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } else {
+            @Suppress("DEPRECATION")
+            val networkInfo = connectivityManager.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            networkInfo != null && networkInfo.isConnectedOrConnecting
+        }
+    }
+
     private fun saveWarehouseItems() {
         val senderName = editTextSenderName.text.toString().trim()
         val phoneNumber = editTextPhoneNumber.text.toString().trim() // Get phone number
@@ -186,6 +209,15 @@ class EnterWarehouseGoods : Fragment() {
             return
         }
 
+        // Check if online
+        if (isNetworkAvailable()) {
+            saveToFirestore(senderName, phoneNumber, date, goodsNumbersToSave)
+        } else {
+            saveToLocalDatabase(senderName, phoneNumber, date, goodsNumbersToSave)
+        }
+    }
+
+    private fun saveToFirestore(senderName: String, phoneNumber: String, date: String, goodsNumbersToSave: MutableList<String>) {
         var successCount = 0
         var failureCount = 0
         val totalItems = goodsNumbersToSave.size
@@ -195,7 +227,7 @@ class EnterWarehouseGoods : Fragment() {
             val warehouseItem = hashMapOf(
                 "goodNo" to goodNo,
                 "senderName" to senderName,
-                "phoneNumber" to phoneNumber, // Added phone number to the data map
+                "phoneNumber" to phoneNumber,
                 "date" to date,
                 "timestamp" to FieldValue.serverTimestamp() // Adds a server-generated timestamp
             )
@@ -212,9 +244,9 @@ class EnterWarehouseGoods : Fragment() {
                     if (successCount + failureCount == totalItems) {
                         // All items processed
                         if (failureCount == 0) {
-                            Toast.makeText(requireContext(), "All warehouse items added successfully!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "All warehouse items synced to cloud!", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(requireContext(), "Added $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(requireContext(), "Synced $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
                         }
                         clearInputFields()
                     }
@@ -224,17 +256,46 @@ class EnterWarehouseGoods : Fragment() {
                     failureCount++
                     if (successCount + failureCount == totalItems) {
                         // All items processed
-                        Toast.makeText(requireContext(), "Added $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(requireContext(), "Synced $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
                         clearInputFields()
                     }
                 }
         }
     }
 
+    private fun saveToLocalDatabase(senderName: String, phoneNumber: String, date: String, goodsNumbersToSave: MutableList<String>) {
+        val db = OfflineDatabase.getDatabase(requireContext())
+        var savedCount = 0
+        val totalItems = goodsNumbersToSave.size
+
+        GlobalScope.launch(Dispatchers.IO) {
+            for (goodNo in goodsNumbersToSave) {
+                val warehouseItemEntity = com.kevann.africanshipping25.database.WarehouseGoodsEntity(
+                    loadingListId = loadingListId!!,
+                    goodNo = goodNo,
+                    senderName = senderName,
+                    phoneNumber = phoneNumber,
+                    date = date,
+                    isSynced = false
+                )
+                db.offlineDao().insertWarehouseGoods(warehouseItemEntity)
+                savedCount++
+            }
+            
+            GlobalScope.launch(Dispatchers.Main) {
+                Toast.makeText(
+                    requireContext(),
+                    "Saved $totalItems warehouse items locally (will sync when online)",
+                    Toast.LENGTH_SHORT
+                ).show()
+                clearInputFields()
+            }
+        }
+    }
+
     private fun clearInputFields() {
         editTextSenderName.text.clear()
         editTextPhoneNumber.text.clear() // Clear the phone number field
-
 
         // Clear all dynamically added goods number fields and remove them
         goodsNumberEditTexts.clear()

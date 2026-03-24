@@ -38,3 +38,16 @@ data class LoadingListEntity(
     val isSynced: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "warehouse_goods_offline")
+data class WarehouseGoodsEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val loadingListId: String,
+    val goodNo: String,
+    val senderName: String,
+    val phoneNumber: String,
+    val date: String,
+    val isSynced: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)

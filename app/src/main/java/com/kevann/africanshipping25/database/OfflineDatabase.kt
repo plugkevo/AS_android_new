@@ -6,13 +6,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [TruckGoodsEntity::class, StoreGoodsEntity::class, LoadingListEntity::class],
+    entities = [TruckGoodsEntity::class, StoreGoodsEntity::class, LoadingListEntity::class, WarehouseGoodsEntity::class],
     version = 1
 )
 abstract class OfflineDatabase : RoomDatabase() {
     abstract fun truckGoodsDao(): TruckGoodsDao
     abstract fun storeGoodsDao(): StoreGoodsDao
     abstract fun loadingListDao(): LoadingListDao
+    abstract fun warehouseGoodsDao(): WarehouseGoodsDao
+
+    fun offlineDao(): OfflineDao {
+        return OfflineDao(truckGoodsDao(), storeGoodsDao(), loadingListDao(), warehouseGoodsDao())
+    }
 
     companion object {
         @Volatile
@@ -26,6 +31,10 @@ abstract class OfflineDatabase : RoomDatabase() {
                     "offline_shipping_db"
                 ).build().also { instance = it }
             }
+        }
+
+        fun getDatabase(context: Context): OfflineDatabase {
+            return getInstance(context)
         }
     }
 }
