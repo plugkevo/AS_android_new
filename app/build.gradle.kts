@@ -17,6 +17,9 @@ android {
         versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Add AIS Hub API Key
+        buildConfigField("String", "AIS_HUB_API_KEY", "\"${project.findProperty("AIS_HUB_API_KEY") ?: ""}\"")
     }
 
     buildTypes {
