@@ -21,6 +21,7 @@ class SyncManager(private val context: Context) {
                 syncTruckGoods()
                 syncStoreGoods()
                 syncLoadingLists()
+                syncWarehouseGoods()
             }
         }
     }
@@ -113,5 +114,34 @@ class SyncManager(private val context: Context) {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    private suspend fun syncWarehouseGoods() {
+        try {
+            val unsyncedGoods = db.warehouseGoodsDao().getUnsyncedWarehouseGoods()
+            for (good in unsyncedGoods) {
+                firestore.collection("loading_lists")
+                    .document(good.loadingListId)
+                    .collection("warehouseItems")
+                    .add(mapOf(
+                        "goodNo" to good.goodNo,
+                        "senderName" to good.senderName,
+                        "phoneNumber" to good.phoneNumber,
+                        "date" to good.date,
+                        "createdAt" to System.currentTimeMillis()
+                    ))
+                    .addOnSuccessListener {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            db.warehouseGoodsDao().markAsSynced(good.id)
+                        }
+                        Log.d(tag, "Warehouse good synced: ${good.id}")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(tag, "Error syncing warehouse good: ${e.message}")
+                    }
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Error syncing warehouse goods: ${e.message}")
+        }
     }
 }
