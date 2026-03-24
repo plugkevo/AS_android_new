@@ -21,7 +21,7 @@ data class StoreGoodsEntity(
     val shipmentId: String,
     val name: String,
     val storeLocation: String,
-    val quantity: Int,
+    val goodsNumber: String,
     val isSynced: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
