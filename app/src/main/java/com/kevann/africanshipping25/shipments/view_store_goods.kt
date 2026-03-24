@@ -36,7 +36,7 @@ import java.util.*
 import com.kevann.africanshipping25.R  // Add this import
 
 
-data class StoreGood(var goodsNumber: Long? = null, var name: String? = null, var storeLocation: String? = null)
+data class StoreGood(var goodsNumber: String? = null, var name: String? = null, var storeLocation: String? = null)
 
 class view_store_goods : Fragment() {
 
