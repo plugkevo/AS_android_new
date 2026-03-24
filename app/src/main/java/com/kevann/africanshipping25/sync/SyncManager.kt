@@ -62,7 +62,7 @@ class SyncManager(private val context: Context) {
                     .add(mapOf(
                         "name" to good.name,
                         "storeLocation" to good.storeLocation,
-                        "quantity" to good.quantity,
+                        "goodsNumber" to good.goodsNumber,
                         "createdAt" to System.currentTimeMillis()
                     ))
                     .addOnSuccessListener {
