@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    id("kotlin-kapt") // Use kapt because your dependencies below use kapt
 }
 
 android {
@@ -13,8 +14,8 @@ android {
         applicationId = "com.kevann.africanshipping25"
         minSdk = 24
         targetSdk = 35 // Use stable API level
-        versionCode = 3 //next 2
-        versionName = "1.3.0"
+        versionCode = 4 //next 2
+        versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,7 +42,11 @@ android {
     buildFeatures {
         viewBinding = true
     }
-
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
+    }
     // Add packaging options to handle conflicts
     packagingOptions {
         exclude("META-INF/DEPENDENCIES")
@@ -91,8 +96,7 @@ dependencies {
 
     // Image loading - Use only once
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
-
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
     // Circle ImageView
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
@@ -119,8 +123,14 @@ dependencies {
 
     implementation("com.google.firebase:firebase-storage:20.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
-    implementation("com.google.firebase:firebase-config-ktx:22.0.0")
+    implementation("com.google.firebase:firebase-config-ktx:22.1.2")
 
      //Lifecycle and ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+
+    // Room Database for offline storage
+    val room_version = "2.7.0"
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version") // Changed from 2.8.4 to 2.6.1)
 }

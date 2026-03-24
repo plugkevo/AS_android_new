@@ -42,8 +42,7 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_search"
                     android:layout_marginEnd="8dp"
-                    android:contentDescription="Search"
-                    app:tint="?attr/searchIconTint" />
+                    android:contentDescription="Search" />
 
                 <EditText
                     android:id="@+id/et_search"
