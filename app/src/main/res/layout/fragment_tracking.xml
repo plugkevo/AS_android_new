@@ -140,60 +140,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Ship Info Card (Live Tracking) -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/card_background">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Live Ship Tracking"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/tvColor"
-                        android:layout_marginBottom="8dp" />
-
-                    <TextView
-                        android:id="@+id/tvShipInfo"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="No ship assigned"
-                        android:textSize="13sp"
-                        android:textColor="?attr/tvColor"
-                        android:layout_marginBottom="12dp" />
-
-                    <com.google.android.gms.maps.SupportMapFragment
-                        android:id="@+id/map_fragment"
-                        android:layout_width="match_parent"
-                        android:layout_height="250dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Refresh Location Button -->
-            <Button
-                android:id="@+id/btnRefreshLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Refresh Live Location"
-                android:textColor="@android:color/white"
-                android:backgroundTint="@color/colorSecondary"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp"
-                app:icon="@drawable/ic_refresh"
-                app:iconGravity="textStart"
-                app:iconTint="@android:color/white" />
-
             <!-- Add Checkpoint Button -->
             <Button
                 android:id="@+id/btnAddCheckpoint"
