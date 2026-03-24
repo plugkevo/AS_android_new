@@ -1,7 +1,11 @@
 package com.kevann.africanshipping25.loadinglists
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -22,7 +26,12 @@ import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.database.OfflineDatabase
+import com.kevann.africanshipping25.database.LoadingListEntity
 import com.kevann.africanshipping25.search.GlobalSearchFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 // Ensure LoadingListItem data class is defined in LoadingListItem.kt
 // Ensure OnLoadingListItemClickListener interface is defined in LoadingListAdapter.kt
@@ -160,6 +169,21 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
     }
     // --- END OF THE SIMPLIFIED onMoreOptionsClick function ---
 
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } else {
+            @Suppress("DEPRECATION")
+            val networkInfo = connectivityManager.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            networkInfo != null && networkInfo.isConnectedOrConnecting
+        }
+    }
+
 
     // --- showUpdateLoadingListDialog FUNCTION (remains the same) ---
     private fun showUpdateLoadingListDialog(loadingList: LoadingListItem) {
@@ -270,32 +294,66 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
                 return@setOnClickListener
             }
 
-            val loadingList = hashMapOf(
-                "name" to name,
-                "origin" to origin,
-                "destination" to destination,
-                "extraDetails" to extraDetails,
-                "status" to "New",
-                "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
-            )
-
-            firestore.collection("loading_lists")
-                .add(loadingList)
-                .addOnSuccessListener { documentReference ->
-                    Toast.makeText(requireContext(), "Loading List created successfully!", Toast.LENGTH_SHORT).show()
-                    Log.d("LoadingFragment", "Loading List Document added with ID: ${documentReference.id}")
-                    dialog.dismiss()
-                    fetchLoadingLists() // Refresh the list
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Error creating loading list: ${e.message}", Toast.LENGTH_SHORT).show()
-                    Log.e("LoadingFragment", "Error adding loading list document", e)
-                }
+            // Check network connectivity
+            if (isNetworkAvailable()) {
+                saveLoadingListToFirestore(name, origin, destination, extraDetails, dialog)
+            } else {
+                saveLoadingListLocally(name, origin, destination, extraDetails, dialog)
+            }
         }
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
             Toast.makeText(requireContext(), "Loading list creation cancelled.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun saveLoadingListToFirestore(name: String, origin: String, destination: String, extraDetails: String, dialog: AlertDialog) {
+        val loadingList = hashMapOf(
+            "name" to name,
+            "origin" to origin,
+            "destination" to destination,
+            "extraDetails" to extraDetails,
+            "status" to "New",
+            "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+        )
+
+        firestore.collection("loading_lists")
+            .add(loadingList)
+            .addOnSuccessListener { documentReference ->
+                Toast.makeText(requireContext(), "Loading List created successfully (synced to cloud)!", Toast.LENGTH_SHORT).show()
+                Log.d("LoadingFragment", "Loading List Document added with ID: ${documentReference.id}")
+                dialog.dismiss()
+                fetchLoadingLists()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Error creating loading list: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e("LoadingFragment", "Error adding loading list document", e)
+            }
+    }
+
+    private fun saveLoadingListLocally(name: String, origin: String, destination: String, extraDetails: String, dialog: AlertDialog) {
+        val db = OfflineDatabase.getDatabase(requireContext())
+        val loadingListEntity = LoadingListEntity(
+            name = name,
+            origin = origin,
+            destination = destination,
+            extraDetails = extraDetails,
+            status = "New",
+            isSynced = false
+        )
+
+        GlobalScope.launch(Dispatchers.IO) {
+            db.offlineDao().insertLoadingList(loadingListEntity)
+            GlobalScope.launch(Dispatchers.Main) {
+                Toast.makeText(
+                    requireContext(),
+                    "Loading List saved locally (will sync when online)!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                dialog.dismiss()
+                fetchLoadingLists()
+            }
         }
     }
 }

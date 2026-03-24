@@ -1,7 +1,9 @@
 package com.kevann.africanshipping25.shipments
 
-import com.kevann.africanshipping25.R  // Add this import
-
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,26 +15,27 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
-// No need to import TextInputLayout if it's not directly referenced for errors
-
 import com.google.firebase.firestore.FirebaseFirestore
+import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.database.OfflineDatabase
+import com.kevann.africanshipping25.database.TruckGoodsEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
-// Data class to represent the data we are saving
 data class TruckGoodInput(
     var name: String? = null,
-    var goodsNumber: String? = null // Changed to String
+    var goodsNumber: String? = null
 )
 
 class enter_truck_goods : Fragment() {
 
     private lateinit var goodsNameSpinner: Spinner
     private lateinit var goodsNumber: TextInputEditText
-    // Removed lateinit var quantityInputLayout: TextInputLayout
-
     private lateinit var addButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
-    private val goodsOptions =arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
+    private val goodsOptions = arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,10 +56,8 @@ class enter_truck_goods : Fragment() {
 
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
         goodsNumber = view.findViewById(R.id.etgoodsNumber)
-        // No longer need to find quantityInputLayout here
         addButton = view.findViewById(R.id.saveButton)
 
-        // Options for the goods name spinner
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, goodsOptions)
         goodsNameSpinner.adapter = adapter
 
@@ -65,8 +66,22 @@ class enter_truck_goods : Fragment() {
         }
     }
 
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } else {
+            @Suppress("DEPRECATION")
+            val networkInfo = connectivityManager.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            networkInfo != null && networkInfo.isConnectedOrConnecting
+        }
+    }
+
     private fun addGoodsToShipment() {
-        // Clear any previous errors on the TextInputEditText
         goodsNumber.error = null
 
         if (currentShipmentId == null) {
@@ -76,45 +91,78 @@ class enter_truck_goods : Fragment() {
         }
 
         val goodsName = goodsNameSpinner.selectedItem.toString()
-        val goodsNumberString = goodsNumber.text.toString().trim() // Renamed for clarity
+        val goodsNumberString = goodsNumber.text.toString().trim()
 
-        // --- Validation Logic for Goods Number (4 characters) ---
         if (goodsNumberString.isEmpty()) {
             goodsNumber.error = "Please enter the goods number"
-            return // Stop execution if validation fails
+            return
         }
 
         if (goodsNumberString.length != 4) {
             goodsNumber.error = "Goods number must be 4 characters"
-            return // Stop execution if validation fails
+            return
         }
-        // --- End Validation Logic ---
 
-        // If validation passes, proceed to save
         val newTruckGood = TruckGoodInput(name = goodsName, goodsNumber = goodsNumberString)
 
+        // Check if online
+        if (isNetworkAvailable()) {
+            // Save to Firestore directly
+            saveToFirestore(currentShipmentId!!, newTruckGood)
+        } else {
+            // Save to local database
+            saveToLocalDatabase(newTruckGood)
+        }
+    }
+
+    private fun saveToFirestore(shipmentId: String, good: TruckGoodInput) {
         firestore.collection("shipments")
-            .document(currentShipmentId!!)
-            .collection("offloaded goods")
-            .add(newTruckGood)
+            .document(shipmentId)
+            .collection("truck_inventory")
+            .add(good)
             .addOnSuccessListener { documentReference ->
                 Toast.makeText(
                     requireContext(),
-                    "Item added to shipment $currentShipmentId with ID: ${documentReference.id}",
+                    "Item added to truck inventory (synced to cloud)",
                     Toast.LENGTH_SHORT
                 ).show()
-                // Clear the input field and reset spinner after successful save
-                goodsNumber.text = null
-                goodsNameSpinner.setSelection(0)
+                clearFields()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(
                     requireContext(),
-                    "Error adding item to shipment: ${e.message}",
+                    "Error adding item: ${e.message}",
                     Toast.LENGTH_LONG
                 ).show()
-                Log.e("FirestoreError", "Error adding item to shipment $currentShipmentId", e)
+                Log.e("FirestoreError", "Error adding truck goods", e)
             }
+    }
+
+    private fun saveToLocalDatabase(good: TruckGoodInput) {
+        val db = OfflineDatabase.getDatabase(requireContext())
+        val truckGoodsEntity = TruckGoodsEntity(
+            shipmentId = currentShipmentId!!,
+            name = good.name ?: "",
+            goodsNumber = good.goodsNumber ?: "",
+            isSynced = false
+        )
+
+        GlobalScope.launch(Dispatchers.IO) {
+            db.offlineDao().insertTruckGoods(truckGoodsEntity)
+            GlobalScope.launch(Dispatchers.Main) {
+                Toast.makeText(
+                    requireContext(),
+                    "Item saved locally (will sync when online)",
+                    Toast.LENGTH_SHORT
+                ).show()
+                clearFields()
+            }
+        }
+    }
+
+    private fun clearFields() {
+        goodsNumber.text = null
+        goodsNameSpinner.setSelection(0)
     }
 
     companion object {
