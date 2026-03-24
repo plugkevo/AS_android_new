@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import com.kevann.africanshipping25.R
-import com.kevann.africanshipping25.database.OfflineDatabase
+import com.kevann.africanshipping25.database.OfflineDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -264,33 +264,28 @@ class EnterWarehouseGoods : Fragment() {
     }
 
     private fun saveToLocalDatabase(senderName: String, phoneNumber: String, date: String, goodsNumbersToSave: MutableList<String>) {
-        val db = OfflineDatabase.getDatabase(requireContext())
         var savedCount = 0
         val totalItems = goodsNumbersToSave.size
 
-        GlobalScope.launch(Dispatchers.IO) {
-            for (goodNo in goodsNumbersToSave) {
-                val warehouseItemEntity = com.kevann.africanshipping25.database.WarehouseGoodsEntity(
-                    loadingListId = loadingListId!!,
-                    goodNo = goodNo,
-                    senderName = senderName,
-                    phoneNumber = phoneNumber,
-                    date = date,
-                    isSynced = false
-                )
-                db.warehouseGoodsDao().insert(warehouseItemEntity)
-                savedCount++
-            }
-            
-            GlobalScope.launch(Dispatchers.Main) {
-                Toast.makeText(
-                    requireContext(),
-                    "Saved $totalItems warehouse items locally (will sync when online)",
-                    Toast.LENGTH_SHORT
-                ).show()
-                clearInputFields()
-            }
+        for (goodNo in goodsNumbersToSave) {
+            val warehouseItemEntity = com.kevann.africanshipping25.database.WarehouseGoodsEntity(
+                loadingListId = loadingListId!!,
+                goodNo = goodNo,
+                senderName = senderName,
+                phoneNumber = phoneNumber,
+                date = date,
+                isSynced = false
+            )
+            OfflineDataStore.saveWarehouseGood(warehouseItemEntity, requireContext())
+            savedCount++
         }
+        
+        Toast.makeText(
+            requireContext(),
+            "Saved $totalItems warehouse items locally (will sync when online)",
+            Toast.LENGTH_SHORT
+        ).show()
+        clearInputFields()
     }
 
     private fun clearInputFields() {

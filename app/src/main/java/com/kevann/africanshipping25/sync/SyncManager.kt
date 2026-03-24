@@ -28,7 +28,7 @@ class SyncManager(private val context: Context) {
 
     private fun syncTruckGoods() {
         try {
-            val unsyncedGoods = OfflineDataStore.getUnsyncedTruckGoods()
+            val unsyncedGoods = OfflineDataStore.getUnsyncedTruckGoods(context)
             for (good in unsyncedGoods) {
                 firestore.collection("shipments")
                     .document(good.shipmentId)
@@ -39,7 +39,7 @@ class SyncManager(private val context: Context) {
                         "createdAt" to System.currentTimeMillis()
                     ))
                     .addOnSuccessListener {
-                        OfflineDataStore.markTruckGoodAsSynced(good.id)
+                        OfflineDataStore.markTruckGoodAsSynced(good.id, context)
                         Log.d(tag, "Truck good synced: ${good.id}")
                     }
                     .addOnFailureListener { e ->
@@ -53,7 +53,7 @@ class SyncManager(private val context: Context) {
 
     private fun syncStoreGoods() {
         try {
-            val unsyncedGoods = OfflineDataStore.getUnsyncedStoreGoods()
+            val unsyncedGoods = OfflineDataStore.getUnsyncedStoreGoods(context)
             for (good in unsyncedGoods) {
                 firestore.collection("shipments")
                     .document(good.shipmentId)
@@ -65,7 +65,7 @@ class SyncManager(private val context: Context) {
                         "createdAt" to System.currentTimeMillis()
                     ))
                     .addOnSuccessListener {
-                        OfflineDataStore.markStoreGoodAsSynced(good.id)
+                        OfflineDataStore.markStoreGoodAsSynced(good.id, context)
                         Log.d(tag, "Store good synced: ${good.id}")
                     }
                     .addOnFailureListener { e ->
@@ -79,7 +79,7 @@ class SyncManager(private val context: Context) {
 
     private fun syncLoadingLists() {
         try {
-            val unsyncedLists = OfflineDataStore.getUnsyncedLoadingLists()
+            val unsyncedLists = OfflineDataStore.getUnsyncedLoadingLists(context)
             for (list in unsyncedLists) {
                 firestore.collection("loading_lists")
                     .add(mapOf(
@@ -91,7 +91,7 @@ class SyncManager(private val context: Context) {
                         "createdAt" to FieldValue.serverTimestamp()
                     ))
                     .addOnSuccessListener {
-                        OfflineDataStore.markLoadingListAsSynced(list.id)
+                        OfflineDataStore.markLoadingListAsSynced(list.id, context)
                         Log.d(tag, "Loading list synced: ${list.id}")
                     }
                     .addOnFailureListener { e ->
@@ -105,7 +105,7 @@ class SyncManager(private val context: Context) {
 
     private fun syncWarehouseGoods() {
         try {
-            val unsyncedGoods = OfflineDataStore.getUnsyncedWarehouseGoods()
+            val unsyncedGoods = OfflineDataStore.getUnsyncedWarehouseGoods(context)
             for (good in unsyncedGoods) {
                 firestore.collection("loading_lists")
                     .document(good.loadingListId)
@@ -118,7 +118,7 @@ class SyncManager(private val context: Context) {
                         "createdAt" to System.currentTimeMillis()
                     ))
                     .addOnSuccessListener {
-                        OfflineDataStore.markWarehouseGoodAsSynced(good.id)
+                        OfflineDataStore.markWarehouseGoodAsSynced(good.id, context)
                         Log.d(tag, "Warehouse good synced: ${good.id}")
                     }
                     .addOnFailureListener { e ->

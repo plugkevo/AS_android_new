@@ -164,7 +164,7 @@ class enter_store_goods : Fragment() {
             isSynced = false
         )
 
-        OfflineDataStore.saveStoreGood(storeGoodsEntity)
+        OfflineDataStore.saveStoreGood(storeGoodsEntity, requireContext())
         Toast.makeText(
             requireContext(),
             "Goods saved locally (will sync when online)",

@@ -12,118 +12,130 @@ object OfflineDataStore {
     private const val KEY_LOADING_LISTS = "loading_lists"
     private const val KEY_WAREHOUSE_GOODS = "warehouse_goods"
 
-    private lateinit var prefs: SharedPreferences
+    private var prefs: SharedPreferences? = null
     private val gson = Gson()
 
     fun init(context: Context) {
-        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs == null) {
+            prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        }
+    }
+
+    private fun getPrefs(context: Context? = null): SharedPreferences {
+        return prefs ?: run {
+            if (context == null) {
+                throw IllegalStateException("OfflineDataStore not initialized. Call init(context) first.")
+            }
+            init(context)
+            prefs!!
+        }
     }
 
     // Truck Goods Methods
-    fun saveTruckGood(good: TruckGoodsEntity) {
-        val goods = getTruckGoods().toMutableList()
+    fun saveTruckGood(good: TruckGoodsEntity, context: Context? = null) {
+        val goods = getTruckGoods(context).toMutableList()
         goods.add(good.copy(id = goods.size + 1))
         val json = gson.toJson(goods)
-        prefs.edit().putString(KEY_TRUCK_GOODS, json).apply()
+        getPrefs(context).edit().putString(KEY_TRUCK_GOODS, json).apply()
     }
 
-    fun getTruckGoods(): List<TruckGoodsEntity> {
-        val json = prefs.getString(KEY_TRUCK_GOODS, "[]") ?: "[]"
+    fun getTruckGoods(context: Context? = null): List<TruckGoodsEntity> {
+        val json = getPrefs(context).getString(KEY_TRUCK_GOODS, "[]") ?: "[]"
         return gson.fromJson(json, object : TypeToken<List<TruckGoodsEntity>>() {}.type) ?: emptyList()
     }
 
-    fun getUnsyncedTruckGoods(): List<TruckGoodsEntity> {
-        return getTruckGoods().filter { !it.isSynced }
+    fun getUnsyncedTruckGoods(context: Context? = null): List<TruckGoodsEntity> {
+        return getTruckGoods(context).filter { !it.isSynced }
     }
 
-    fun markTruckGoodAsSynced(id: Int) {
-        val goods = getTruckGoods().toMutableList()
+    fun markTruckGoodAsSynced(id: Int, context: Context? = null) {
+        val goods = getTruckGoods(context).toMutableList()
         val index = goods.indexOfFirst { it.id == id }
         if (index >= 0) {
             goods[index] = goods[index].copy(isSynced = true)
             val json = gson.toJson(goods)
-            prefs.edit().putString(KEY_TRUCK_GOODS, json).apply()
+            getPrefs(context).edit().putString(KEY_TRUCK_GOODS, json).apply()
         }
     }
 
     // Store Goods Methods
-    fun saveStoreGood(good: StoreGoodsEntity) {
-        val goods = getStoreGoods().toMutableList()
+    fun saveStoreGood(good: StoreGoodsEntity, context: Context? = null) {
+        val goods = getStoreGoods(context).toMutableList()
         goods.add(good.copy(id = goods.size + 1))
         val json = gson.toJson(goods)
-        prefs.edit().putString(KEY_STORE_GOODS, json).apply()
+        getPrefs(context).edit().putString(KEY_STORE_GOODS, json).apply()
     }
 
-    fun getStoreGoods(): List<StoreGoodsEntity> {
-        val json = prefs.getString(KEY_STORE_GOODS, "[]") ?: "[]"
+    fun getStoreGoods(context: Context? = null): List<StoreGoodsEntity> {
+        val json = getPrefs(context).getString(KEY_STORE_GOODS, "[]") ?: "[]"
         return gson.fromJson(json, object : TypeToken<List<StoreGoodsEntity>>() {}.type) ?: emptyList()
     }
 
-    fun getUnsyncedStoreGoods(): List<StoreGoodsEntity> {
-        return getStoreGoods().filter { !it.isSynced }
+    fun getUnsyncedStoreGoods(context: Context? = null): List<StoreGoodsEntity> {
+        return getStoreGoods(context).filter { !it.isSynced }
     }
 
-    fun markStoreGoodAsSynced(id: Int) {
-        val goods = getStoreGoods().toMutableList()
+    fun markStoreGoodAsSynced(id: Int, context: Context? = null) {
+        val goods = getStoreGoods(context).toMutableList()
         val index = goods.indexOfFirst { it.id == id }
         if (index >= 0) {
             goods[index] = goods[index].copy(isSynced = true)
             val json = gson.toJson(goods)
-            prefs.edit().putString(KEY_STORE_GOODS, json).apply()
+            getPrefs(context).edit().putString(KEY_STORE_GOODS, json).apply()
         }
     }
 
     // Loading Lists Methods
-    fun saveLoadingList(list: LoadingListEntity) {
-        val lists = getLoadingLists().toMutableList()
+    fun saveLoadingList(list: LoadingListEntity, context: Context? = null) {
+        val lists = getLoadingLists(context).toMutableList()
         lists.add(list.copy(id = lists.size + 1))
         val json = gson.toJson(lists)
-        prefs.edit().putString(KEY_LOADING_LISTS, json).apply()
+        getPrefs(context).edit().putString(KEY_LOADING_LISTS, json).apply()
     }
 
-    fun getLoadingLists(): List<LoadingListEntity> {
-        val json = prefs.getString(KEY_LOADING_LISTS, "[]") ?: "[]"
+    fun getLoadingLists(context: Context? = null): List<LoadingListEntity> {
+        val json = getPrefs(context).getString(KEY_LOADING_LISTS, "[]") ?: "[]"
         return gson.fromJson(json, object : TypeToken<List<LoadingListEntity>>() {}.type) ?: emptyList()
     }
 
-    fun getUnsyncedLoadingLists(): List<LoadingListEntity> {
-        return getLoadingLists().filter { !it.isSynced }
+    fun getUnsyncedLoadingLists(context: Context? = null): List<LoadingListEntity> {
+        return getLoadingLists(context).filter { !it.isSynced }
     }
 
-    fun markLoadingListAsSynced(id: Int) {
-        val lists = getLoadingLists().toMutableList()
+    fun markLoadingListAsSynced(id: Int, context: Context? = null) {
+        val lists = getLoadingLists(context).toMutableList()
         val index = lists.indexOfFirst { it.id == id }
         if (index >= 0) {
             lists[index] = lists[index].copy(isSynced = true)
             val json = gson.toJson(lists)
-            prefs.edit().putString(KEY_LOADING_LISTS, json).apply()
+            getPrefs(context).edit().putString(KEY_LOADING_LISTS, json).apply()
         }
     }
 
     // Warehouse Goods Methods
-    fun saveWarehouseGood(good: WarehouseGoodsEntity) {
-        val goods = getWarehouseGoods().toMutableList()
+    fun saveWarehouseGood(good: WarehouseGoodsEntity, context: Context? = null) {
+        val goods = getWarehouseGoods(context).toMutableList()
         goods.add(good.copy(id = goods.size + 1))
         val json = gson.toJson(goods)
-        prefs.edit().putString(KEY_WAREHOUSE_GOODS, json).apply()
+        getPrefs(context).edit().putString(KEY_WAREHOUSE_GOODS, json).apply()
     }
 
-    fun getWarehouseGoods(): List<WarehouseGoodsEntity> {
-        val json = prefs.getString(KEY_WAREHOUSE_GOODS, "[]") ?: "[]"
+    fun getWarehouseGoods(context: Context? = null): List<WarehouseGoodsEntity> {
+        val json = getPrefs(context).getString(KEY_WAREHOUSE_GOODS, "[]") ?: "[]"
         return gson.fromJson(json, object : TypeToken<List<WarehouseGoodsEntity>>() {}.type) ?: emptyList()
     }
 
-    fun getUnsyncedWarehouseGoods(): List<WarehouseGoodsEntity> {
-        return getWarehouseGoods().filter { !it.isSynced }
+    fun getUnsyncedWarehouseGoods(context: Context? = null): List<WarehouseGoodsEntity> {
+        return getWarehouseGoods(context).filter { !it.isSynced }
     }
 
-    fun markWarehouseGoodAsSynced(id: Int) {
-        val goods = getWarehouseGoods().toMutableList()
+    fun markWarehouseGoodAsSynced(id: Int, context: Context? = null) {
+        val goods = getWarehouseGoods(context).toMutableList()
         val index = goods.indexOfFirst { it.id == id }
         if (index >= 0) {
             goods[index] = goods[index].copy(isSynced = true)
             val json = gson.toJson(goods)
-            prefs.edit().putString(KEY_WAREHOUSE_GOODS, json).apply()
+            getPrefs(context).edit().putString(KEY_WAREHOUSE_GOODS, json).apply()
         }
     }
 }
