@@ -344,7 +344,7 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         )
 
         GlobalScope.launch(Dispatchers.IO) {
-            db.offlineDao().insertLoadingList(loadingListEntity)
+            db.loadingListDao().insert(loadingListEntity)
             GlobalScope.launch(Dispatchers.Main) {
                 Toast.makeText(
                     requireContext(),

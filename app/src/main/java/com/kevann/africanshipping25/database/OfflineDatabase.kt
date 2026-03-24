@@ -15,10 +15,6 @@ abstract class OfflineDatabase : RoomDatabase() {
     abstract fun loadingListDao(): LoadingListDao
     abstract fun warehouseGoodsDao(): WarehouseGoodsDao
 
-    fun offlineDao(): OfflineDao {
-        return OfflineDao(truckGoodsDao(), storeGoodsDao(), loadingListDao(), warehouseGoodsDao())
-    }
-
     companion object {
         @Volatile
         private var instance: OfflineDatabase? = null

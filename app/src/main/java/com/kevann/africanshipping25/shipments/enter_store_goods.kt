@@ -166,7 +166,7 @@ class enter_store_goods : Fragment() {
         )
 
         GlobalScope.launch(Dispatchers.IO) {
-            db.offlineDao().insertStoreGoods(storeGoodsEntity)
+            db.storeGoodsDao().insert(storeGoodsEntity)
             GlobalScope.launch(Dispatchers.Main) {
                 Toast.makeText(
                     requireContext(),

@@ -278,7 +278,7 @@ class EnterWarehouseGoods : Fragment() {
                     date = date,
                     isSynced = false
                 )
-                db.offlineDao().insertWarehouseGoods(warehouseItemEntity)
+                db.warehouseGoodsDao().insert(warehouseItemEntity)
                 savedCount++
             }
             
