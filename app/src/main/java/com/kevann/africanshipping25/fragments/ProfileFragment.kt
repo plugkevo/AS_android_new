@@ -651,7 +651,8 @@ class ProfileFragment : Fragment() {
                 .get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
-                        userRole.text = document.getString("role") ?: "Customer"
+                        // Load job title instead of role
+                        userRole.text = document.getString("jobTitle") ?: "Employee"
 
                         // Update display name if we have first and last name
                         val firstName = document.getString("firstName")
