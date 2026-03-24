@@ -17,7 +17,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kevann.africanshipping25.R
-import com.kevann.africanshipping25.database.OfflineDatabase
+import com.kevann.africanshipping25.database.OfflineDataStore
 import com.kevann.africanshipping25.database.TruckGoodsEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -139,7 +139,6 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun saveToLocalDatabase(good: TruckGoodInput) {
-        val db = OfflineDatabase.getDatabase(requireContext())
         val truckGoodsEntity = TruckGoodsEntity(
             shipmentId = currentShipmentId!!,
             name = good.name ?: "",
@@ -147,17 +146,13 @@ class enter_truck_goods : Fragment() {
             isSynced = false
         )
 
-        GlobalScope.launch(Dispatchers.IO) {
-            db.truckGoodsDao().insert(truckGoodsEntity)
-            GlobalScope.launch(Dispatchers.Main) {
-                Toast.makeText(
-                    requireContext(),
-                    "Item saved locally (will sync when online)",
-                    Toast.LENGTH_SHORT
-                ).show()
-                clearFields()
-            }
-        }
+        OfflineDataStore.saveTruckGood(truckGoodsEntity)
+        Toast.makeText(
+            requireContext(),
+            "Item saved locally (will sync when online)",
+            Toast.LENGTH_SHORT
+        ).show()
+        clearFields()
     }
 
     private fun clearFields() {

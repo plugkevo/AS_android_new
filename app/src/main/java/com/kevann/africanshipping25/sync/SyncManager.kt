@@ -5,30 +5,30 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
-import com.kevann.africanshipping25.database.OfflineDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.google.firebase.firestore.FieldValue
+import com.kevann.africanshipping25.database.OfflineDataStore
 
 class SyncManager(private val context: Context) {
-    private val db = OfflineDatabase.getInstance(context)
     private val firestore = FirebaseFirestore.getInstance()
     private val tag = "SyncManager"
 
+    init {
+        OfflineDataStore.init(context)
+    }
+
     fun syncAllData() {
         if (isNetworkAvailable()) {
-            CoroutineScope(Dispatchers.IO).launch {
-                syncTruckGoods()
-                syncStoreGoods()
-                syncLoadingLists()
-                syncWarehouseGoods()
-            }
+            Log.d(tag, "Device online, starting sync...")
+            syncTruckGoods()
+            syncStoreGoods()
+            syncLoadingLists()
+            syncWarehouseGoods()
         }
     }
 
-    private suspend fun syncTruckGoods() {
+    private fun syncTruckGoods() {
         try {
-            val unsyncedGoods = db.truckGoodsDao().getUnsyncedTruckGoods()
+            val unsyncedGoods = OfflineDataStore.getUnsyncedTruckGoods()
             for (good in unsyncedGoods) {
                 firestore.collection("shipments")
                     .document(good.shipmentId)
@@ -39,9 +39,7 @@ class SyncManager(private val context: Context) {
                         "createdAt" to System.currentTimeMillis()
                     ))
                     .addOnSuccessListener {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            db.truckGoodsDao().markAsSynced(good.id)
-                        }
+                        OfflineDataStore.markTruckGoodAsSynced(good.id)
                         Log.d(tag, "Truck good synced: ${good.id}")
                     }
                     .addOnFailureListener { e ->
@@ -53,9 +51,9 @@ class SyncManager(private val context: Context) {
         }
     }
 
-    private suspend fun syncStoreGoods() {
+    private fun syncStoreGoods() {
         try {
-            val unsyncedGoods = db.storeGoodsDao().getUnsyncedStoreGoods()
+            val unsyncedGoods = OfflineDataStore.getUnsyncedStoreGoods()
             for (good in unsyncedGoods) {
                 firestore.collection("shipments")
                     .document(good.shipmentId)
@@ -67,9 +65,7 @@ class SyncManager(private val context: Context) {
                         "createdAt" to System.currentTimeMillis()
                     ))
                     .addOnSuccessListener {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            db.storeGoodsDao().markAsSynced(good.id)
-                        }
+                        OfflineDataStore.markStoreGoodAsSynced(good.id)
                         Log.d(tag, "Store good synced: ${good.id}")
                     }
                     .addOnFailureListener { e ->
@@ -81,9 +77,9 @@ class SyncManager(private val context: Context) {
         }
     }
 
-    private suspend fun syncLoadingLists() {
+    private fun syncLoadingLists() {
         try {
-            val unsyncedLists = db.loadingListDao().getUnsyncedLoadingLists()
+            val unsyncedLists = OfflineDataStore.getUnsyncedLoadingLists()
             for (list in unsyncedLists) {
                 firestore.collection("loading_lists")
                     .add(mapOf(
@@ -92,12 +88,10 @@ class SyncManager(private val context: Context) {
                         "destination" to list.destination,
                         "extraDetails" to list.extraDetails,
                         "status" to list.status,
-                        "createdAt" to System.currentTimeMillis()
+                        "createdAt" to FieldValue.serverTimestamp()
                     ))
                     .addOnSuccessListener {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            db.loadingListDao().markAsSynced(list.id)
-                        }
+                        OfflineDataStore.markLoadingListAsSynced(list.id)
                         Log.d(tag, "Loading list synced: ${list.id}")
                     }
                     .addOnFailureListener { e ->
@@ -109,16 +103,9 @@ class SyncManager(private val context: Context) {
         }
     }
 
-    private fun isNetworkAvailable(): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
-
-    private suspend fun syncWarehouseGoods() {
+    private fun syncWarehouseGoods() {
         try {
-            val unsyncedGoods = db.warehouseGoodsDao().getUnsyncedWarehouseGoods()
+            val unsyncedGoods = OfflineDataStore.getUnsyncedWarehouseGoods()
             for (good in unsyncedGoods) {
                 firestore.collection("loading_lists")
                     .document(good.loadingListId)
@@ -131,9 +118,7 @@ class SyncManager(private val context: Context) {
                         "createdAt" to System.currentTimeMillis()
                     ))
                     .addOnSuccessListener {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            db.warehouseGoodsDao().markAsSynced(good.id)
-                        }
+                        OfflineDataStore.markWarehouseGoodAsSynced(good.id)
                         Log.d(tag, "Warehouse good synced: ${good.id}")
                     }
                     .addOnFailureListener { e ->
@@ -143,5 +128,12 @@ class SyncManager(private val context: Context) {
         } catch (e: Exception) {
             Log.e(tag, "Error syncing warehouse goods: ${e.message}")
         }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 }

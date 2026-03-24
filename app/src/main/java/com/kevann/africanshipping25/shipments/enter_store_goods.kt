@@ -17,7 +17,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kevann.africanshipping25.R
-import com.kevann.africanshipping25.database.OfflineDatabase
+import com.kevann.africanshipping25.database.OfflineDataStore
 import com.kevann.africanshipping25.database.StoreGoodsEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -156,7 +156,6 @@ class enter_store_goods : Fragment() {
     }
 
     private fun saveToLocalDatabase(shipmentId: String, goodsName: String, storeLocation: String, goodsNumber: String) {
-        val db = OfflineDatabase.getDatabase(requireContext())
         val storeGoodsEntity = StoreGoodsEntity(
             shipmentId = shipmentId,
             name = goodsName,
@@ -165,24 +164,20 @@ class enter_store_goods : Fragment() {
             isSynced = false
         )
 
-        GlobalScope.launch(Dispatchers.IO) {
-            db.storeGoodsDao().insert(storeGoodsEntity)
-            GlobalScope.launch(Dispatchers.Main) {
-                Toast.makeText(
-                    requireContext(),
-                    "Goods saved locally (will sync when online)",
-                    Toast.LENGTH_SHORT
-                ).show()
+        OfflineDataStore.saveStoreGood(storeGoodsEntity)
+        Toast.makeText(
+            requireContext(),
+            "Goods saved locally (will sync when online)",
+            Toast.LENGTH_SHORT
+        ).show()
 
-                val sharedPrefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                with(sharedPrefs.edit()) {
-                    putString(LAST_STORE_KEY, storeLocation)
-                    apply()
-                }
-
-                clearFields()
-            }
+        val sharedPrefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        with(sharedPrefs.edit()) {
+            putString(LAST_STORE_KEY, storeLocation)
+            apply()
         }
+
+        clearFields()
     }
 
     private fun clearFields() {

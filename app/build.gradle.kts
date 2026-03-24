@@ -43,6 +43,12 @@ android {
         viewBinding = true
     }
 
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
+    }
+
     // Add packaging options to handle conflicts
     packagingOptions {
         exclude("META-INF/DEPENDENCIES")
