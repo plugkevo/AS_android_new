@@ -107,6 +107,10 @@ class PaymentFragment : Fragment() {
             // Initiate STK Push with the dynamic amount
             initiateMpesaSTKPush(formattedPhoneNumber, amount.toString()) // Pass amount as String
         }
+
+        // Translate UI elements based on current language - exactly like HomeFragment
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
     }
 
     /**
@@ -304,6 +308,30 @@ class PaymentFragment : Fragment() {
         })
     }
 
+    // Translation method - exactly like HomeFragment
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.tv_title)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "MPESA Payment", targetLanguage)
+            }
+            
+            // Translate labels
+            v.findViewById<TextView>(R.id.tv_phone_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Enter Phone Number", targetLanguage)
+            }
+            
+            v.findViewById<TextView>(R.id.tv_amount_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Enter Amount", targetLanguage)
+            }
+            
+            // Translate button
+            v.findViewById<Button>(R.id.btn_track)?.let { button ->
+                translationHelper.translateAndSetText(button, "Prompt", targetLanguage)
+            }
+        }
+    }
+
     /**
      * Clears the text from the phone number and amount input fields.
      */
@@ -315,9 +343,7 @@ class PaymentFragment : Fragment() {
     // Helper method to translate toast messages (following ProfileFragment pattern)
     private fun showTranslatedToast(message: String) {
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        Log.d("PaymentFragment", "[v0] showTranslatedToast - Language: $currentLanguage, Message: $message")
         translationHelper.translateText(message, currentLanguage) { translatedMessage ->
-            Log.d("PaymentFragment", "[v0] Translated message: $translatedMessage")
             Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
