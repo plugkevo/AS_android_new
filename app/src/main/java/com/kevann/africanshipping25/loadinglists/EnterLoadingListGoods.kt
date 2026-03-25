@@ -334,15 +334,21 @@ class EnterWarehouseGoods : Fragment() {
 
             // Translate EditText hints
             v.findViewById<EditText>(R.id.editTextSenderName)?.let { et ->
-                translationHelper.translateAndSetText(et, "Sender Name", targetLanguage)
+                translationHelper.translateText("Sender Name", targetLanguage) { translated ->
+                    et.hint = translated
+                }
             }
 
             v.findViewById<EditText>(R.id.editTextPhoneNumber)?.let { et ->
-                translationHelper.translateAndSetText(et, "Phone Number", targetLanguage)
+                translationHelper.translateText("Phone Number", targetLanguage) { translated ->
+                    et.hint = translated
+                }
             }
 
             v.findViewById<EditText>(R.id.editTextDate)?.let { et ->
-                translationHelper.translateAndSetText(et, "Date (dd/MM/yyyy)", targetLanguage)
+                translationHelper.translateText("Date (dd/MM/yyyy)", targetLanguage) { translated ->
+                    et.hint = translated
+                }
             }
         }
     }
