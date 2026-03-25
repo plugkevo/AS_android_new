@@ -404,9 +404,15 @@ class TrackingFragment : Fragment() {
 
         override fun onBindViewHolder(holder: CheckpointViewHolder, position: Int) {
             val checkpoint = checkpoints[position]
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
 
             holder.tvLocationName.text = checkpoint.locationName
-            holder.tvStatus.text = checkpoint.status
+            
+            // Translate checkpoint status
+            translationHelper.translateText(checkpoint.status, currentLanguage) { translatedStatus ->
+                holder.tvStatus.text = translatedStatus
+            }
+            
             holder.tvCoordinates.text = "Lat: ${checkpoint.latitude}, Lng: ${checkpoint.longitude}"
 
             if (checkpoint.timestamp != null) {
