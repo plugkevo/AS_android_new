@@ -80,7 +80,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val fabCreateShipment = view.findViewById<FloatingActionButton>(R.id.fab_create_shipment)
 
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
-        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this, translationHelper)
+        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this, translationHelper, requireContext())
         rvAllShipments.adapter = shipmentAdapter
 
         fetchShipments()

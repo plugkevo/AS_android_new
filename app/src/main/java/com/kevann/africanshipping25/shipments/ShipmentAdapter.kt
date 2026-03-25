@@ -1,5 +1,7 @@
 package com.kevann.africanshipping25.shipments
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +21,8 @@ class ShipmentAdapter(
     private val shipmentList: MutableList<Shipment>,
     private val updateListener: OnShipmentUpdateListener,
     private val itemClickListener: OnShipmentItemClickListener,
-    private val translationHelper: GoogleTranslationHelper? = null
+    private val translationHelper: GoogleTranslationHelper? = null,
+    private val context: Context? = null
 ) : RecyclerView.Adapter<ShipmentAdapter.ShipmentViewHolder>() {
 
     interface OnShipmentItemClickListener {
@@ -37,9 +40,19 @@ class ShipmentAdapter(
         holder.tvName.text = currentShipment.name
         holder.tvOriginDestination.text = "${currentShipment.origin} to ${currentShipment.destination}"
         
-        // Display status - translation happens at fragment level via language preferences
+        // Get current language and translate status
         val displayStatus = currentShipment.status ?: "Pending"
-        holder.tvStatus.text = displayStatus
+        val sharedPreferences = context?.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        val currentLanguage = sharedPreferences?.getString("language", "English") ?: "English"
+        
+        // Translate status text if translation helper is available
+        if (translationHelper != null) {
+            translationHelper.translateText(displayStatus, currentLanguage) { translatedStatus ->
+                holder.tvStatus.text = translatedStatus
+            }
+        } else {
+            holder.tvStatus.text = displayStatus
+        }
 
         // --- UPDATED: Displaying ONLY Date from createdAt timestamp ---
         currentShipment.createdAt?.let { date ->
@@ -52,12 +65,12 @@ class ShipmentAdapter(
         // --- END UPDATED ---
 
         // Set text color based on status (preserve original status for color coding)
-        val context = holder.itemView.context
+        val adapterContext = holder.itemView.context
         when (currentShipment.status) {
-            "Active" -> holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.orange))
-            "In Transit" -> holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.blue))
-            "Processing" -> holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.error))
-            "Delivered" -> holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.green))
+            "Active" -> holder.tvStatus.setTextColor(ContextCompat.getColor(adapterContext, R.color.orange))
+            "In Transit" -> holder.tvStatus.setTextColor(ContextCompat.getColor(adapterContext, R.color.blue))
+            "Processing" -> holder.tvStatus.setTextColor(ContextCompat.getColor(adapterContext, R.color.error))
+            "Delivered" -> holder.tvStatus.setTextColor(ContextCompat.getColor(adapterContext, R.color.green))
             else -> holder.tvStatus.setTextColor(Color.BLACK)
         }
 
