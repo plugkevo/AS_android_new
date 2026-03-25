@@ -123,6 +123,10 @@ class ViewWarehouseGoods : Fragment() {
 
         loadItemsFromFirestore()
 
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(view, currentLanguage)
+
         return view
     }
 
@@ -448,6 +452,15 @@ class ViewWarehouseGoods : Fragment() {
         translationHelper.translateText(message, currentLanguage) { translatedMessage ->
             Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Translation method for UI elements
+    private fun translateUIElements(view: View, targetLanguage: String) {
+        // Translate Export button
+        translationHelper.translateAndSetText(exportButton, "Export", targetLanguage)
+        
+        // Translate Search hint
+        translationHelper.translateAndSetText(searchEditText, "Search warehouse items...", targetLanguage)
     }
 
     private fun updateEmptyView(show: Boolean) {

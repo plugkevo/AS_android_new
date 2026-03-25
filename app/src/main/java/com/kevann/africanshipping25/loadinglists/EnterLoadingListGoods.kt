@@ -106,6 +106,10 @@ class EnterWarehouseGoods : Fragment() {
             saveWarehouseItems()
         }
 
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(view, currentLanguage)
+
         return view
     }
 
@@ -312,6 +316,17 @@ class EnterWarehouseGoods : Fragment() {
         translationHelper.translateText(message, currentLanguage) { translatedMessage ->
             Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Translation method for UI elements
+    private fun translateUIElements(view: View, targetLanguage: String) {
+        // Translate Submit button
+        translationHelper.translateAndSetText(buttonSubmit, "Submit", targetLanguage)
+        
+        // Translate Edit Text hints
+        translationHelper.translateAndSetText(editTextSenderName, "Sender Name", targetLanguage)
+        translationHelper.translateAndSetText(editTextPhoneNumber, "Phone Number", targetLanguage)
+        translationHelper.translateAndSetText(editTextDate, "Date (dd/MM/yyyy)", targetLanguage)
     }
 
     private fun clearInputFields() {
