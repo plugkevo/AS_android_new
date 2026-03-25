@@ -106,10 +106,6 @@ class EnterWarehouseGoods : Fragment() {
             saveWarehouseItems()
         }
 
-        // Translate UI elements
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        translateUIElements(currentLanguage)
-
         return view
     }
 
@@ -165,7 +161,7 @@ class EnterWarehouseGoods : Fragment() {
 
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        
+
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val network = connectivityManager.activeNetwork ?: return false
             val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
@@ -266,8 +262,8 @@ class EnterWarehouseGoods : Fragment() {
                             val successMsg = "All warehouse items synced to cloud!"
                             showTranslatedToast(successMsg)
                         } else {
-                            val partialMsg = "Synced $successCount items, $failureCount failed."
-                            showTranslatedToast(partialMsg)
+                            val failMsg = "Synced $successCount items, $failureCount failed."
+                            showTranslatedToast(failMsg)
                         }
                         clearInputFields()
                     }
@@ -301,27 +297,13 @@ class EnterWarehouseGoods : Fragment() {
             OfflineDataStore.saveWarehouseGood(warehouseItemEntity, requireContext())
             savedCount++
         }
-        
+
         Toast.makeText(
             requireContext(),
             "Saved $totalItems warehouse items locally (will sync when online)",
             Toast.LENGTH_SHORT
         ).show()
         clearInputFields()
-    }
-
-    // Translation method
-    private fun translateUIElements(targetLanguage: String) {
-        view?.let { v ->
-            // Translate button text
-            translationHelper.translateText("Add Good Number", targetLanguage) { translated ->
-                buttonAddGoodNo.contentDescription = translated
-            }
-
-            translationHelper.translateText("Submit", targetLanguage) { translated ->
-                buttonSubmit.text = translated
-            }
-        }
     }
 
     // Helper method to translate toast messages
