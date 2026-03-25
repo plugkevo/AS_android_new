@@ -26,7 +26,8 @@ import com.kevann.africanshipping25.R
 
 class LoadingListItemAdapter(
     private val items: List<LoadingListGoodsItem>, // This will be our original, unfiltered list
-    private val onItemUpdated: (LoadingListGoodsItem) -> Unit
+    private val onItemUpdated: (LoadingListGoodsItem) -> Unit,
+    private var translatedLabels: Map<String, String> = emptyMap()
 ) : RecyclerView.Adapter<LoadingListItemAdapter.ViewHolder>(), Filterable {
 
     private var filteredItems: MutableList<LoadingListGoodsItem> = items.toMutableList()
@@ -35,6 +36,12 @@ class LoadingListItemAdapter(
     private lateinit var translationManager: GoogleTranslationManager
     private lateinit var translationHelper: GoogleTranslationHelper
     private lateinit var sharedPreferences: SharedPreferences
+
+    // Method to update translated labels
+    fun updateTranslatedLabels(labels: Map<String, String>) {
+        translatedLabels = labels
+        notifyDataSetChanged()
+    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textGoodNo: TextView = view.findViewById(R.id.textGoodNo)
@@ -50,13 +57,18 @@ class LoadingListItemAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = filteredItems[position] // Use filteredItems here
+        val item = filteredItems[position]
         
-        // Display item data without translating every label (to avoid coroutine cancellation)
-        holder.textGoodNo.text = "Good No: ${item.goodNo}"
-        holder.textSenderName.text = "Sender: ${item.senderName}"
-        holder.textPhoneNumber.text = "Phone: ${item.phoneNumber}"
-        holder.textDate.text = "Date: ${item.date}"
+        // Use translated labels if available, otherwise fall back to English
+        val goodNoLabel = translatedLabels["goodNo"] ?: "Good No"
+        val senderLabel = translatedLabels["sender"] ?: "Sender"
+        val phoneLabel = translatedLabels["phone"] ?: "Phone"
+        val dateLabel = translatedLabels["date"] ?: "Date"
+        
+        holder.textGoodNo.text = "$goodNoLabel: ${item.goodNo}"
+        holder.textSenderName.text = "$senderLabel: ${item.senderName}"
+        holder.textPhoneNumber.text = "$phoneLabel: ${item.phoneNumber}"
+        holder.textDate.text = "$dateLabel: ${item.date}"
 
         holder.imageMoreVert.setOnClickListener {
             // Initialize translation on first use

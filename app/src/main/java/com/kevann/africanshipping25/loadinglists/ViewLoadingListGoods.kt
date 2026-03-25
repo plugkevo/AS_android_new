@@ -125,9 +125,10 @@ class ViewWarehouseGoods : Fragment() {
 
         loadItemsFromFirestore()
 
-        // Translate UI elements
+        // Translate UI elements and list item labels
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         translateUIElements(view, currentLanguage)
+        translateListLabels(currentLanguage)
 
         return view
     }
@@ -473,6 +474,25 @@ class ViewWarehouseGoods : Fragment() {
             // Translate empty state message
             v.findViewById<TextView>(R.id.emptyView)?.let { tv ->
                 translationHelper.translateAndSetText(tv, "No warehouse items", targetLanguage)
+            }
+        }
+    }
+
+    // Translate list item labels and update adapter
+    private fun translateListLabels(targetLanguage: String) {
+        translationHelper.translateText("Good No", targetLanguage) { goodNo ->
+            translationHelper.translateText("Sender", targetLanguage) { sender ->
+                translationHelper.translateText("Phone", targetLanguage) { phone ->
+                    translationHelper.translateText("Date", targetLanguage) { date ->
+                        val translatedLabels = mapOf(
+                            "goodNo" to goodNo,
+                            "sender" to sender,
+                            "phone" to phone,
+                            "date" to date
+                        )
+                        adapter.updateTranslatedLabels(translatedLabels)
+                    }
+                }
             }
         }
     }
