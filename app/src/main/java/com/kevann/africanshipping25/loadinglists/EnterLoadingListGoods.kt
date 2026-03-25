@@ -117,6 +117,8 @@ class EnterWarehouseGoods : Fragment() {
      * Dynamically adds a new TextInputEditText for a goods number.
      */
     private fun addGoodsNumberInputField() {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        
         // Create TextInputLayout with the OutlinedBox style
         val textInputLayout = TextInputLayout(
             requireContext(),
@@ -130,7 +132,10 @@ class EnterWarehouseGoods : Fragment() {
             ).apply {
                 setMargins(0, 0, 0, resources.getDimensionPixelSize(com.kevann.africanshipping25.R.dimen.margin_small))
             }
-            hint = "Enter Good Number (4 characters)" // Update hint for clarity
+            var hintText = "Enter Good Number (4 characters)"
+            translationHelper.translateText(hintText, currentLanguage) { translated ->
+                hint = translated
+            }
         }
 
         val textInputEditText = TextInputEditText(requireContext()).apply {
@@ -205,11 +210,21 @@ class EnterWarehouseGoods : Fragment() {
 
         for (i in goodsNumberEditTexts.indices) {
             val goodNo = goodsNumberEditTexts[i].text.toString().trim()
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            
             if (goodNo.isEmpty()) {
-                goodsNumberInputLayouts[i].error = "Good Number cannot be empty"
+                var errorMsg = "Good Number cannot be empty"
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    errorMsg = translated
+                    goodsNumberInputLayouts[i].error = errorMsg
+                }
                 hasValidationErrors = true
             } else if (goodNo.length != 4) {
-                goodsNumberInputLayouts[i].error = "Good Number must be 4 characters"
+                var errorMsg = "Good Number must be 4 characters"
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    errorMsg = translated
+                    goodsNumberInputLayouts[i].error = errorMsg
+                }
                 hasValidationErrors = true
             } else {
                 goodsNumbersToSave.add(goodNo)
@@ -302,11 +317,8 @@ class EnterWarehouseGoods : Fragment() {
             savedCount++
         }
 
-        Toast.makeText(
-            requireContext(),
-            "Saved $totalItems warehouse items locally (will sync when online)",
-            Toast.LENGTH_SHORT
-        ).show()
+        val localMsg = "Saved $totalItems warehouse items locally (will sync when online)"
+        showTranslatedToast(localMsg)
         clearInputFields()
     }
 

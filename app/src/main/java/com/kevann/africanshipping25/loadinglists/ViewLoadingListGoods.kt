@@ -65,7 +65,15 @@ class ViewWarehouseGoods : Fragment() {
         if (isGranted) {
             exportToCSV()
         } else {
-            Toast.makeText(requireContext(), "Storage permission is required to export files", Toast.LENGTH_LONG).show()
+            val permMsg = "Storage permission is required to export files"
+            if (::sharedPreferences.isInitialized) {
+                val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                translationHelper.translateText(permMsg, currentLanguage) { translatedMessage ->
+                    Toast.makeText(context, translatedMessage, Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), permMsg, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
