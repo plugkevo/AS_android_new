@@ -60,6 +60,9 @@ class PaymentFragment : Fragment() {
         etPhoneNumber = view.findViewById(R.id.et_phone_number)
         etAmount = view.findViewById(R.id.et_amount) // Find the new amount EditText
         val btnPrompt = view.findViewById<Button>(R.id.btn_track)
+        Log.d("PaymentFragment", "[v0] Button found: ${btnPrompt != null}")
+        Log.d("PaymentFragment", "[v0] Phone EditText found: ${etPhoneNumber != null}")
+        Log.d("PaymentFragment", "[v0] Amount EditText found: ${etAmount != null}")
 
         // Set up the click listener for the Prompt button
         btnPrompt.setOnClickListener {
