@@ -26,7 +26,9 @@ import com.airbnb.lottie.LottieAnimationView
 import com.kevann.africanshipping25.shipments.Shipment
 import com.kevann.africanshipping25.shipments.ShipmentAdapter
 import com.kevann.africanshipping25.shipments.ViewShipment
-import com.kevann.africanshipping25.R  // Add this import
+import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 
 interface OnShipmentUpdateListener {
     fun onUpdateShipment(shipment: Shipment)
@@ -44,6 +46,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     private val allShipmentsList = mutableListOf<Shipment>()
     private val filteredShipmentsList = mutableListOf<Shipment>()
     private val firestore = FirebaseFirestore.getInstance()
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     private val statusOptions = arrayOf("Active", "In Transit", "Delivered", "Processing")
 
@@ -58,6 +62,10 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize translation manager and helper
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(requireContext())
+
         rvAllShipments = view.findViewById(R.id.rv_all_shipments)
         etSearch = view.findViewById(R.id.et_search)
         chipGroup = view.findViewById(R.id.chip_group)
@@ -68,7 +76,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val fabCreateShipment = view.findViewById<FloatingActionButton>(R.id.fab_create_shipment)
 
         rvAllShipments.layoutManager = LinearLayoutManager(requireContext())
-        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this)
+        shipmentAdapter = ShipmentAdapter(filteredShipmentsList, this, this, translationHelper)
         rvAllShipments.adapter = shipmentAdapter
 
         fetchShipments()
@@ -113,7 +121,9 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                         lottieNoDataAnimation.visibility = View.VISIBLE
                         lottieNoDataAnimation.playAnimation()
                         tvNoDataMessage.visibility = View.VISIBLE
-                        tvNoDataMessage.text = "No shipments found in the database."
+                        val noDataText = "No shipments found in the database."
+                        val targetLanguage = translationManager.getSelectedLanguage()
+                        translationHelper.translateAndSetText(tvNoDataMessage, noDataText, targetLanguage)
                         rvAllShipments.visibility = View.GONE
                     } else {
                         lottieNoDataAnimation.visibility = View.GONE
@@ -123,10 +133,13 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                     }
                 } else {
                     Log.w("AllShipmentsFragment", "Error getting documents.", task.exception)
-                    Toast.makeText(requireContext(), "Error loading shipments: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error loading shipments: ${task.exception?.message}"
+                    Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show()
                     lottieNoDataAnimation.visibility = View.GONE
                     lottieNoDataAnimation.cancelAnimation()
-                    tvNoDataMessage.text = "Failed to load shipments. Please try again."
+                    val failedText = "Failed to load shipments. Please try again."
+                    val targetLanguage = translationManager.getSelectedLanguage()
+                    translationHelper.translateAndSetText(tvNoDataMessage, failedText, targetLanguage)
                     tvNoDataMessage.visibility = View.VISIBLE
                     rvAllShipments.visibility = View.GONE
                 }
@@ -183,8 +196,13 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val updateButton = dialogView.findViewById<Button>(R.id.btn_update)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
-        // Populate the spinner
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, statusOptions)
+        // Populate the spinner with translated status options
+        val targetLanguage = translationManager.getSelectedLanguage()
+        val translatedStatusOptions = statusOptions.map { status ->
+            translationHelper.translateText(status, targetLanguage)
+        }.toTypedArray()
+        
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, translatedStatusOptions)
         statusSpinner.adapter = adapter
 
         // Set the initial selection of the spinner
@@ -208,12 +226,13 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             val updatedOrigin = originEditText.text.toString().trim()
             val updatedDestination = destinationEditText.text.toString().trim()
             val updatedDetails = detailsEditText.text.toString().trim()
-            val updatedStatus = statusSpinner.selectedItem.toString()
+            val updatedStatus = statusOptions[statusSpinner.selectedItemPosition]
             val updatedLatitude = latitudeEditText.text.toString().toDoubleOrNull()
             val updatedLongitude = longitudeEditText.text.toString().toDoubleOrNull()
 
             if (updatedName.isEmpty() || updatedOrigin.isEmpty() || updatedDestination.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill in all the name, origin, and destination", Toast.LENGTH_SHORT).show()
+                val validationMsg = "Please fill in all the name, origin, and destination"
+                translationHelper.showTranslatedToast(requireContext(), validationMsg, targetLanguage)
                 return@setOnClickListener
             }
 
@@ -230,12 +249,14 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             firestore.collection("shipments").document(shipment.id)
                 .update(updatedShipment as Map<String, Any>)
                 .addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Shipment updated successfully", Toast.LENGTH_SHORT).show()
+                    val successMsg = "Shipment updated successfully"
+                    translationHelper.showTranslatedToast(requireContext(), successMsg, targetLanguage)
                     dialog.dismiss()
                     fetchShipments() // Refresh the list
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Error updating shipment: ${e.message}", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error updating shipment: ${e.message}"
+                    translationHelper.showTranslatedToast(requireContext(), errorMsg, targetLanguage)
                 }
         }
 
@@ -289,13 +310,14 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             lottieNoDataAnimation.visibility = View.VISIBLE
             lottieNoDataAnimation.playAnimation()
             tvNoDataMessage.visibility = View.VISIBLE
-            tvNoDataMessage.text = "No matching shipments found." // Message for filtered empty state
+            val noMatchText = "No matching shipments found."
+            val targetLanguage = translationManager.getSelectedLanguage()
+            translationHelper.translateAndSetText(tvNoDataMessage, noMatchText, targetLanguage)
             rvAllShipments.visibility = View.GONE
         } else {
             lottieNoDataAnimation.visibility = View.GONE
             lottieNoDataAnimation.cancelAnimation()
             tvNoDataMessage.visibility = View.GONE
-            tvNoDataMessage.text = "No shipments found in the database." // Reset to default for next potential no data
             rvAllShipments.visibility = View.VISIBLE
         }
     }
@@ -318,6 +340,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val createButton = dialogView.findViewById<Button>(R.id.btn_create)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
+        val targetLanguage = translationManager.getSelectedLanguage()
+
         createButton.setOnClickListener {
             val name = nameEditText.text.toString().trim()
             val origin = originEditText.text.toString().trim()
@@ -329,7 +353,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             val details = detailsEditText.text.toString().trim()
 
             if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill in name, origin and destination", Toast.LENGTH_SHORT).show()
+                val validationMsg = "Please fill in name, origin and destination"
+                translationHelper.showTranslatedToast(requireContext(), validationMsg, targetLanguage)
                 return@setOnClickListener
             }
 
@@ -339,7 +364,8 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             val destLng = destLngStr.toDoubleOrNull()
 
             if (originLat == null || originLng == null || destLat == null || destLng == null) {
-                Toast.makeText(requireContext(), "Invalid coordinates. Please enter valid latitude and longitude.", Toast.LENGTH_SHORT).show()
+                val coordMsg = "Invalid coordinates. Please enter valid latitude and longitude."
+                translationHelper.showTranslatedToast(requireContext(), coordMsg, targetLanguage)
                 return@setOnClickListener
             }
 
@@ -359,13 +385,15 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             firestore.collection("shipments")
                 .add(newShipment)
                 .addOnSuccessListener { documentReference ->
-                    Toast.makeText(requireContext(), "Shipment created successfully!", Toast.LENGTH_SHORT).show()
+                    val successMsg = "Shipment created successfully!"
+                    translationHelper.showTranslatedToast(requireContext(), successMsg, targetLanguage)
                     Log.d("ShipmentsFragment", "Shipment added with ID: ${documentReference.id}")
                     dialog.dismiss()
                     fetchShipments()
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Error creating shipment: ${e.message}", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error creating shipment: ${e.message}"
+                    translationHelper.showTranslatedToast(requireContext(), errorMsg, targetLanguage)
                     Log.e("ShipmentsFragment", "Error adding shipment", e)
                 }
         }

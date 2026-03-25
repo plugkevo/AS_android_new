@@ -11,13 +11,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.kevann.africanshipping25.fragments.OnShipmentUpdateListener
 import java.text.SimpleDateFormat
 import java.util.Locale
-import com.kevann.africanshipping25.R  // Add this import
+import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 
 
 class ShipmentAdapter(
     private val shipmentList: MutableList<Shipment>,
     private val updateListener: OnShipmentUpdateListener,
-    private val itemClickListener: OnShipmentItemClickListener
+    private val itemClickListener: OnShipmentItemClickListener,
+    private val translationHelper: GoogleTranslationHelper? = null
 ) : RecyclerView.Adapter<ShipmentAdapter.ShipmentViewHolder>() {
 
     interface OnShipmentItemClickListener {
@@ -33,8 +35,28 @@ class ShipmentAdapter(
     override fun onBindViewHolder(holder: ShipmentViewHolder, position: Int) {
         val currentShipment = shipmentList[position]
         holder.tvName.text = currentShipment.name
+        
+        // Translate origin and destination labels if translation helper is available
+        val originText = if (translationHelper != null) {
+            translationHelper.translateText("Origin", "en") // Translate label
+        } else {
+            "Origin"
+        }
+        val destinationText = if (translationHelper != null) {
+            translationHelper.translateText("Destination", "en") // Translate label
+        } else {
+            "Destination"
+        }
+        
         holder.tvOriginDestination.text = "${currentShipment.origin} to ${currentShipment.destination}"
-        holder.tvStatus.text = currentShipment.status ?: "Pending"
+        
+        // Translate status if translation helper is available
+        val translatedStatus = if (translationHelper != null) {
+            translationHelper.translateText(currentShipment.status ?: "Pending", "en")
+        } else {
+            currentShipment.status ?: "Pending"
+        }
+        holder.tvStatus.text = translatedStatus
 
         // --- UPDATED: Displaying ONLY Date from createdAt timestamp ---
         currentShipment.createdAt?.let { date ->
@@ -46,7 +68,7 @@ class ShipmentAdapter(
         }
         // --- END UPDATED ---
 
-        // Set text color based on status
+        // Set text color based on status (preserve original status for color coding)
         val context = holder.itemView.context
         when (currentShipment.status) {
             "Active" -> holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.orange))
