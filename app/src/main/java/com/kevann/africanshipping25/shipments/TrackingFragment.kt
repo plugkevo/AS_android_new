@@ -116,7 +116,7 @@ class TrackingFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        checkpointAdapter = CheckpointAdapter(checkpointList, {}, translationHelper, requireContext())
+        checkpointAdapter = CheckpointAdapter(checkpointList)
         rvCheckpoints.layoutManager = LinearLayoutManager(requireContext())
         rvCheckpoints.adapter = checkpointAdapter
     }
