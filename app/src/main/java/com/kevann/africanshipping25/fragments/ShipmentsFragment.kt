@@ -137,11 +137,11 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                 } else {
                     Log.w("AllShipmentsFragment", "Error getting documents.", task.exception)
                     val errorMsg = "Error loading shipments: ${task.exception?.message}"
-                    val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
-                    translationHelper.showTranslatedToast(requireContext(), errorMsg, targetLanguage)
+                    showTranslatedToast(errorMsg)
                     lottieNoDataAnimation.visibility = View.GONE
                     lottieNoDataAnimation.cancelAnimation()
                     val failedText = "Failed to load shipments. Please try again."
+                    val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
                     translationHelper.translateAndSetText(tvNoDataMessage, failedText, targetLanguage)
                     tvNoDataMessage.visibility = View.VISIBLE
                     rvAllShipments.visibility = View.GONE
@@ -238,7 +238,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
 
             if (updatedName.isEmpty() || updatedOrigin.isEmpty() || updatedDestination.isEmpty()) {
                 val validationMsg = "Please fill in all the name, origin, and destination"
-                translationHelper.showTranslatedToast(requireContext(), validationMsg, targetLanguage)
+                showTranslatedToast(validationMsg)
                 return@setOnClickListener
             }
 
@@ -256,13 +256,13 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                 .update(updatedShipment as Map<String, Any>)
                 .addOnSuccessListener {
                     val successMsg = "Shipment updated successfully"
-                    translationHelper.showTranslatedToast(requireContext(), successMsg, targetLanguage)
+                    showTranslatedToast(successMsg)
                     dialog.dismiss()
                     fetchShipments() // Refresh the list
                 }
                 .addOnFailureListener { e ->
                     val errorMsg = "Error updating shipment: ${e.message}"
-                    translationHelper.showTranslatedToast(requireContext(), errorMsg, targetLanguage)
+                    showTranslatedToast(errorMsg)
                 }
         }
 
@@ -360,7 +360,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
 
             if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
                 val validationMsg = "Please fill in name, origin and destination"
-                translationHelper.showTranslatedToast(requireContext(), validationMsg, targetLanguage)
+                showTranslatedToast(validationMsg)
                 return@setOnClickListener
             }
 
@@ -371,7 +371,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
 
             if (originLat == null || originLng == null || destLat == null || destLng == null) {
                 val coordMsg = "Invalid coordinates. Please enter valid latitude and longitude."
-                translationHelper.showTranslatedToast(requireContext(), coordMsg, targetLanguage)
+                showTranslatedToast(coordMsg)
                 return@setOnClickListener
             }
 
@@ -392,20 +392,28 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                 .add(newShipment)
                 .addOnSuccessListener { documentReference ->
                     val successMsg = "Shipment created successfully!"
-                    translationHelper.showTranslatedToast(requireContext(), successMsg, targetLanguage)
+                    showTranslatedToast(successMsg)
                     Log.d("ShipmentsFragment", "Shipment added with ID: ${documentReference.id}")
                     dialog.dismiss()
                     fetchShipments()
                 }
                 .addOnFailureListener { e ->
                     val errorMsg = "Error creating shipment: ${e.message}"
-                    translationHelper.showTranslatedToast(requireContext(), errorMsg, targetLanguage)
+                    showTranslatedToast(errorMsg)
                     Log.e("ShipmentsFragment", "Error adding shipment", e)
                 }
         }
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
+        }
+    }
+
+    // Helper method to translate toast messages (following ProfileFragment pattern)
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
 }
