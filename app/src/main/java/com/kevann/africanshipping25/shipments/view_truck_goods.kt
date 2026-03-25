@@ -2,6 +2,8 @@ package com.kevann.africanshipping25.shipments
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -32,7 +34,9 @@ import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.*
-import com.kevann.africanshipping25.R  // Add this import
+import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 
 
 // Data class to represent a truck good item
@@ -47,6 +51,9 @@ class view_truck_goods : Fragment() {
     private var currentShipmentId: String? = null
     private lateinit var searchEditText: EditText
     private lateinit var exportButton: Button
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     // Declare Lottie animations
     private lateinit var lottieLoadingAnimation: LottieAnimationView
@@ -83,6 +90,11 @@ class view_truck_goods : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize SharedPreferences and translation
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+
         db = FirebaseFirestore.getInstance()
 
         truckInventoryRecyclerView = view.findViewById(R.id.truckInventoryRecyclerView)
@@ -105,7 +117,8 @@ class view_truck_goods : Fragment() {
         // Set up export button click listener
         exportButton.setOnClickListener {
             if (allTruckGoods.isEmpty()) {
-                Toast.makeText(requireContext(), "No data to export", Toast.LENGTH_SHORT).show()
+                val noDataMsg = "No data to export"
+                showTranslatedToast(noDataMsg)
             } else {
                 showExportOptionsDialog()
             }
@@ -121,6 +134,10 @@ class view_truck_goods : Fragment() {
                 filterTruckGoods(s.toString())
             }
         })
+
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
     }
 
     private fun showExportOptionsDialog() {
@@ -606,6 +623,36 @@ class view_truck_goods : Fragment() {
             fragment.arguments = args
             Log.d("view_truck_goods", "newInstance: Shipment ID passed: $shipmentId")
             return fragment
+        }
+    }
+
+    // Translation method
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.titleTextView)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Truck Inventory", targetLanguage)
+            }
+
+            // Translate search hint
+            v.findViewById<EditText>(R.id.searchEditText)?.let { editText ->
+                translationHelper.translateText("Search truck inventory...", targetLanguage) { translated ->
+                    editText.hint = translated
+                }
+            }
+
+            // Translate export button
+            v.findViewById<Button>(R.id.exportButton)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Export", targetLanguage)
+            }
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
 }
