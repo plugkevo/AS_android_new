@@ -3,6 +3,7 @@ package com.kevann.africanshipping25.fragments
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -48,6 +49,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     private val firestore = FirebaseFirestore.getInstance()
     private lateinit var translationManager: GoogleTranslationManager
     private lateinit var translationHelper: GoogleTranslationHelper
+    private lateinit var sharedPreferences: SharedPreferences
 
     private val statusOptions = arrayOf("Active", "In Transit", "Delivered", "Processing")
 
@@ -62,9 +64,10 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize translation manager and helper
+        // Initialize SharedPreferences and translation
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", 0)
         translationManager = GoogleTranslationManager(requireContext())
-        translationHelper = GoogleTranslationHelper(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
 
         rvAllShipments = view.findViewById(R.id.rv_all_shipments)
         etSearch = view.findViewById(R.id.et_search)
@@ -122,7 +125,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                         lottieNoDataAnimation.playAnimation()
                         tvNoDataMessage.visibility = View.VISIBLE
                         val noDataText = "No shipments found in the database."
-                        val targetLanguage = translationManager.getSelectedLanguage()
+                        val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
                         translationHelper.translateAndSetText(tvNoDataMessage, noDataText, targetLanguage)
                         rvAllShipments.visibility = View.GONE
                     } else {
@@ -134,11 +137,11 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                 } else {
                     Log.w("AllShipmentsFragment", "Error getting documents.", task.exception)
                     val errorMsg = "Error loading shipments: ${task.exception?.message}"
-                    Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show()
+                    val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                    translationHelper.showTranslatedToast(requireContext(), errorMsg, targetLanguage)
                     lottieNoDataAnimation.visibility = View.GONE
                     lottieNoDataAnimation.cancelAnimation()
                     val failedText = "Failed to load shipments. Please try again."
-                    val targetLanguage = translationManager.getSelectedLanguage()
                     translationHelper.translateAndSetText(tvNoDataMessage, failedText, targetLanguage)
                     tvNoDataMessage.visibility = View.VISIBLE
                     rvAllShipments.visibility = View.GONE
@@ -197,9 +200,12 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
         // Populate the spinner with translated status options
-        val targetLanguage = translationManager.getSelectedLanguage()
+        val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
         val translatedStatusOptions = statusOptions.map { status ->
-            translationHelper.translateText(status, targetLanguage)
+            translationHelper.translateText(status, targetLanguage) { translatedText ->
+                // This is handled asynchronously, so we'll use the original for now
+            }
+            status // Use original for now
         }.toTypedArray()
         
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, translatedStatusOptions)
@@ -311,7 +317,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             lottieNoDataAnimation.playAnimation()
             tvNoDataMessage.visibility = View.VISIBLE
             val noMatchText = "No matching shipments found."
-            val targetLanguage = translationManager.getSelectedLanguage()
+            val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
             translationHelper.translateAndSetText(tvNoDataMessage, noMatchText, targetLanguage)
             rvAllShipments.visibility = View.GONE
         } else {
@@ -340,7 +346,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         val createButton = dialogView.findViewById<Button>(R.id.btn_create)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
-        val targetLanguage = translationManager.getSelectedLanguage()
+        val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
 
         createButton.setOnClickListener {
             val name = nameEditText.text.toString().trim()
