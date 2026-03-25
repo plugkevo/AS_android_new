@@ -49,7 +49,7 @@ class EnterWarehouseGoods : Fragment() {
     private lateinit var goodsNumberFieldsContainer: LinearLayout
     private lateinit var buttonAddGoodNo: ImageButton
     private lateinit var editTextSenderName: EditText
-    private lateinit var editTextPhoneNumber: EditText // Declared the phone number EditText
+    private lateinit var editTextPhoneNumber: EditText
     private lateinit var editTextDate: EditText
     private lateinit var buttonSubmit: Button
 
@@ -84,7 +84,7 @@ class EnterWarehouseGoods : Fragment() {
         goodsNumberFieldsContainer = view.findViewById(R.id.goodsNumberFieldsContainer)
         buttonAddGoodNo = view.findViewById(R.id.buttonAddGoodNo)
         editTextSenderName = view.findViewById(R.id.editTextSenderName)
-        editTextPhoneNumber = view.findViewById(R.id.editTextPhoneNumber) // Initialized the phone number EditText
+        editTextPhoneNumber = view.findViewById(R.id.editTextPhoneNumber)
         editTextDate = view.findViewById(R.id.editTextDate)
         buttonSubmit = view.findViewById(R.id.buttonSubmit)
 
@@ -108,7 +108,7 @@ class EnterWarehouseGoods : Fragment() {
 
         // Translate UI elements
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        translateUIElements(view, currentLanguage)
+        translateUIElements(currentLanguage)
 
         return view
     }
@@ -117,8 +117,6 @@ class EnterWarehouseGoods : Fragment() {
      * Dynamically adds a new TextInputEditText for a goods number.
      */
     private fun addGoodsNumberInputField() {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        
         // Create TextInputLayout with the OutlinedBox style
         val textInputLayout = TextInputLayout(
             requireContext(),
@@ -132,10 +130,6 @@ class EnterWarehouseGoods : Fragment() {
             ).apply {
                 setMargins(0, 0, 0, resources.getDimensionPixelSize(com.kevann.africanshipping25.R.dimen.margin_small))
             }
-            var hintText = "Enter Good Number (4 characters)"
-            translationHelper.translateText(hintText, currentLanguage) { translated ->
-                hint = translated
-            }
         }
 
         val textInputEditText = TextInputEditText(requireContext()).apply {
@@ -148,8 +142,8 @@ class EnterWarehouseGoods : Fragment() {
 
         textInputLayout.addView(textInputEditText)
         goodsNumberFieldsContainer.addView(textInputLayout)
-        goodsNumberInputLayouts.add(textInputLayout) // Add the TextInputLayout to track errors
-        goodsNumberEditTexts.add(textInputEditText) // Add to our list for tracking
+        goodsNumberInputLayouts.add(textInputLayout)
+        goodsNumberEditTexts.add(textInputEditText)
     }
 
     private fun showDatePickerDialog() {
@@ -185,7 +179,7 @@ class EnterWarehouseGoods : Fragment() {
 
     private fun saveWarehouseItems() {
         val senderName = editTextSenderName.text.toString().trim()
-        val phoneNumber = editTextPhoneNumber.text.toString().trim() // Get phone number
+        val phoneNumber = editTextPhoneNumber.text.toString().trim()
         val date = editTextDate.text.toString().trim()
 
         // Reset errors on all goods number fields
@@ -213,17 +207,15 @@ class EnterWarehouseGoods : Fragment() {
             val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
             
             if (goodNo.isEmpty()) {
-                var errorMsg = "Good Number cannot be empty"
+                val errorMsg = "Good Number cannot be empty"
                 translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    errorMsg = translated
-                    goodsNumberInputLayouts[i].error = errorMsg
+                    goodsNumberInputLayouts[i].error = translated
                 }
                 hasValidationErrors = true
             } else if (goodNo.length != 4) {
-                var errorMsg = "Good Number must be 4 characters"
+                val errorMsg = "Good Number must be 4 characters"
                 translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    errorMsg = translated
-                    goodsNumberInputLayouts[i].error = errorMsg
+                    goodsNumberInputLayouts[i].error = translated
                 }
                 hasValidationErrors = true
             } else {
@@ -263,15 +255,15 @@ class EnterWarehouseGoods : Fragment() {
                 "senderName" to senderName,
                 "phoneNumber" to phoneNumber,
                 "date" to date,
-                "timestamp" to FieldValue.serverTimestamp() // Adds a server-generated timestamp
+                "timestamp" to FieldValue.serverTimestamp()
             )
 
             // Reference to the subcollection
             // loading_lists/{loadingListId}/warehouseItems/{documentId}
             firestore.collection("loading_lists")
-                .document(loadingListId!!) // Use !! because we've already checked for null
+                .document(loadingListId!!)
                 .collection(WAREHOUSE_ITEMS_COLLECTION)
-                .add(warehouseItem) // Add a new document with an auto-generated ID
+                .add(warehouseItem)
                 .addOnSuccessListener { documentReference ->
                     Log.d("EnterWarehouseGoods", "DocumentSnapshot added with ID: ${documentReference.id} for Good No: $goodNo")
                     successCount++
@@ -301,7 +293,6 @@ class EnterWarehouseGoods : Fragment() {
     }
 
     private fun saveToLocalDatabase(senderName: String, phoneNumber: String, date: String, goodsNumbersToSave: MutableList<String>) {
-        var savedCount = 0
         val totalItems = goodsNumbersToSave.size
 
         for (goodNo in goodsNumbersToSave) {
@@ -314,7 +305,6 @@ class EnterWarehouseGoods : Fragment() {
                 isSynced = false
             )
             OfflineDataStore.saveWarehouseGood(warehouseItemEntity, requireContext())
-            savedCount++
         }
 
         val localMsg = "Saved $totalItems warehouse items locally (will sync when online)"
@@ -322,48 +312,46 @@ class EnterWarehouseGoods : Fragment() {
         clearInputFields()
     }
 
-    // Helper method to translate toast messages
-    private fun showTranslatedToast(message: String) {
-        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
-            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
-        }
+    private fun clearInputFields() {
+        editTextSenderName.text.clear()
+        editTextPhoneNumber.text.clear()
+
+        // Clear all dynamically added goods number fields and remove them
+        goodsNumberEditTexts.clear()
+        goodsNumberInputLayouts.clear()
+        goodsNumberFieldsContainer.removeAllViews()
+
+        // Add back a single, fresh goods number input field
+        addGoodsNumberInputField()
     }
 
-    // Translation method for UI elements
-    private fun translateUIElements(view: View, targetLanguage: String) {
-        view.let { v ->
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
             // Translate Submit button
             v.findViewById<Button>(R.id.buttonSubmit)?.let { btn ->
                 translationHelper.translateAndSetText(btn, "Submit", targetLanguage)
             }
-            
+
             // Translate EditText hints
             v.findViewById<EditText>(R.id.editTextSenderName)?.let { et ->
                 translationHelper.translateAndSetText(et, "Sender Name", targetLanguage)
             }
-            
+
             v.findViewById<EditText>(R.id.editTextPhoneNumber)?.let { et ->
                 translationHelper.translateAndSetText(et, "Phone Number", targetLanguage)
             }
-            
+
             v.findViewById<EditText>(R.id.editTextDate)?.let { et ->
                 translationHelper.translateAndSetText(et, "Date (dd/MM/yyyy)", targetLanguage)
             }
         }
     }
 
-    private fun clearInputFields() {
-        editTextSenderName.text.clear()
-        editTextPhoneNumber.text.clear() // Clear the phone number field
-
-        // Clear all dynamically added goods number fields and remove them
-        goodsNumberEditTexts.clear()
-        goodsNumberInputLayouts.clear() // Clear the TextInputLayouts list as well
-        goodsNumberFieldsContainer.removeAllViews()
-
-        // Add back a single, fresh goods number input field
-        addGoodsNumberInputField()
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {
