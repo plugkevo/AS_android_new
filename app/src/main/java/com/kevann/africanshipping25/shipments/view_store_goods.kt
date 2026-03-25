@@ -135,14 +135,28 @@ class view_store_goods : Fragment() {
 
         // Translate UI elements
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        translateUIElements(currentLanguage)
+        translateUIElements(currentLanguage, view)
     }
 
     private fun showExportOptionsDialog() {
-        val options = arrayOf("Export as CSV", "Export as Excel")
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        var dialogTitle = "Choose Export Format"
+        var csvText = "Export as CSV"
+        var excelText = "Export as Excel"
+
+        translationHelper.translateText(dialogTitle, currentLanguage) { translated ->
+            dialogTitle = translated
+        }
+        translationHelper.translateText(csvText, currentLanguage) { translated ->
+            csvText = translated
+        }
+        translationHelper.translateText(excelText, currentLanguage) { translated ->
+            excelText = translated
+        }
+
         AlertDialog.Builder(requireContext())
-            .setTitle("Choose Export Format")
-            .setItems(options) { _, which ->
+            .setTitle(dialogTitle)
+            .setItems(arrayOf(csvText, excelText)) { _, which ->
                 when (which) {
                     0 -> checkPermissionAndExportCSV()
                     1 -> checkPermissionAndExportExcel()
@@ -188,7 +202,10 @@ class view_store_goods : Fragment() {
     private fun exportToCSV() {
         try {
             exportButton.isEnabled = false
-            exportButton.setText("Exporting...")
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            translationHelper.translateText("Exporting...", currentLanguage) { translated ->
+                exportButton.text = translated
+            }
 
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             val filename = "StoreInventory_${currentShipmentId}_$timestamp.csv"
@@ -217,17 +234,24 @@ class view_store_goods : Fragment() {
 
         } catch (e: Exception) {
             Log.e("ExportCSV", "Error exporting to CSV", e)
-            Toast.makeText(requireContext(), "Error exporting file: ${e.message}", Toast.LENGTH_LONG).show()
+            val errorMsg = "Error exporting file: ${e.message}"
+            showTranslatedToast(errorMsg)
         } finally {
             exportButton.isEnabled = true
-            exportButton.setText("Export")
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            translationHelper.translateText("Export", currentLanguage) { translated ->
+                exportButton.text = translated
+            }
         }
     }
 
     private fun exportToExcel() {
         try {
             exportButton.isEnabled = false
-            exportButton.setText("Exporting...")
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            translationHelper.translateText("Exporting...", currentLanguage) { translated ->
+                exportButton.text = translated
+            }
 
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             val filename = "StoreInventory_${currentShipmentId}_$timestamp.csv"
@@ -263,7 +287,8 @@ class view_store_goods : Fragment() {
                 uri?.let {
                     resolver.openOutputStream(it)?.use { outputStream ->
                         outputStream.write(csvContent.toByteArray(Charsets.UTF_8))
-                        Toast.makeText(requireContext(), "File exported to Downloads: $filename\nOpen with Excel or Google Sheets", Toast.LENGTH_LONG).show()
+                        val successMsg = "File exported to Downloads: $filename\nOpen with Excel or Google Sheets"
+                        showTranslatedToast(successMsg)
                     }
                 }
             } else {
@@ -271,15 +296,20 @@ class view_store_goods : Fragment() {
                 if (!downloadsDir.exists()) downloadsDir.mkdirs()
 
                 File(downloadsDir, filename).writeText(csvContent, Charsets.UTF_8)
-                Toast.makeText(requireContext(), "File exported to Downloads: $filename\nOpen with Excel or Google Sheets", Toast.LENGTH_LONG).show()
+                val successMsg = "File exported to Downloads: $filename\nOpen with Excel or Google Sheets"
+                showTranslatedToast(successMsg)
             }
 
         } catch (e: Exception) {
             Log.e("ExportExcel", "Error exporting", e)
-            Toast.makeText(requireContext(), "Error exporting: ${e.message}", Toast.LENGTH_LONG).show()
+            val errorMsg = "Error exporting: ${e.message}"
+            showTranslatedToast(errorMsg)
         } finally {
             exportButton.isEnabled = true
-            exportButton.setText("Export")
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            translationHelper.translateText("Export", currentLanguage) { translated ->
+                exportButton.text = translated
+            }
         }
     }
 
@@ -300,11 +330,13 @@ class view_store_goods : Fragment() {
                 resolver.openOutputStream(it)?.use { outputStream ->
                     OutputStreamWriter(outputStream).use { writer ->
                         writer.write(content)
-                        Toast.makeText(requireContext(), "CSV file exported to Downloads: $filename", Toast.LENGTH_LONG).show()
+                        val successMsg = "CSV file exported to Downloads: $filename"
+                        showTranslatedToast(successMsg)
                     }
                 }
             } ?: run {
-                Toast.makeText(requireContext(), "Failed to create file", Toast.LENGTH_SHORT).show()
+                val failMsg = "Failed to create file"
+                showTranslatedToast(failMsg)
             }
         }
     }
@@ -319,7 +351,8 @@ class view_store_goods : Fragment() {
         FileOutputStream(file).use { outputStream ->
             OutputStreamWriter(outputStream).use { writer ->
                 writer.write(content)
-                Toast.makeText(requireContext(), "CSV file exported to Downloads: $filename", Toast.LENGTH_LONG).show()
+                val successMsg = "CSV file exported to Downloads: $filename"
+                showTranslatedToast(successMsg)
             }
         }
     }
@@ -338,11 +371,13 @@ class view_store_goods : Fragment() {
                 resolver.openOutputStream(it)?.use { outputStream ->
                     OutputStreamWriter(outputStream).use { writer ->
                         writer.write(content)
-                        Toast.makeText(requireContext(), "Excel file exported to Downloads: $filename", Toast.LENGTH_LONG).show()
+                        val successMsg = "Excel file exported to Downloads: $filename"
+                        showTranslatedToast(successMsg)
                     }
                 }
             } ?: run {
-                Toast.makeText(requireContext(), "Failed to create file", Toast.LENGTH_SHORT).show()
+                val failMsg = "Failed to create file"
+                showTranslatedToast(failMsg)
             }
         }
     }
@@ -357,7 +392,8 @@ class view_store_goods : Fragment() {
         FileOutputStream(file).use { outputStream ->
             OutputStreamWriter(outputStream).use { writer ->
                 writer.write(content)
-                Toast.makeText(requireContext(), "Excel file exported to Downloads: $filename", Toast.LENGTH_LONG).show()
+                val successMsg = "Excel file exported to Downloads: $filename"
+                showTranslatedToast(successMsg)
             }
         }
     }
@@ -607,17 +643,17 @@ class view_store_goods : Fragment() {
     }
 
     // Translation method
-    private fun translateUIElements(targetLanguage: String) {
-        view?.let { v ->
+    private fun translateUIElements(targetLanguage: String, rootView: View) {
+        rootView.let { v ->
             // Translate title
             v.findViewById<TextView>(R.id.titleTextView)?.let { tv ->
                 translationHelper.translateAndSetText(tv, "Store Inventory", targetLanguage)
             }
 
-            // Translate search hint
-            v.findViewById<EditText>(R.id.searchEditText)?.let { editText ->
+            // Translate search hint on TextInputLayout
+            v.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilSearch)?.let { layout ->
                 translationHelper.translateText("Search store inventory...", targetLanguage) { translated ->
-                    editText.hint = translated
+                    layout.hint = translated
                 }
             }
 
@@ -632,7 +668,7 @@ class view_store_goods : Fragment() {
     private fun showTranslatedToast(message: String) {
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         translationHelper.translateText(message, currentLanguage) { translatedMessage ->
-            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
 
