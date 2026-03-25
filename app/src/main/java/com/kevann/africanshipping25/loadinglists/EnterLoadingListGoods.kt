@@ -326,11 +326,6 @@ class EnterWarehouseGoods : Fragment() {
                 translationHelper.translateAndSetText(btn, "Submit", targetLanguage)
             }
             
-            // Translate Add Good Number button
-            v.findViewById<ImageButton>(R.id.buttonAddGoodNo)?.let { btn ->
-                translationHelper.translateAndSetText(btn, "Add Good Number", targetLanguage)
-            }
-            
             // Translate EditText hints
             v.findViewById<EditText>(R.id.editTextSenderName)?.let { et ->
                 translationHelper.translateAndSetText(et, "Sender Name", targetLanguage)
