@@ -332,6 +332,27 @@ class EnterWarehouseGoods : Fragment() {
                 translationHelper.translateAndSetText(btn, "Submit", targetLanguage)
             }
 
+            // Translate section titles
+            v.findViewById<TextView>(R.id.tvGoodNumbersTitle)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Good Numbers", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tvAddGoodNumberLabel)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Add Good Number Field", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tvSenderNameTitle)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Sender Name", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tvPhoneNumberTitle)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Phone Number", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tvDateTitle)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Date", targetLanguage)
+            }
+
             // Translate EditText hints
             v.findViewById<EditText>(R.id.editTextSenderName)?.let { et ->
                 translationHelper.translateText("Sender Name", targetLanguage) { translated ->
