@@ -126,6 +126,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
                         tvNoDataMessage.visibility = View.VISIBLE
                         val noDataText = "No shipments found in the database."
                         val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                        Log.d("ShipmentsFragment", "[v0] fetchShipments - No data. Language: $targetLanguage")
                         translationHelper.translateAndSetText(tvNoDataMessage, noDataText, targetLanguage)
                         rvAllShipments.visibility = View.GONE
                     } else {
@@ -318,6 +319,7 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
             tvNoDataMessage.visibility = View.VISIBLE
             val noMatchText = "No matching shipments found."
             val targetLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            Log.d("ShipmentsFragment", "[v0] filterShipments - No match. Language: $targetLanguage")
             translationHelper.translateAndSetText(tvNoDataMessage, noMatchText, targetLanguage)
             rvAllShipments.visibility = View.GONE
         } else {
@@ -412,7 +414,9 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
     // Helper method to translate toast messages (following ProfileFragment pattern)
     private fun showTranslatedToast(message: String) {
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        Log.d("ShipmentsFragment", "[v0] showTranslatedToast - Language: $currentLanguage, Message: $message")
         translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Log.d("ShipmentsFragment", "[v0] Translated message: $translatedMessage")
             Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
