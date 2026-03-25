@@ -2,6 +2,8 @@ package com.kevann.africanshipping25.shipments
 
 
 import android.app.AlertDialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +17,8 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,6 +47,11 @@ class TrackingFragment : Fragment() {
     private lateinit var rvCheckpoints: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var tvNoCheckpoints: TextView
+
+    // Translation properties
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     private val checkpointList = mutableListOf<Checkpoint>()
     private lateinit var checkpointAdapter: CheckpointAdapter
@@ -75,6 +84,11 @@ class TrackingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize translation components
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+
         initViews(view)
         setupRecyclerView()
         loadShipmentDetails()
@@ -83,6 +97,10 @@ class TrackingFragment : Fragment() {
         btnAddCheckpoint.setOnClickListener {
             showAddCheckpointDialog()
         }
+
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
     }
 
     private fun initViews(view: View) {
@@ -125,7 +143,8 @@ class TrackingFragment : Fragment() {
                 }
                 .addOnFailureListener { e ->
                     Log.e("TrackingFragment", "Error loading shipment", e)
-                    Toast.makeText(requireContext(), "Error loading shipment details", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error loading shipment details"
+                    showTranslatedToast(errorMsg)
                 }
         }
     }
@@ -169,7 +188,8 @@ class TrackingFragment : Fragment() {
                 .addOnFailureListener { e ->
                     progressBar.visibility = View.GONE
                     Log.e("TrackingFragment", "Error loading checkpoints", e)
-                    Toast.makeText(requireContext(), "Error loading checkpoints", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error loading checkpoints"
+                    showTranslatedToast(errorMsg)
                 }
         }
     }
@@ -183,7 +203,7 @@ class TrackingFragment : Fragment() {
         val spinnerStatus = dialogView.findViewById<Spinner>(R.id.spinnerStatus)
         val etNotes = dialogView.findViewById<EditText>(R.id.etNotes)
 
-        // Setup status spinner
+        // Setup status spinner with translation
         val statusOptions = arrayOf(
             "Departed Origin",
             "In Transit",
@@ -195,14 +215,37 @@ class TrackingFragment : Fragment() {
             "Delayed",
             "On Hold"
         )
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, statusOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerStatus.adapter = adapter
+
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        var dialogTitle = "Add Tracking Checkpoint"
+        
+        // Translate dialog title
+        translationHelper.translateText("Add Tracking Checkpoint", currentLanguage) { translated ->
+            dialogTitle = translated
+        }
+
+        // Translate spinner status options
+        val translatedStatusOptions = mutableListOf<String>()
+        var completedCount = 0
+
+        for (status in statusOptions) {
+            translationHelper.translateText(status, currentLanguage) { translated ->
+                translatedStatusOptions.add(translated)
+                completedCount++
+
+                // Once all status options are translated, update the adapter
+                if (completedCount == statusOptions.size) {
+                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, translatedStatusOptions)
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinnerStatus.adapter = adapter
+                }
+            }
+        }
 
         val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Add Tracking Checkpoint")
+            .setTitle(dialogTitle)
             .setView(dialogView)
-            .setPositiveButton("Add", null) // Set to null initially
+            .setPositiveButton("Add", null)
             .setNegativeButton("Cancel", null)
             .create()
 
@@ -213,7 +256,15 @@ class TrackingFragment : Fragment() {
 
             // Change Cancel button color
             val cancelButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-            cancelButton.setTextColor(resources.getColor(R.color.colorDarkBlue, null)) // Or any color you want
+            cancelButton.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
+
+            // Translate button texts
+            translationHelper.translateText("Add", currentLanguage) { translated ->
+                addButton.text = translated
+            }
+            translationHelper.translateText("Cancel", currentLanguage) { translated ->
+                cancelButton.text = translated
+            }
 
             // Set click listener for Add button
             addButton.setOnClickListener {
@@ -225,7 +276,8 @@ class TrackingFragment : Fragment() {
 
                 // Validate inputs
                 if (locationName.isEmpty()) {
-                    Toast.makeText(requireContext(), "Please enter location name", Toast.LENGTH_SHORT).show()
+                    val emptyMsg = "Please enter location name"
+                    showTranslatedToast(emptyMsg)
                     return@setOnClickListener
                 }
 
@@ -233,17 +285,20 @@ class TrackingFragment : Fragment() {
                 val longitude = longitudeStr.toDoubleOrNull()
 
                 if (latitude == null || longitude == null) {
-                    Toast.makeText(requireContext(), "Please enter valid coordinates", Toast.LENGTH_SHORT).show()
+                    val invalidMsg = "Please enter valid coordinates"
+                    showTranslatedToast(invalidMsg)
                     return@setOnClickListener
                 }
 
                 if (latitude < -90 || latitude > 90) {
-                    Toast.makeText(requireContext(), "Latitude must be between -90 and 90", Toast.LENGTH_SHORT).show()
+                    val latRangeMsg = "Latitude must be between -90 and 90"
+                    showTranslatedToast(latRangeMsg)
                     return@setOnClickListener
                 }
 
                 if (longitude < -180 || longitude > 180) {
-                    Toast.makeText(requireContext(), "Longitude must be between -180 and 180", Toast.LENGTH_SHORT).show()
+                    val longRangeMsg = "Longitude must be between -180 and 180"
+                    showTranslatedToast(longRangeMsg)
                     return@setOnClickListener
                 }
 
@@ -259,6 +314,7 @@ class TrackingFragment : Fragment() {
 
         dialog.show()
     }
+
     private fun addCheckpoint(
         locationName: String,
         latitude: Double,
@@ -290,15 +346,40 @@ class TrackingFragment : Fragment() {
                             )
                         )
                         .addOnSuccessListener {
-                            Toast.makeText(requireContext(), "Checkpoint added successfully", Toast.LENGTH_SHORT).show()
+                            val successMsg = "Checkpoint added successfully"
+                            showTranslatedToast(successMsg)
                             loadShipmentDetails()
                             loadCheckpoints()
                         }
                 }
                 .addOnFailureListener { e ->
                     Log.e("TrackingFragment", "Error adding checkpoint", e)
-                    Toast.makeText(requireContext(), "Error adding checkpoint: ${e.message}", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error adding checkpoint: ${e.message}"
+                    showTranslatedToast(errorMsg)
                 }
+        }
+    }
+
+    // Translation method
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate button
+            v.findViewById<Button>(R.id.btnAddCheckpoint)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Add Checkpoint", targetLanguage)
+            }
+
+            // Translate no checkpoints message
+            v.findViewById<TextView>(R.id.tvNoCheckpoints)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "No checkpoints yet", targetLanguage)
+            }
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
 
