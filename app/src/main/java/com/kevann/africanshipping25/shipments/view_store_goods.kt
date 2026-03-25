@@ -650,10 +650,10 @@ class view_store_goods : Fragment() {
                 translationHelper.translateAndSetText(tv, "Store Inventory", targetLanguage)
             }
 
-            // Translate search hint on TextInputLayout
-            v.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilSearch)?.let { layout ->
+            // Translate search hint on EditText
+            v.findViewById<EditText>(R.id.searchEditText)?.let { editText ->
                 translationHelper.translateText("Search store inventory...", targetLanguage) { translated ->
-                    layout.hint = translated
+                    editText.hint = translated
                 }
             }
 
