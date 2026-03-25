@@ -161,12 +161,6 @@ class enter_store_goods : Fragment() {
                 Log.e("FirestoreError", "Error adding store goods", e)
             }
     }
-                    "Error adding goods to store inventory: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-                Log.e("FirestoreError", "Error adding store goods", e)
-            }
-    }
 
     private fun saveToLocalDatabase(shipmentId: String, goodsName: String, storeLocation: String, goodsNumber: String) {
         val storeGoodsEntity = StoreGoodsEntity(
