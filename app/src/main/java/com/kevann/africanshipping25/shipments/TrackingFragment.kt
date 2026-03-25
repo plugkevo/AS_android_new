@@ -127,17 +127,38 @@ class TrackingFragment : Fragment() {
                 .get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
+                        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                        
                         tvShipmentName.text = document.getString("name") ?: "Unknown Shipment"
-                        tvOrigin.text = "Origin: ${document.getString("origin") ?: "N/A"}"
-                        tvDestination.text = "Destination: ${document.getString("destination") ?: "N/A"}"
-                        tvCurrentStatus.text = "Status: ${document.getString("status") ?: "Unknown"}"
+                        
+                        // Translate and display Origin
+                        val originName = document.getString("origin") ?: "N/A"
+                        translationHelper.translateText("Origin", currentLanguage) { translatedOrigin ->
+                            tvOrigin.text = "$translatedOrigin: $originName"
+                        }
+                        
+                        // Translate and display Destination
+                        val destinationName = document.getString("destination") ?: "N/A"
+                        translationHelper.translateText("Destination", currentLanguage) { translatedDestination ->
+                            tvDestination.text = "$translatedDestination: $destinationName"
+                        }
+                        
+                        // Translate and display Status
+                        val statusValue = document.getString("status") ?: "Unknown"
+                        translationHelper.translateText("Status", currentLanguage) { translatedStatus ->
+                            tvCurrentStatus.text = "$translatedStatus: $statusValue"
+                        }
 
                         val lastUpdated = document.getDate("lastUpdated")
                         if (lastUpdated != null) {
                             val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-                            tvLastUpdated.text = "Last Updated: ${dateFormat.format(lastUpdated)}"
+                            translationHelper.translateText("Last Updated", currentLanguage) { translatedLastUpdated ->
+                                tvLastUpdated.text = "$translatedLastUpdated: ${dateFormat.format(lastUpdated)}"
+                            }
                         } else {
-                            tvLastUpdated.text = "Last Updated: N/A"
+                            translationHelper.translateText("Last Updated", currentLanguage) { translatedLastUpdated ->
+                                tvLastUpdated.text = "$translatedLastUpdated: N/A"
+                            }
                         }
                     }
                 }
