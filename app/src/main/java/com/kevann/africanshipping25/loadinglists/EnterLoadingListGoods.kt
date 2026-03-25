@@ -2,6 +2,7 @@ package com.kevann.africanshipping25.loadinglists
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -26,6 +27,8 @@ import java.util.Calendar
 import java.util.Locale
 import com.kevann.africanshipping25.R
 import com.kevann.africanshipping25.database.OfflineDataStore
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -38,6 +41,9 @@ class EnterWarehouseGoods : Fragment() {
 
     private var loadingListId: String? = null
     private lateinit var firestore: FirebaseFirestore
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     // Declare your UI elements
     private lateinit var goodsNumberFieldsContainer: LinearLayout
@@ -69,6 +75,11 @@ class EnterWarehouseGoods : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_enter_warehouse_goods, container, false)
 
+        // Initialize translation
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+
         // Initialize UI elements
         goodsNumberFieldsContainer = view.findViewById(R.id.goodsNumberFieldsContainer)
         buttonAddGoodNo = view.findViewById(R.id.buttonAddGoodNo)
@@ -94,6 +105,10 @@ class EnterWarehouseGoods : Fragment() {
         buttonSubmit.setOnClickListener {
             saveWarehouseItems()
         }
+
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
 
         return view
     }
@@ -173,12 +188,14 @@ class EnterWarehouseGoods : Fragment() {
 
         // Basic validation for sender name, phone number, and date
         if (senderName.isEmpty() || phoneNumber.isEmpty() || date.isEmpty()) {
-            Toast.makeText(requireContext(), "Please fill in Sender Name, Phone Number, and Date", Toast.LENGTH_SHORT).show()
+            val emptyMsg = "Please fill in Sender Name, Phone Number, and Date"
+            showTranslatedToast(emptyMsg)
             return
         }
 
         if (loadingListId == null) {
-            Toast.makeText(requireContext(), "Error: Loading List ID is missing. Cannot save item.", Toast.LENGTH_LONG).show()
+            val errorMsg = "Error: Loading List ID is missing. Cannot save item."
+            showTranslatedToast(errorMsg)
             Log.e("EnterWarehouseGoods", "loadingListId is null when trying to save item!")
             return
         }
@@ -200,12 +217,14 @@ class EnterWarehouseGoods : Fragment() {
         }
 
         if (hasValidationErrors) {
-            Toast.makeText(requireContext(), "Please correct the errors in the Good Numbers", Toast.LENGTH_LONG).show()
+            val errorMsg = "Please correct the errors in the Good Numbers"
+            showTranslatedToast(errorMsg)
             return
         }
 
         if (goodsNumbersToSave.isEmpty()) {
-            Toast.makeText(requireContext(), "Please enter at least one valid Good Number", Toast.LENGTH_SHORT).show()
+            val emptyMsg = "Please enter at least one valid Good Number"
+            showTranslatedToast(emptyMsg)
             return
         }
 
@@ -244,9 +263,11 @@ class EnterWarehouseGoods : Fragment() {
                     if (successCount + failureCount == totalItems) {
                         // All items processed
                         if (failureCount == 0) {
-                            Toast.makeText(requireContext(), "All warehouse items synced to cloud!", Toast.LENGTH_SHORT).show()
+                            val successMsg = "All warehouse items synced to cloud!"
+                            showTranslatedToast(successMsg)
                         } else {
-                            Toast.makeText(requireContext(), "Synced $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
+                            val partialMsg = "Synced $successCount items, $failureCount failed."
+                            showTranslatedToast(partialMsg)
                         }
                         clearInputFields()
                     }
@@ -256,7 +277,8 @@ class EnterWarehouseGoods : Fragment() {
                     failureCount++
                     if (successCount + failureCount == totalItems) {
                         // All items processed
-                        Toast.makeText(requireContext(), "Synced $successCount items, $failureCount failed.", Toast.LENGTH_LONG).show()
+                        val failMsg = "Synced $successCount items, $failureCount failed."
+                        showTranslatedToast(failMsg)
                         clearInputFields()
                     }
                 }
@@ -286,6 +308,28 @@ class EnterWarehouseGoods : Fragment() {
             Toast.LENGTH_SHORT
         ).show()
         clearInputFields()
+    }
+
+    // Translation method
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate button text
+            translationHelper.translateText("Add Good Number", targetLanguage) { translated ->
+                buttonAddGoodNo.contentDescription = translated
+            }
+
+            translationHelper.translateText("Submit", targetLanguage) { translated ->
+                buttonSubmit.text = translated
+            }
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun clearInputFields() {
