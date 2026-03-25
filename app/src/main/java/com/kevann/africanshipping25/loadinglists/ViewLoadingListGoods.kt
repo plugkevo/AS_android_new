@@ -98,9 +98,12 @@ class ViewWarehouseGoods : Fragment() {
         emptyView = view.findViewById(R.id.emptyView)
         exportButton = view.findViewById(R.id.exportButton)
 
-        adapter = LoadingListItemAdapter(itemList) { updatedItem ->
-            updateItemInFirestore(updatedItem)
-        }
+        adapter = LoadingListItemAdapter(
+            items = itemList,
+            onItemUpdated = { updatedItem ->
+                updateItemInFirestore(updatedItem)
+            }
+        )
         recyclerView.adapter = adapter
 
         // Set up export button click listener
