@@ -7,6 +7,7 @@
     android:padding="24dp">
 
     <TextView
+        android:id="@+id/tvUpdateDialogTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Update Good Item"
@@ -33,6 +34,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
+        android:id="@+id/tvGoodsNameLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Goods Name"
@@ -56,6 +58,7 @@
 
     <!-- Phone Number Input Field -->
     <TextView
+        android:id="@+id/tvPhoneNumberLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Phone Number"
