@@ -1,17 +1,22 @@
 package com.kevann.africanshipping25.shipments
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
 class CheckpointAdapter(
     private var checkpointList: List<Checkpoint>,
-    private val onItemClick: (Checkpoint) -> Unit = {}
+    private val onItemClick: (Checkpoint) -> Unit = {},
+    private val translationHelper: GoogleTranslationHelper? = null,
+    private val context: Context? = null
 ) : RecyclerView.Adapter<CheckpointAdapter.CheckpointViewHolder>() {
 
     class CheckpointViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -31,9 +36,20 @@ class CheckpointAdapter(
 
     override fun onBindViewHolder(holder: CheckpointViewHolder, position: Int) {
         val currentCheckpoint = checkpointList[position]
+        val sharedPreferences = context?.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        val currentLanguage = sharedPreferences?.getString("language", "English") ?: "English"
 
         holder.tvCheckpointLocation.text = currentCheckpoint.locationName
-        holder.tvCheckpointStatus.text = currentCheckpoint.status
+
+        // Translate status
+        if (translationHelper != null) {
+            translationHelper.translateText(currentCheckpoint.status, currentLanguage) { translatedStatus ->
+                holder.tvCheckpointStatus.text = translatedStatus
+            }
+        } else {
+            holder.tvCheckpointStatus.text = currentCheckpoint.status
+        }
+
         holder.tvCheckpointCoordinates.text = "Lat: ${String.format("%.4f", currentCheckpoint.latitude)}, Lng: ${String.format("%.4f", currentCheckpoint.longitude)}"
 
         // Format timestamp
