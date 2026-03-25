@@ -280,13 +280,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         progressBar.visibility = View.GONE
         btnTrack.isEnabled = true
     }
-}
-            }
-            .addOnFailureListener { e ->
-                hideLoading()
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-    }
 
     private fun displayTrackingOnMap(trackingInfo: ShipmentTrackingInfo, shipmentName: String) {
         mMap.clear()
@@ -418,21 +411,5 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             "delayed" -> tvCurrentStatus.setTextColor(Color.parseColor("#F44336"))
             else -> tvCurrentStatus.setTextColor(Color.parseColor("#757575"))
         }
-    }
-
-    private fun formatTimestamp(date: Date?): String {
-        if (date == null) return "N/A"
-        val formatter = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-        return formatter.format(date)
-    }
-
-    private fun showLoading() {
-        progressBar.visibility = View.VISIBLE
-        btnTrack.isEnabled = false
-    }
-
-    private fun hideLoading() {
-        progressBar.visibility = View.GONE
-        btnTrack.isEnabled = true
     }
 }
