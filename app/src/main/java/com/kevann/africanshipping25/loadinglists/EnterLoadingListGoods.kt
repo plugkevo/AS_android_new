@@ -108,7 +108,7 @@ class EnterWarehouseGoods : Fragment() {
 
         // Translate UI elements
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
-        translateUIElements(currentLanguage)
+        translateUIElements(view, currentLanguage)
 
         return view
     }
@@ -325,8 +325,8 @@ class EnterWarehouseGoods : Fragment() {
         addGoodsNumberInputField()
     }
 
-    private fun translateUIElements(targetLanguage: String) {
-        view?.let { v ->
+    private fun translateUIElements(view: View, targetLanguage: String) {
+        view.let { v ->
             // Translate Submit button
             v.findViewById<Button>(R.id.buttonSubmit)?.let { btn ->
                 translationHelper.translateAndSetText(btn, "Submit", targetLanguage)
