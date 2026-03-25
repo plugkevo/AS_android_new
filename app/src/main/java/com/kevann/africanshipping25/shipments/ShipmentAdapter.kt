@@ -35,28 +35,11 @@ class ShipmentAdapter(
     override fun onBindViewHolder(holder: ShipmentViewHolder, position: Int) {
         val currentShipment = shipmentList[position]
         holder.tvName.text = currentShipment.name
-        
-        // Translate origin and destination labels if translation helper is available
-        val originText = if (translationHelper != null) {
-            translationHelper.translateText("Origin", "en") // Translate label
-        } else {
-            "Origin"
-        }
-        val destinationText = if (translationHelper != null) {
-            translationHelper.translateText("Destination", "en") // Translate label
-        } else {
-            "Destination"
-        }
-        
         holder.tvOriginDestination.text = "${currentShipment.origin} to ${currentShipment.destination}"
         
-        // Translate status if translation helper is available
-        val translatedStatus = if (translationHelper != null) {
-            translationHelper.translateText(currentShipment.status ?: "Pending", "en")
-        } else {
-            currentShipment.status ?: "Pending"
-        }
-        holder.tvStatus.text = translatedStatus
+        // Display status - translation happens at fragment level via language preferences
+        val displayStatus = currentShipment.status ?: "Pending"
+        holder.tvStatus.text = displayStatus
 
         // --- UPDATED: Displaying ONLY Date from createdAt timestamp ---
         currentShipment.createdAt?.let { date ->
