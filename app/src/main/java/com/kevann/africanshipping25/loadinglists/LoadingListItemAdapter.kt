@@ -73,48 +73,67 @@ class LoadingListItemAdapter(
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_update_warehouse_items, null)
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
 
-        val dialogTitleTv = dialogView.findViewById<TextView>(R.id.tvUpdateDialogTitle)
-        val goodsNameLabelTv = dialogView.findViewById<TextView>(R.id.tvGoodsNameLabel)
-        val phoneNumberLabelTv = dialogView.findViewById<TextView>(R.id.tvPhoneNumberLabel)
-
-        // Translate dialog labels
-        translationHelper.translateAndSetText(dialogTitleTv, "Update Good Item", currentLanguage)
-        translationHelper.translateAndSetText(goodsNameLabelTv, "Goods Name", currentLanguage)
-        translationHelper.translateAndSetText(phoneNumberLabelTv, "Phone Number", currentLanguage)
+        // Get and translate dialog title and labels
+        dialogView.findViewById<TextView>(R.id.tvUpdateDialogTitle)?.let { dialogTitleTv ->
+            translationHelper.translateAndSetText(dialogTitleTv, "Update Good Item", currentLanguage)
+        }
+        dialogView.findViewById<TextView>(R.id.tvGoodsNameLabel)?.let { goodsNameLabelTv ->
+            translationHelper.translateAndSetText(goodsNameLabelTv, "Goods Name", currentLanguage)
+        }
+        dialogView.findViewById<TextView>(R.id.tvPhoneNumberLabel)?.let { phoneNumberLabelTv ->
+            translationHelper.translateAndSetText(phoneNumberLabelTv, "Phone Number", currentLanguage)
+        }
 
         val goodNoInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateGoodNo)
+        val senderInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateSenderName)
+        val phoneNumberInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdatePhoneNumber)
+        val dateInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateDate)
+
         val goodNoField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateGoodNo)
         val senderField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateSenderName)
-        val phoneNumberField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdatePhoneNumber) // Get phone number field
+        val phoneNumberField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdatePhoneNumber)
         val dateField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateDate)
 
         val buttonUpdate = dialogView.findViewById<Button>(R.id.buttonUpdate)
         val buttonCancel = dialogView.findViewById<Button>(R.id.buttonCancelUpdate)
 
         // Translate button text
-        translationHelper.translateAndSetText(buttonUpdate, "Update", currentLanguage)
-        translationHelper.translateAndSetText(buttonCancel, "Cancel", currentLanguage)
+        buttonUpdate?.let { btn ->
+            translationHelper.translateAndSetText(btn, "Update", currentLanguage)
+        }
+        buttonCancel?.let { btn ->
+            translationHelper.translateAndSetText(btn, "Cancel", currentLanguage)
+        }
 
         // Translate hints
-        translationHelper.translateText("Good Number (4 characters)", currentLanguage) { translated ->
-            goodNoInputLayout.hint = translated
+        goodNoInputLayout?.let { layout ->
+            translationHelper.translateText("Good Number (4 characters)", currentLanguage) { translated ->
+                layout.hint = translated
+            }
         }
-        translationHelper.translateText("Sender Name", currentLanguage) { translated ->
-            senderField.hint = translated
+        senderInputLayout?.let { layout ->
+            translationHelper.translateText("Sender Name", currentLanguage) { translated ->
+                layout.hint = translated
+            }
         }
-        translationHelper.translateText("Enter Phone Number", currentLanguage) { translated ->
-            phoneNumberField.hint = translated
+        phoneNumberInputLayout?.let { layout ->
+            translationHelper.translateText("Enter Phone Number", currentLanguage) { translated ->
+                layout.hint = translated
+            }
         }
-        translationHelper.translateText("Date", currentLanguage) { translated ->
-            dateField.hint = translated
+        dateInputLayout?.let { layout ->
+            translationHelper.translateText("Date", currentLanguage) { translated ->
+                layout.hint = translated
+            }
         }
 
-        goodNoField.setText(item.goodNo)
-        senderField.setText(item.senderName)
-        phoneNumberField.setText(item.phoneNumber) // Set initial phone number
-        dateField.setText(item.date)
+        // Set current values
+        goodNoField?.setText(item.goodNo)
+        senderField?.setText(item.senderName)
+        phoneNumberField?.setText(item.phoneNumber)
+        dateField?.setText(item.date)
 
-        dateField.setOnClickListener {
+        dateField?.setOnClickListener {
             val c = Calendar.getInstance()
             if (dateField.text?.isNotEmpty() == true) {
                 try {
@@ -141,50 +160,51 @@ class LoadingListItemAdapter(
             .setView(dialogView)
             .create()
 
-        buttonUpdate.setOnClickListener {
-            val updatedGoodNo = goodNoField.text.toString().trim()
-            val updatedSenderName = senderField.text.toString().trim()
-            val updatedPhoneNumber = phoneNumberField.text.toString().trim() // Get updated phone number
-            val updatedDate = dateField.text.toString().trim()
+        buttonUpdate?.setOnClickListener {
+            val updatedGoodNo = goodNoField?.text.toString().trim()
+            val updatedSenderName = senderField?.text.toString().trim()
+            val updatedPhoneNumber = phoneNumberField?.text.toString().trim()
+            val updatedDate = dateField?.text.toString().trim()
 
             // Clear any previous error messages
-            goodNoInputLayout.error = null
-            val phoneNumberInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdatePhoneNumber)
-            phoneNumberInputLayout.error = null // Clear error for phone number
+            goodNoInputLayout?.error = null
+            senderInputLayout?.error = null
+            phoneNumberInputLayout?.error = null
+            dateInputLayout?.error = null
 
             // --- VALIDATION WITH TRANSLATION ---
             if (updatedGoodNo.isEmpty()) {
                 var errorMsg = "Goods number cannot be empty."
                 translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    goodNoInputLayout.error = translated
+                    goodNoInputLayout?.error = translated
                 }
                 return@setOnClickListener
             }
             if (updatedGoodNo.length != 4) {
                 var errorMsg = "Goods number must be 4 characters."
                 translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    goodNoInputLayout.error = translated
+                    goodNoInputLayout?.error = translated
                 }
                 return@setOnClickListener
             }
             if (updatedSenderName.isEmpty()) {
                 var errorMsg = "Sender name cannot be empty."
                 translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    senderField.error = translated
+                    senderInputLayout?.error = translated
                 }
                 return@setOnClickListener
             }
-            if (updatedPhoneNumber.isEmpty()) { // Validate phone number
+            if (updatedPhoneNumber.isEmpty()) {
                 var errorMsg = "Phone number cannot be empty."
                 translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    phoneNumberInputLayout.error = translated
+                    phoneNumberInputLayout?.error = translated
                 }
                 return@setOnClickListener
             }
             if (updatedDate.isEmpty()) {
                 var errorMsg = "Date cannot be empty."
                 translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    dateField.error = translated
+                    dateInputLayout?.error = translated
                 }
                 return@setOnClickListener
             }
@@ -193,14 +213,14 @@ class LoadingListItemAdapter(
             val updatedItem = item.copy(
                 goodNo = updatedGoodNo,
                 senderName = updatedSenderName,
-                phoneNumber = updatedPhoneNumber, // Include phone number in the updated item
+                phoneNumber = updatedPhoneNumber,
                 date = updatedDate
             )
             onItemUpdated(updatedItem)
             dialog.dismiss()
         }
 
-        buttonCancel.setOnClickListener {
+        buttonCancel?.setOnClickListener {
             dialog.dismiss()
         }
         dialog.show()

@@ -42,6 +42,7 @@
         android:textAppearance="?attr/textAppearanceSubtitle1" />
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutUpdateSenderName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Sender Name"
@@ -82,6 +83,7 @@
     <!-- End Phone Number Input Field -->
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutUpdateDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Date"
