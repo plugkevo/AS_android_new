@@ -353,22 +353,22 @@ class EnterWarehouseGoods : Fragment() {
                 translationHelper.translateAndSetText(tv, "Date", targetLanguage)
             }
 
-            // Translate EditText hints
-            v.findViewById<EditText>(R.id.editTextSenderName)?.let { et ->
+            // Translate TextInputLayout hints (not EditText hints directly)
+            v.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilSenderName)?.let { layout ->
                 translationHelper.translateText("Sender Name", targetLanguage) { translated ->
-                    et.hint = translated
+                    layout.hint = translated
                 }
             }
 
-            v.findViewById<EditText>(R.id.editTextPhoneNumber)?.let { et ->
+            v.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilPhoneNumber)?.let { layout ->
                 translationHelper.translateText("Phone Number", targetLanguage) { translated ->
-                    et.hint = translated
+                    layout.hint = translated
                 }
             }
 
-            v.findViewById<EditText>(R.id.editTextDate)?.let { et ->
+            v.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilDate)?.let { layout ->
                 translationHelper.translateText("Date (dd/MM/yyyy)", targetLanguage) { translated ->
-                    et.hint = translated
+                    layout.hint = translated
                 }
             }
         }

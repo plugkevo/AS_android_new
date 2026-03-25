@@ -81,7 +81,6 @@
                         android:id="@+id/tilSenderName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Sender Name"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         app:boxStrokeColor="?attr/inputBoxStrokeColor"
                         app:hintTextColor="?attr/inputHintColor">
@@ -110,7 +109,6 @@
                         android:id="@+id/tilPhoneNumber"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Sender's Phone Number"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         app:boxStrokeColor="?attr/inputBoxStrokeColor"
                         app:hintTextColor="?attr/inputHintColor">
@@ -137,7 +135,6 @@
                         android:id="@+id/tilDate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Select Date"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         app:boxStrokeColor="?attr/inputBoxStrokeColor"
                         app:hintTextColor="?attr/inputHintColor">
