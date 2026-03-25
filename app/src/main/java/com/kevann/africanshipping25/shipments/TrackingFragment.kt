@@ -1,6 +1,8 @@
 package com.kevann.africanshipping25.shipments
 
 import android.app.AlertDialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -22,6 +24,8 @@ import com.google.firebase.firestore.Query
 import com.kevann.africanshipping25.ais.AisHubRepository
 import com.kevann.africanshipping25.ais.ShipsRepository
 import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,6 +47,9 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
     private lateinit var firestore: FirebaseFirestore
     private var shipmentId: String? = null
     private var googleMap: GoogleMap? = null
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     // Views
     private lateinit var tvShipmentName: TextView
@@ -91,6 +98,11 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize translation components
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+
         initViews(view)
         setupRecyclerView()
         loadShipmentDetails()
@@ -107,6 +119,10 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
         // Initialize Google Map
         val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
         mapFragment?.getMapAsync(this)
+
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
     }
 
     private fun initViews(view: View) {
@@ -159,7 +175,8 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
                 }
                 .addOnFailureListener { e ->
                     Log.e("TrackingFragment", "Error loading shipment", e)
-                    Toast.makeText(requireContext(), "Error loading shipment details", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error loading shipment details"
+                    showTranslatedToast(errorMsg)
                 }
         }
     }
@@ -229,7 +246,8 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
                 .addOnFailureListener { e ->
                     progressBar.visibility = View.GONE
                     Log.e("TrackingFragment", "Error loading checkpoints", e)
-                    Toast.makeText(requireContext(), "Error loading checkpoints", Toast.LENGTH_SHORT).show()
+                    val errorMsg = "Error loading checkpoints"
+                    showTranslatedToast(errorMsg)
                 }
         }
     }
@@ -243,24 +261,29 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
                         if (!assignedShipId.isNullOrEmpty()) {
                             CoroutineScope(Dispatchers.Main).launch {
                                 try {
-                                    Toast.makeText(requireContext(), "Fetching live location...", Toast.LENGTH_SHORT).show()
+                                    val fetchingMsg = "Fetching live location..."
+                                    showTranslatedToast(fetchingMsg)
                                     val ship = shipsRepository.getShipById(assignedShipId)
                                     if (ship != null) {
                                         val vesselLocation = aisHubRepository.getVesselLocationByIMO(ship.imoNumber)
                                         if (vesselLocation != null) {
                                             shipsRepository.updateShipLocation(assignedShipId, vesselLocation)
                                             loadShipDetails(assignedShipId)
-                                            Toast.makeText(requireContext(), "Location updated!", Toast.LENGTH_SHORT).show()
+                                            val updatedMsg = "Location updated!"
+                                            showTranslatedToast(updatedMsg)
                                         } else {
-                                            Toast.makeText(requireContext(), "Vessel not found in AIS database", Toast.LENGTH_LONG).show()
+                                            val notFoundMsg = "Vessel not found in AIS database"
+                                            showTranslatedToast(notFoundMsg)
                                         }
                                     }
                                 } catch (e: Exception) {
-                                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    val errorMsg = "Error: ${e.message}"
+                                    showTranslatedToast(errorMsg)
                                 }
                             }
                         } else {
-                            Toast.makeText(requireContext(), "No ship assigned to this shipment", Toast.LENGTH_SHORT).show()
+                            val noShipMsg = "No ship assigned to this shipment"
+                            showTranslatedToast(noShipMsg)
                         }
                     }
                 }
@@ -303,7 +326,8 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
                 val notes = etNotes.text.toString().trim()
 
                 if (locationName.isEmpty()) {
-                    Toast.makeText(requireContext(), "Please enter location name", Toast.LENGTH_SHORT).show()
+                    val emptyMsg = "Please enter location name"
+                    showTranslatedToast(emptyMsg)
                     return@setOnClickListener
                 }
 
@@ -311,7 +335,8 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
                 val longitude = longitudeStr.toDoubleOrNull()
 
                 if (latitude == null || longitude == null || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-                    Toast.makeText(requireContext(), "Invalid coordinates", Toast.LENGTH_SHORT).show()
+                    val invalidMsg = "Invalid coordinates"
+                    showTranslatedToast(invalidMsg)
                     return@setOnClickListener
                 }
 
@@ -329,12 +354,14 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
                         .collection("tracking_checkpoints")
                         .add(checkpoint)
                         .addOnSuccessListener {
-                            Toast.makeText(requireContext(), "Checkpoint added!", Toast.LENGTH_SHORT).show()
+                            val successMsg = "Checkpoint added!"
+                            showTranslatedToast(successMsg)
                             dialog.dismiss()
                             loadCheckpoints()
                         }
                         .addOnFailureListener { e ->
-                            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            val errorMsg = "Error: ${e.message}"
+                            showTranslatedToast(errorMsg)
                         }
                 }
             }
@@ -347,5 +374,36 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
         this.googleMap = map
         googleMap?.setMinZoomPreference(5f)
         googleMap?.setMaxZoomPreference(20f)
+    }
+
+    // Translation method
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.titleTextView)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Tracking", targetLanguage)
+            }
+
+            // Translate labels
+            v.findViewById<Button>(R.id.btnAddCheckpoint)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Add Checkpoint", targetLanguage)
+            }
+
+            v.findViewById<Button>(R.id.btnRefreshLocation)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Refresh Location", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tvNoCheckpoints)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "No checkpoints yet", targetLanguage)
+            }
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 }
