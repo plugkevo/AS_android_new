@@ -303,12 +303,34 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
             "Departed Origin", "In Transit", "At Checkpoint", "Customs Clearance",
             "At Warehouse", "Out for Delivery", "Delivered", "Delayed", "On Hold"
         )
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, statusOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerStatus.adapter = adapter
+
+        // Translate dialog title
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        var dialogTitle = "Add Tracking Checkpoint"
+        translationHelper.translateText("Add Tracking Checkpoint", currentLanguage) { translated ->
+            dialogTitle = translated
+        }
+
+        // Translate spinner status options
+        val translatedStatusOptions = mutableListOf<String>()
+        var completedCount = 0
+
+        for (status in statusOptions) {
+            translationHelper.translateText(status, currentLanguage) { translated ->
+                translatedStatusOptions.add(translated)
+                completedCount++
+
+                // Once all status options are translated, update the adapter
+                if (completedCount == statusOptions.size) {
+                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, translatedStatusOptions)
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinnerStatus.adapter = adapter
+                }
+            }
+        }
 
         val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Add Tracking Checkpoint")
+            .setTitle(dialogTitle)
             .setView(dialogView)
             .setPositiveButton("Add", null)
             .setNegativeButton("Cancel", null)
@@ -317,6 +339,14 @@ class TrackingFragment : Fragment(), OnMapReadyCallback {
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(resources.getColor(R.color.colorDarkBlue, null))
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(resources.getColor(R.color.colorDarkBlue, null))
+
+            // Translate button texts
+            translationHelper.translateText("Add", currentLanguage) { translated ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).text = translated
+            }
+            translationHelper.translateText("Cancel", currentLanguage) { translated ->
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).text = translated
+            }
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val locationName = etLocationName.text.toString().trim()
