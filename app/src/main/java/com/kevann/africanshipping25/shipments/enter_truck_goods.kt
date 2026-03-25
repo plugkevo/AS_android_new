@@ -70,9 +70,6 @@ class enter_truck_goods : Fragment() {
         goodsNumber = view.findViewById(R.id.etgoodsNumber)
         addButton = view.findViewById(R.id.saveButton)
 
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, goodsOptions)
-        goodsNameSpinner.adapter = adapter
-
         addButton.setOnClickListener {
             addGoodsToShipment()
         }
@@ -80,6 +77,7 @@ class enter_truck_goods : Fragment() {
         // Translate UI elements
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         translateUIElements(currentLanguage)
+        translateSpinnerItems(currentLanguage)
     }
 
     private fun isNetworkAvailable(): Boolean {
@@ -188,6 +186,25 @@ class enter_truck_goods : Fragment() {
             // Translate button
             v.findViewById<Button>(R.id.saveButton)?.let { btn ->
                 translationHelper.translateAndSetText(btn, "Save to Truck Inventory", targetLanguage)
+            }
+        }
+    }
+
+    // Translate spinner items
+    private fun translateSpinnerItems(targetLanguage: String) {
+        val translatedItems = mutableListOf<String>()
+        var completedCount = 0
+        
+        for (item in goodsOptions) {
+            translationHelper.translateText(item, targetLanguage) { translatedItem ->
+                translatedItems.add(translatedItem)
+                completedCount++
+                
+                // Once all items are translated, update the adapter
+                if (completedCount == goodsOptions.size) {
+                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, translatedItems)
+                    goodsNameSpinner.adapter = adapter
+                }
             }
         }
     }
