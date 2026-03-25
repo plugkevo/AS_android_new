@@ -320,13 +320,30 @@ class EnterWarehouseGoods : Fragment() {
 
     // Translation method for UI elements
     private fun translateUIElements(view: View, targetLanguage: String) {
-        // Translate Submit button
-        translationHelper.translateAndSetText(buttonSubmit, "Submit", targetLanguage)
-        
-        // Translate Edit Text hints
-        translationHelper.translateAndSetText(editTextSenderName, "Sender Name", targetLanguage)
-        translationHelper.translateAndSetText(editTextPhoneNumber, "Phone Number", targetLanguage)
-        translationHelper.translateAndSetText(editTextDate, "Date (dd/MM/yyyy)", targetLanguage)
+        view.let { v ->
+            // Translate Submit button
+            v.findViewById<Button>(R.id.buttonSubmit)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Submit", targetLanguage)
+            }
+            
+            // Translate Add Good Number button
+            v.findViewById<ImageButton>(R.id.buttonAddGoodNo)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Add Good Number", targetLanguage)
+            }
+            
+            // Translate EditText hints
+            v.findViewById<EditText>(R.id.editTextSenderName)?.let { et ->
+                translationHelper.translateAndSetText(et, "Sender Name", targetLanguage)
+            }
+            
+            v.findViewById<EditText>(R.id.editTextPhoneNumber)?.let { et ->
+                translationHelper.translateAndSetText(et, "Phone Number", targetLanguage)
+            }
+            
+            v.findViewById<EditText>(R.id.editTextDate)?.let { et ->
+                translationHelper.translateAndSetText(et, "Date (dd/MM/yyyy)", targetLanguage)
+            }
+        }
     }
 
     private fun clearInputFields() {

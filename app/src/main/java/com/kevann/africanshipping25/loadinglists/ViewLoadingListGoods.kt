@@ -456,11 +456,22 @@ class ViewWarehouseGoods : Fragment() {
 
     // Translation method for UI elements
     private fun translateUIElements(view: View, targetLanguage: String) {
-        // Translate Export button
-        translationHelper.translateAndSetText(exportButton, "Export", targetLanguage)
-        
-        // Translate Search hint
-        translationHelper.translateAndSetText(searchEditText, "Search warehouse items...", targetLanguage)
+        view.let { v ->
+            // Translate Export button
+            v.findViewById<Button>(R.id.exportButton)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Export", targetLanguage)
+            }
+            
+            // Translate Search EditText hint
+            v.findViewById<EditText>(R.id.searchEditText)?.let { et ->
+                translationHelper.translateAndSetText(et, "Search warehouse items...", targetLanguage)
+            }
+            
+            // Translate empty state message
+            v.findViewById<TextView>(R.id.emptyView)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "No warehouse items", targetLanguage)
+            }
+        }
     }
 
     private fun updateEmptyView(show: Boolean) {
