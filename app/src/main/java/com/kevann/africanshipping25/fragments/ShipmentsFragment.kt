@@ -86,6 +86,10 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
         fetchShipments()
         setupSearchAndFilters()
 
+        // Translate UI elements based on current language - exactly like HomeFragment
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
+
         // Set up FAB click listener
         fabCreateShipment.setOnClickListener {
             showCreateShipmentDialog()
@@ -407,6 +411,45 @@ class ShipmentsFragment : Fragment(), OnShipmentUpdateListener, ShipmentAdapter.
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
+        }
+    }
+
+    // Translation method - exactly like HomeFragment
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.tv_shipments_title)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "All Shipments", targetLanguage)
+            }
+
+            // Translate search hint
+            v.findViewById<EditText>(R.id.et_search)?.let { editText ->
+                editText.hint = "Search shipments..."  // Will be translated via helper if needed
+                translationHelper.translateText("Search shipments...", targetLanguage) { translated ->
+                    editText.hint = translated
+                }
+            }
+
+            // Translate chips
+            v.findViewById<com.google.android.material.chip.Chip>(R.id.chip_all)?.let { chip ->
+                translationHelper.translateAndSetText(chip, "All", targetLanguage)
+            }
+
+            v.findViewById<com.google.android.material.chip.Chip>(R.id.chip_active)?.let { chip ->
+                translationHelper.translateAndSetText(chip, "Active", targetLanguage)
+            }
+
+            v.findViewById<com.google.android.material.chip.Chip>(R.id.chip_in_transit)?.let { chip ->
+                translationHelper.translateAndSetText(chip, "In Transit", targetLanguage)
+            }
+
+            v.findViewById<com.google.android.material.chip.Chip>(R.id.chip_delivered)?.let { chip ->
+                translationHelper.translateAndSetText(chip, "Delivered", targetLanguage)
+            }
+
+            v.findViewById<com.google.android.material.chip.Chip>(R.id.chip_processing)?.let { chip ->
+                translationHelper.translateAndSetText(chip, "Processing", targetLanguage)
+            }
         }
     }
 
