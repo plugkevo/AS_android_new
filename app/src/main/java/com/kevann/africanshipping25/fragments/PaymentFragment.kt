@@ -63,16 +63,20 @@ class PaymentFragment : Fragment() {
 
         // Set up the click listener for the Prompt button
         btnPrompt.setOnClickListener {
+            Log.d("PaymentFragment", "[v0] Button clicked")
             val phoneNumber = etPhoneNumber.text.toString().trim()
             val amountString = etAmount.text.toString().trim()
+            Log.d("PaymentFragment", "[v0] Phone: $phoneNumber, Amount: $amountString")
 
             if (phoneNumber.isEmpty() || phoneNumber.length != 10 || !phoneNumber.startsWith("07")) {
+                Log.d("PaymentFragment", "[v0] Phone validation failed")
                 val validationMsg = "Please enter a valid Safaricom phone number (e.g., 07XXXXXXXX)"
                 showTranslatedToast(validationMsg)
                 return@setOnClickListener // Stop execution if phone number is invalid
             }
 
             if (amountString.isEmpty()) {
+                Log.d("PaymentFragment", "[v0] Amount is empty")
                 val emptyAmountMsg = "Please enter the amount to pay."
                 showTranslatedToast(emptyAmountMsg)
                 return@setOnClickListener // Stop execution if amount is empty
@@ -82,11 +86,13 @@ class PaymentFragment : Fragment() {
             try {
                 amount = amountString.toInt()
                 if (amount <= 0) {
+                    Log.d("PaymentFragment", "[v0] Amount is negative or zero")
                     val negativeMsg = "Amount must be a positive number."
                     showTranslatedToast(negativeMsg)
                     return@setOnClickListener
                 }
             } catch (e: NumberFormatException) {
+                Log.d("PaymentFragment", "[v0] Invalid numeric amount")
                 val invalidMsg = "Please enter a valid numeric amount."
                 showTranslatedToast(invalidMsg)
                 return@setOnClickListener // Stop execution if amount is not a valid number
