@@ -51,18 +51,34 @@ class LoadingListItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = filteredItems[position] // Use filteredItems here
-        holder.textGoodNo.text = "Good No: ${item.goodNo}"
-        holder.textSenderName.text = "Sender: ${item.senderName}"
-        holder.textPhoneNumber.text = "Phone: ${item.phoneNumber}" // Set phone number text
-        holder.textDate.text = "Date: ${item.date}"
+        
+        // Initialize translation on first use
+        if (!::translationManager.isInitialized) {
+            translationManager = GoogleTranslationManager(holder.itemView.context)
+            translationHelper = GoogleTranslationHelper(translationManager)
+            sharedPreferences = holder.itemView.context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        }
+        
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        
+        // Translate and set all labels with item data
+        translationHelper.translateText("Good No", currentLanguage) { translated ->
+            holder.textGoodNo.text = "$translated: ${item.goodNo}"
+        }
+        
+        translationHelper.translateText("Sender", currentLanguage) { translated ->
+            holder.textSenderName.text = "$translated: ${item.senderName}"
+        }
+        
+        translationHelper.translateText("Phone", currentLanguage) { translated ->
+            holder.textPhoneNumber.text = "$translated: ${item.phoneNumber}"
+        }
+        
+        translationHelper.translateText("Date", currentLanguage) { translated ->
+            holder.textDate.text = "$translated: ${item.date}"
+        }
 
         holder.imageMoreVert.setOnClickListener {
-            // Initialize translation on first use
-            if (!::translationManager.isInitialized) {
-                translationManager = GoogleTranslationManager(holder.itemView.context)
-                translationHelper = GoogleTranslationHelper(translationManager)
-                sharedPreferences = holder.itemView.context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-            }
             showUpdateDialog(holder.itemView.context, item)
         }
     }
