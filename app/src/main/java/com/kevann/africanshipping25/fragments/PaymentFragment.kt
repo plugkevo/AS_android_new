@@ -54,6 +54,7 @@ class PaymentFragment : Fragment() {
         sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
         translationManager = GoogleTranslationManager(requireContext())
         translationHelper = GoogleTranslationHelper(translationManager)
+        Log.d("PaymentFragment", "[v0] Translation components initialized")
 
         // Find views using findViewById
         etPhoneNumber = view.findViewById(R.id.et_phone_number)
@@ -305,7 +306,9 @@ class PaymentFragment : Fragment() {
     // Helper method to translate toast messages (following ProfileFragment pattern)
     private fun showTranslatedToast(message: String) {
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        Log.d("PaymentFragment", "[v0] showTranslatedToast - Language: $currentLanguage, Message: $message")
         translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Log.d("PaymentFragment", "[v0] Translated message: $translatedMessage")
             Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
         }
     }
