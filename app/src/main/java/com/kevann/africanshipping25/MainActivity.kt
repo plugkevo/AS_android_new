@@ -30,6 +30,7 @@ import com.kevann.africanshipping25.fragments.ShipmentsFragment
 import com.kevann.africanshipping25.loadinglists.LoadingFragment
 import com.kevann.africanshipping25.notifications.ViewNotificationsFragment
 import com.kevann.africanshipping25.shipments.NewShipmentDialogFragment
+import com.kevann.africanshipping25.sync.SyncManager
 import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import com.kevann.africanshipping25.translation.GoogleTranslationManager
 
@@ -218,6 +219,15 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(unseenCountReceiver, IntentFilter(ViewNotificationsFragment.ACTION_UNSEEN_COUNT_UPDATED))
         updateNotificationBadge()
+        
+        // Trigger sync when app comes to foreground (WiFi may have been turned on while app was backgrounded)
+        Log.d(TAG, "[v0] MainActivity onResume - triggering offline sync")
+        try {
+            val syncManager = SyncManager(this)
+            syncManager.syncAllData()
+        } catch (e: Exception) {
+            Log.e(TAG, "[v0] Error triggering sync on resume: ${e.message}", e)
+        }
     }
 
     override fun onPause() {
