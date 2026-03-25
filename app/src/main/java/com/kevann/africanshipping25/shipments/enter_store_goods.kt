@@ -1,6 +1,7 @@
 package com.kevann.africanshipping25.shipments
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
@@ -19,6 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.kevann.africanshipping25.R
 import com.kevann.africanshipping25.database.OfflineDataStore
 import com.kevann.africanshipping25.database.StoreGoodsEntity
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -31,9 +35,15 @@ class enter_store_goods : Fragment() {
     private lateinit var saveButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     private val PREFS_NAME = "StoreGoodsPrefs"
     private val LAST_STORE_KEY = "lastSelectedStore"
+    
+    private val goodsOptions = arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
+    private val storeLocations = arrayOf("Store A", "Store B", "Store C")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,18 +62,25 @@ class enter_store_goods : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize SharedPreferences and translation
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
         storeLocationSpinner = view.findViewById(R.id.storeLocationSpinner)
         goodsNumberEditText = view.findViewById(R.id.etgoodsNumber)
         saveButton = view.findViewById(R.id.saveButton)
 
-        val goodsOptions = arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
-        val goodsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, goodsOptions)
-        goodsNameSpinner.adapter = goodsAdapter
-
-        val storeLocations = arrayOf("Store A", "Store B", "Store C")
-        val locationAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, storeLocations)
-        storeLocationSpinner.adapter = locationAdapter
+        saveButton.setOnClickListener {
+            currentShipmentId?.let { shipmentId ->
+                saveGoodsToStore(shipmentId)
+            } ?: run {
+                val errorMsg = "Error: Shipment ID not available."
+                showTranslatedToast(errorMsg)
+                Log.e("enter_store_goods", "Shipment ID is null.")
+            }
+        }
 
         val sharedPrefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastSelectedStore = sharedPrefs.getString(LAST_STORE_KEY, storeLocations[0])
@@ -72,14 +89,10 @@ class enter_store_goods : Fragment() {
             storeLocationSpinner.setSelection(lastSelectedIndex)
         }
 
-        saveButton.setOnClickListener {
-            currentShipmentId?.let { shipmentId ->
-                saveGoodsToStore(shipmentId)
-            } ?: run {
-                Toast.makeText(requireContext(), "Error: Shipment ID not available.", Toast.LENGTH_SHORT).show()
-                Log.e("enter_store_goods", "Shipment ID is null.")
-            }
-        }
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
+        translateSpinnerItems(currentLanguage)
     }
 
     private fun isNetworkAvailable(): Boolean {
@@ -131,11 +144,8 @@ class enter_store_goods : Fragment() {
             .collection("store_inventory")
             .add(itemData)
             .addOnSuccessListener { documentReference ->
-                Toast.makeText(
-                    requireContext(),
-                    "Goods added to store inventory (synced to cloud)",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val successMsg = "Goods added to store inventory (synced to cloud)"
+                showTranslatedToast(successMsg)
 
                 val sharedPrefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 with(sharedPrefs.edit()) {
@@ -146,8 +156,11 @@ class enter_store_goods : Fragment() {
                 clearFields()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(
-                    requireContext(),
+                val errorMsg = "Error adding goods: ${e.message}"
+                showTranslatedToast(errorMsg)
+                Log.e("FirestoreError", "Error adding store goods", e)
+            }
+    }
                     "Error adding goods to store inventory: ${e.message}",
                     Toast.LENGTH_LONG
                 ).show()
@@ -165,11 +178,8 @@ class enter_store_goods : Fragment() {
         )
 
         OfflineDataStore.saveStoreGood(storeGoodsEntity, requireContext())
-        Toast.makeText(
-            requireContext(),
-            "Goods saved locally (will sync when online)",
-            Toast.LENGTH_SHORT
-        ).show()
+        val localSaveMsg = "Goods saved locally (will sync when online)"
+        showTranslatedToast(localSaveMsg)
 
         val sharedPrefs = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         with(sharedPrefs.edit()) {
@@ -183,6 +193,79 @@ class enter_store_goods : Fragment() {
     private fun clearFields() {
         goodsNumberEditText.text = null
         goodsNameSpinner.setSelection(0)
+    }
+
+    // Translation method
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.titleTextView)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Enter Store Goods", targetLanguage)
+            }
+
+            // Translate labels
+            v.findViewById<TextView>(R.id.goodsNameLabel)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Goods Name:", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.storeLocationLabel)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Store Location:", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.goodsNumberLabel)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Goods Number:", targetLanguage)
+            }
+
+            // Translate button
+            v.findViewById<Button>(R.id.saveButton)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Save to Store Inventory", targetLanguage)
+            }
+        }
+    }
+
+    // Translate spinner items
+    private fun translateSpinnerItems(targetLanguage: String) {
+        val translatedGoodsItems = mutableListOf<String>()
+        var goodsCount = 0
+        
+        // Translate goods items
+        for (item in goodsOptions) {
+            translationHelper.translateText(item, targetLanguage) { translatedItem ->
+                translatedGoodsItems.add(translatedItem)
+                goodsCount++
+                
+                // Once all goods items are translated, update the adapter
+                if (goodsCount == goodsOptions.size) {
+                    val goodsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, translatedGoodsItems)
+                    goodsNameSpinner.adapter = goodsAdapter
+                }
+            }
+        }
+
+        // Translate store location items
+        val translatedLocationItems = mutableListOf<String>()
+        var locationCount = 0
+        
+        for (item in storeLocations) {
+            translationHelper.translateText(item, targetLanguage) { translatedItem ->
+                translatedLocationItems.add(translatedItem)
+                locationCount++
+                
+                // Once all location items are translated, update the adapter
+                if (locationCount == storeLocations.size) {
+                    val locationAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, translatedLocationItems)
+                    storeLocationSpinner.adapter = locationAdapter
+                }
+            }
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {
