@@ -433,6 +433,23 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         }
     }
 
+    // Translation helper method
+    private fun translateUIElements(view: View, targetLanguage: String) {
+        view.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.tv_title)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "All Loading Lists", targetLanguage)
+            }
+
+            // Translate search hint
+            v.findViewById<EditText>(R.id.et_search)?.let { et ->
+                translationHelper.translateText("Search loading lists...", targetLanguage) { translated ->
+                    et.hint = translated
+                }
+            }
+        }
+    }
+
     // Translate list item labels and update adapter
     private fun translateListLabels(targetLanguage: String) {
         translationHelper.translateText("From: ", targetLanguage) { from ->
