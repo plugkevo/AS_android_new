@@ -46,17 +46,24 @@ class LoadingListDetailsActivity : AppCompatActivity() {
         if (loadingListId != null) {
             Log.d("LoadingListDetail", "Received Loading List ID: $loadingListId")
 
-            val adapter = ViewPagerAdapter(supportFragmentManager)
-
-            // Translate tab titles
             val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            
+            // Translate tab titles FIRST, then add fragments, then set adapter
+            val adapter = ViewPagerAdapter(supportFragmentManager)
             translateUIElements(currentLanguage)
-            translateTabTitles(adapter, currentLanguage, loadingListId)
-
-            // Set the adapter to the ViewPager
-            viewPager.adapter = adapter
-            // Link the TabLayout with the ViewPager
-            tabLayout.setupWithViewPager(viewPager)
+            
+            translationHelper.translateText("Enter Goods", currentLanguage) { enterGoodsTitle ->
+                translationHelper.translateText("View Goods", currentLanguage) { viewGoodsTitle ->
+                    // Add fragments to adapter
+                    adapter.addFragment(EnterWarehouseGoods.Companion.newInstance(loadingListId), enterGoodsTitle)
+                    adapter.addFragment(ViewWarehouseGoods.Companion.newInstance(loadingListId), viewGoodsTitle)
+                    
+                    // NOW set the adapter to the ViewPager (after fragments are added)
+                    viewPager.adapter = adapter
+                    // Link the TabLayout with the ViewPager
+                    tabLayout.setupWithViewPager(viewPager)
+                }
+            }
 
         } else {
             Log.e("LoadingListDetail", "No Loading List ID received!")
@@ -71,15 +78,5 @@ class LoadingListDetailsActivity : AppCompatActivity() {
 
     private fun translateUIElements(targetLanguage: String) {
         translationHelper.translateAndSetText(headerTitle, "Loading List", targetLanguage)
-    }
-
-    private fun translateTabTitles(adapter: ViewPagerAdapter, targetLanguage: String, loadingListId: String) {
-        translationHelper.translateText("Enter Goods", targetLanguage) { enterGoodsTitle ->
-            translationHelper.translateText("View Goods", targetLanguage) { viewGoodsTitle ->
-                // Pass the loadingListId to the EnterWarehouseGoods fragment
-                adapter.addFragment(EnterWarehouseGoods.Companion.newInstance(loadingListId), enterGoodsTitle)
-                adapter.addFragment(ViewWarehouseGoods.Companion.newInstance(loadingListId), viewGoodsTitle)
-            }
-        }
     }
 }
