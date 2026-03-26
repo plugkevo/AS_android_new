@@ -1,6 +1,7 @@
 package com.kevann.africanshipping25.shipments
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
@@ -19,6 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.kevann.africanshipping25.R
 import com.kevann.africanshipping25.database.OfflineDataStore
 import com.kevann.africanshipping25.database.TruckGoodsEntity
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -36,6 +40,9 @@ class enter_truck_goods : Fragment() {
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
     private val goodsOptions = arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,16 +61,23 @@ class enter_truck_goods : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize SharedPreferences and translation
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
         goodsNumber = view.findViewById(R.id.etgoodsNumber)
         addButton = view.findViewById(R.id.saveButton)
 
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, goodsOptions)
-        goodsNameSpinner.adapter = adapter
-
         addButton.setOnClickListener {
             addGoodsToShipment()
         }
+
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
+        translateSpinnerItems(currentLanguage)
     }
 
     private fun isNetworkAvailable(): Boolean {
@@ -85,7 +99,8 @@ class enter_truck_goods : Fragment() {
         goodsNumber.error = null
 
         if (currentShipmentId == null) {
-            Toast.makeText(requireContext(), "Error: Shipment ID not available.", Toast.LENGTH_SHORT).show()
+            val errorMsg = "Error: Shipment ID not available."
+            showTranslatedToast(errorMsg)
             Log.e("enter_truck_goods", "Shipment ID is null.")
             return
         }
@@ -121,19 +136,13 @@ class enter_truck_goods : Fragment() {
             .collection("truck_inventory")
             .add(good)
             .addOnSuccessListener { documentReference ->
-                Toast.makeText(
-                    requireContext(),
-                    "Item added to truck inventory (synced to cloud)",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val successMsg = "Item added to truck inventory (synced to cloud)"
+                showTranslatedToast(successMsg)
                 clearFields()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(
-                    requireContext(),
-                    "Error adding item: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                val errorMsg = "Error adding item: ${e.message}"
+                showTranslatedToast(errorMsg)
                 Log.e("FirestoreError", "Error adding truck goods", e)
             }
     }
@@ -147,17 +156,65 @@ class enter_truck_goods : Fragment() {
         )
 
         OfflineDataStore.saveTruckGood(truckGoodsEntity, requireContext())
-        Toast.makeText(
-            requireContext(),
-            "Item saved locally (will sync when online)",
-            Toast.LENGTH_SHORT
-        ).show()
+        val localSaveMsg = "Item saved locally (will sync when online)"
+        showTranslatedToast(localSaveMsg)
         clearFields()
     }
 
     private fun clearFields() {
         goodsNumber.text = null
         goodsNameSpinner.setSelection(0)
+    }
+
+    // Translation method
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.titleTextView)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Enter Truck Goods", targetLanguage)
+            }
+
+            // Translate labels
+            v.findViewById<TextView>(R.id.goodsNameLabel)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Goods Name:", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.goodsNumberLabel)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Goods Number:", targetLanguage)
+            }
+
+            // Translate button
+            v.findViewById<Button>(R.id.saveButton)?.let { btn ->
+                translationHelper.translateAndSetText(btn, "Save to Truck Inventory", targetLanguage)
+            }
+        }
+    }
+
+    // Translate spinner items
+    private fun translateSpinnerItems(targetLanguage: String) {
+        val translatedItems = mutableListOf<String>()
+        var completedCount = 0
+
+        for (item in goodsOptions) {
+            translationHelper.translateText(item, targetLanguage) { translatedItem ->
+                translatedItems.add(translatedItem)
+                completedCount++
+
+                // Once all items are translated, update the adapter
+                if (completedCount == goodsOptions.size) {
+                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, translatedItems)
+                    goodsNameSpinner.adapter = adapter
+                }
+            }
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {

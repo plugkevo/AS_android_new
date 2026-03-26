@@ -18,18 +18,22 @@ class SyncManager(private val context: Context) {
 
     fun syncAllData() {
         if (isNetworkAvailable()) {
-            Log.d(tag, "Device online, starting sync...")
+            Log.d(tag, "[v0] Device online, starting sync...")
             syncTruckGoods()
             syncStoreGoods()
             syncLoadingLists()
             syncWarehouseGoods()
+        } else {
+            Log.d(tag, "[v0] Device offline, sync skipped")
         }
     }
 
     private fun syncTruckGoods() {
         try {
             val unsyncedGoods = OfflineDataStore.getUnsyncedTruckGoods(context)
+            Log.d(tag, "[v0] Found ${unsyncedGoods.size} unsynced truck goods")
             for (good in unsyncedGoods) {
+                Log.d(tag, "[v0] Syncing truck good: ID=${good.id}, shipmentId=${good.shipmentId}, name=${good.name}")
                 firestore.collection("shipments")
                     .document(good.shipmentId)
                     .collection("truck_inventory")
@@ -40,21 +44,26 @@ class SyncManager(private val context: Context) {
                     ))
                     .addOnSuccessListener {
                         OfflineDataStore.markTruckGoodAsSynced(good.id, context)
-                        Log.d(tag, "Truck good synced: ${good.id}")
+                        Log.d(tag, "[v0] Truck good synced successfully: ${good.id}")
                     }
                     .addOnFailureListener { e ->
-                        Log.e(tag, "Error syncing truck good: ${e.message}")
+                        Log.e(tag, "[v0] Error syncing truck good: ${e.message}", e)
                     }
             }
+            if (unsyncedGoods.isEmpty()) {
+                Log.d(tag, "[v0] No unsynced truck goods to sync")
+            }
         } catch (e: Exception) {
-            Log.e(tag, "Error syncing truck goods: ${e.message}")
+            Log.e(tag, "[v0] Error syncing truck goods: ${e.message}", e)
         }
     }
 
     private fun syncStoreGoods() {
         try {
             val unsyncedGoods = OfflineDataStore.getUnsyncedStoreGoods(context)
+            Log.d(tag, "[v0] Found ${unsyncedGoods.size} unsynced store goods")
             for (good in unsyncedGoods) {
+                Log.d(tag, "[v0] Syncing store good: ID=${good.id}, shipmentId=${good.shipmentId}, location=${good.storeLocation}")
                 firestore.collection("shipments")
                     .document(good.shipmentId)
                     .collection("store_inventory")
@@ -66,21 +75,26 @@ class SyncManager(private val context: Context) {
                     ))
                     .addOnSuccessListener {
                         OfflineDataStore.markStoreGoodAsSynced(good.id, context)
-                        Log.d(tag, "Store good synced: ${good.id}")
+                        Log.d(tag, "[v0] Store good synced successfully: ${good.id}")
                     }
                     .addOnFailureListener { e ->
-                        Log.e(tag, "Error syncing store good: ${e.message}")
+                        Log.e(tag, "[v0] Error syncing store good: ${e.message}", e)
                     }
             }
+            if (unsyncedGoods.isEmpty()) {
+                Log.d(tag, "[v0] No unsynced store goods to sync")
+            }
         } catch (e: Exception) {
-            Log.e(tag, "Error syncing store goods: ${e.message}")
+            Log.e(tag, "[v0] Error syncing store goods: ${e.message}", e)
         }
     }
 
     private fun syncLoadingLists() {
         try {
             val unsyncedLists = OfflineDataStore.getUnsyncedLoadingLists(context)
+            Log.d(tag, "[v0] Found ${unsyncedLists.size} unsynced loading lists")
             for (list in unsyncedLists) {
+                Log.d(tag, "[v0] Syncing loading list: ID=${list.id}, name=${list.name}")
                 firestore.collection("loading_lists")
                     .add(mapOf(
                         "name" to list.name,
@@ -92,21 +106,26 @@ class SyncManager(private val context: Context) {
                     ))
                     .addOnSuccessListener {
                         OfflineDataStore.markLoadingListAsSynced(list.id, context)
-                        Log.d(tag, "Loading list synced: ${list.id}")
+                        Log.d(tag, "[v0] Loading list synced successfully: ${list.id}")
                     }
                     .addOnFailureListener { e ->
-                        Log.e(tag, "Error syncing loading list: ${e.message}")
+                        Log.e(tag, "[v0] Error syncing loading list: ${e.message}", e)
                     }
             }
+            if (unsyncedLists.isEmpty()) {
+                Log.d(tag, "[v0] No unsynced loading lists to sync")
+            }
         } catch (e: Exception) {
-            Log.e(tag, "Error syncing loading lists: ${e.message}")
+            Log.e(tag, "[v0] Error syncing loading lists: ${e.message}", e)
         }
     }
 
     private fun syncWarehouseGoods() {
         try {
             val unsyncedGoods = OfflineDataStore.getUnsyncedWarehouseGoods(context)
+            Log.d(tag, "[v0] Found ${unsyncedGoods.size} unsynced warehouse goods")
             for (good in unsyncedGoods) {
+                Log.d(tag, "[v0] Syncing warehouse good: ID=${good.id}, loadingListId=${good.loadingListId}, goodNo=${good.goodNo}")
                 firestore.collection("loading_lists")
                     .document(good.loadingListId)
                     .collection("warehouseItems")
@@ -119,14 +138,17 @@ class SyncManager(private val context: Context) {
                     ))
                     .addOnSuccessListener {
                         OfflineDataStore.markWarehouseGoodAsSynced(good.id, context)
-                        Log.d(tag, "Warehouse good synced: ${good.id}")
+                        Log.d(tag, "[v0] Warehouse good synced successfully: ${good.id}")
                     }
                     .addOnFailureListener { e ->
-                        Log.e(tag, "Error syncing warehouse good: ${e.message}")
+                        Log.e(tag, "[v0] Error syncing warehouse good: ${e.message}", e)
                     }
             }
+            if (unsyncedGoods.isEmpty()) {
+                Log.d(tag, "[v0] No unsynced warehouse goods to sync")
+            }
         } catch (e: Exception) {
-            Log.e(tag, "Error syncing warehouse goods: ${e.message}")
+            Log.e(tag, "[v0] Error syncing warehouse goods: ${e.message}", e)
         }
     }
 

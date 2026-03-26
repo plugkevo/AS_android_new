@@ -3,6 +3,7 @@ package com.kevann.africanshipping25.loadinglists
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,22 +12,36 @@ import android.widget.Filter
 import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.kevann.africanshipping25.loadinglists.LoadingListGoodsItem
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import com.kevann.africanshipping25.R  // Add this import
+import com.kevann.africanshipping25.R
 
 class LoadingListItemAdapter(
     private val items: List<LoadingListGoodsItem>, // This will be our original, unfiltered list
-    private val onItemUpdated: (LoadingListGoodsItem) -> Unit
+    private val onItemUpdated: (LoadingListGoodsItem) -> Unit,
+    private var translatedLabels: Map<String, String> = emptyMap()
 ) : RecyclerView.Adapter<LoadingListItemAdapter.ViewHolder>(), Filterable {
 
     private var filteredItems: MutableList<LoadingListGoodsItem> = items.toMutableList()
     private val originalItems: List<LoadingListGoodsItem> = items // Keep a copy of the original list
+
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
+    private lateinit var sharedPreferences: SharedPreferences
+
+    // Method to update translated labels
+    fun updateTranslatedLabels(labels: Map<String, String>) {
+        translatedLabels = labels
+        notifyDataSetChanged()
+    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textGoodNo: TextView = view.findViewById(R.id.textGoodNo)
@@ -42,13 +57,26 @@ class LoadingListItemAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = filteredItems[position] // Use filteredItems here
-        holder.textGoodNo.text = "Good No: ${item.goodNo}"
-        holder.textSenderName.text = "Sender: ${item.senderName}"
-        holder.textPhoneNumber.text = "Phone: ${item.phoneNumber}" // Set phone number text
-        holder.textDate.text = "Date: ${item.date}"
+        val item = filteredItems[position]
+
+        // Use translated labels if available, otherwise fall back to English
+        val goodNoLabel = translatedLabels["goodNo"] ?: "Good No"
+        val senderLabel = translatedLabels["sender"] ?: "Sender"
+        val phoneLabel = translatedLabels["phone"] ?: "Phone"
+        val dateLabel = translatedLabels["date"] ?: "Date"
+
+        holder.textGoodNo.text = "$goodNoLabel: ${item.goodNo}"
+        holder.textSenderName.text = "$senderLabel: ${item.senderName}"
+        holder.textPhoneNumber.text = "$phoneLabel: ${item.phoneNumber}"
+        holder.textDate.text = "$dateLabel: ${item.date}"
 
         holder.imageMoreVert.setOnClickListener {
+            // Initialize translation on first use
+            if (!::translationManager.isInitialized) {
+                translationManager = GoogleTranslationManager(holder.itemView.context)
+                translationHelper = GoogleTranslationHelper(translationManager)
+                sharedPreferences = holder.itemView.context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+            }
             showUpdateDialog(holder.itemView.context, item)
         }
     }
@@ -57,22 +85,69 @@ class LoadingListItemAdapter(
 
     private fun showUpdateDialog(context: Context, item: LoadingListGoodsItem) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_update_warehouse_items, null)
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+
+        // Get and translate dialog title and labels
+        dialogView.findViewById<TextView>(R.id.tvUpdateDialogTitle)?.let { dialogTitleTv ->
+            translationHelper.translateAndSetText(dialogTitleTv, "Update Good Item", currentLanguage)
+        }
+        dialogView.findViewById<TextView>(R.id.tvGoodsNameLabel)?.let { goodsNameLabelTv ->
+            translationHelper.translateAndSetText(goodsNameLabelTv, "Goods Name", currentLanguage)
+        }
+        dialogView.findViewById<TextView>(R.id.tvPhoneNumberLabel)?.let { phoneNumberLabelTv ->
+            translationHelper.translateAndSetText(phoneNumberLabelTv, "Phone Number", currentLanguage)
+        }
 
         val goodNoInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateGoodNo)
+        val senderInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateSenderName)
+        val phoneNumberInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdatePhoneNumber)
+        val dateInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdateDate)
+
         val goodNoField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateGoodNo)
         val senderField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateSenderName)
-        val phoneNumberField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdatePhoneNumber) // Get phone number field
+        val phoneNumberField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdatePhoneNumber)
         val dateField = dialogView.findViewById<TextInputEditText>(R.id.editTextUpdateDate)
 
         val buttonUpdate = dialogView.findViewById<Button>(R.id.buttonUpdate)
         val buttonCancel = dialogView.findViewById<Button>(R.id.buttonCancelUpdate)
 
-        goodNoField.setText(item.goodNo)
-        senderField.setText(item.senderName)
-        phoneNumberField.setText(item.phoneNumber) // Set initial phone number
-        dateField.setText(item.date)
+        // Translate button text
+        buttonUpdate?.let { btn ->
+            translationHelper.translateAndSetText(btn, "Update", currentLanguage)
+        }
+        buttonCancel?.let { btn ->
+            translationHelper.translateAndSetText(btn, "Cancel", currentLanguage)
+        }
 
-        dateField.setOnClickListener {
+        // Translate hints
+        goodNoInputLayout?.let { layout ->
+            translationHelper.translateText("Good Number (4 characters)", currentLanguage) { translated ->
+                layout.hint = translated
+            }
+        }
+        senderInputLayout?.let { layout ->
+            translationHelper.translateText("Sender Name", currentLanguage) { translated ->
+                layout.hint = translated
+            }
+        }
+        phoneNumberInputLayout?.let { layout ->
+            translationHelper.translateText("Enter Phone Number", currentLanguage) { translated ->
+                layout.hint = translated
+            }
+        }
+        dateInputLayout?.let { layout ->
+            translationHelper.translateText("Date", currentLanguage) { translated ->
+                layout.hint = translated
+            }
+        }
+
+        // Set current values
+        goodNoField?.setText(item.goodNo)
+        senderField?.setText(item.senderName)
+        phoneNumberField?.setText(item.phoneNumber)
+        dateField?.setText(item.date)
+
+        dateField?.setOnClickListener {
             val c = Calendar.getInstance()
             if (dateField.text?.isNotEmpty() == true) {
                 try {
@@ -99,41 +174,52 @@ class LoadingListItemAdapter(
             .setView(dialogView)
             .create()
 
-        buttonUpdate.setOnClickListener {
-            val updatedGoodNo = goodNoField.text.toString().trim()
-            val updatedSenderName = senderField.text.toString().trim()
-            val updatedPhoneNumber = phoneNumberField.text.toString().trim() // Get updated phone number
-            val updatedDate = dateField.text.toString().trim()
+        buttonUpdate?.setOnClickListener {
+            val updatedGoodNo = goodNoField?.text.toString().trim()
+            val updatedSenderName = senderField?.text.toString().trim()
+            val updatedPhoneNumber = phoneNumberField?.text.toString().trim()
+            val updatedDate = dateField?.text.toString().trim()
 
             // Clear any previous error messages
-            goodNoInputLayout.error = null
-            val phoneNumberInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutUpdatePhoneNumber)
-            phoneNumberInputLayout.error = null // Clear error for phone number
+            goodNoInputLayout?.error = null
+            senderInputLayout?.error = null
+            phoneNumberInputLayout?.error = null
+            dateInputLayout?.error = null
 
-            // --- VALIDATION ---
+            // --- VALIDATION WITH TRANSLATION ---
             if (updatedGoodNo.isEmpty()) {
-                goodNoInputLayout.error = "Goods number cannot be empty."
+                var errorMsg = "Goods number cannot be empty."
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    goodNoInputLayout?.error = translated
+                }
                 return@setOnClickListener
             }
             if (updatedGoodNo.length != 4) {
-                goodNoInputLayout.error = "Goods number must be 4 characters."
+                var errorMsg = "Goods number must be 4 characters."
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    goodNoInputLayout?.error = translated
+                }
                 return@setOnClickListener
             }
             if (updatedSenderName.isEmpty()) {
-                senderField.error = "Sender name cannot be empty."
+                var errorMsg = "Sender name cannot be empty."
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    senderInputLayout?.error = translated
+                }
                 return@setOnClickListener
             }
-            if (updatedPhoneNumber.isEmpty()) { // Validate phone number
-                phoneNumberInputLayout.error = "Phone number cannot be empty."
+            if (updatedPhoneNumber.isEmpty()) {
+                var errorMsg = "Phone number cannot be empty."
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    phoneNumberInputLayout?.error = translated
+                }
                 return@setOnClickListener
             }
-            // Optional: Add more specific phone number validation (e.g., length, format)
-            // if (updatedPhoneNumber.length < 10) {
-            //     phoneNumberInputLayout.error = "Phone number is too short."
-            //     return@setOnClickListener
-            // }
             if (updatedDate.isEmpty()) {
-                dateField.error = "Date cannot be empty."
+                var errorMsg = "Date cannot be empty."
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    dateInputLayout?.error = translated
+                }
                 return@setOnClickListener
             }
             // --- END VALIDATION ---
@@ -141,14 +227,14 @@ class LoadingListItemAdapter(
             val updatedItem = item.copy(
                 goodNo = updatedGoodNo,
                 senderName = updatedSenderName,
-                phoneNumber = updatedPhoneNumber, // Include phone number in the updated item
+                phoneNumber = updatedPhoneNumber,
                 date = updatedDate
             )
             onItemUpdated(updatedItem)
             dialog.dismiss()
         }
 
-        buttonCancel.setOnClickListener {
+        buttonCancel?.setOnClickListener {
             dialog.dismiss()
         }
         dialog.show()

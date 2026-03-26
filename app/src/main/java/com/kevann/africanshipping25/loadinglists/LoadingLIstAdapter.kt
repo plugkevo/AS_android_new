@@ -20,7 +20,8 @@ interface OnLoadingListItemClickListener {
 
 class LoadingListAdapter(
     private val loadingLists: MutableList<LoadingListItem>,
-    private val itemClickListener: OnLoadingListItemClickListener // Pass the listener here
+    private val itemClickListener: OnLoadingListItemClickListener, // Pass the listener here
+    private var translatedLabels: Map<String, String> = emptyMap()
 ) : RecyclerView.Adapter<LoadingListAdapter.LoadingListViewHolder>() {
 
     // ViewHolder class to hold references to the views for each item
@@ -30,7 +31,15 @@ class LoadingListAdapter(
         val tvOrigin: TextView = itemView.findViewById(R.id.tv_origin)
         val tvDestination: TextView = itemView.findViewById(R.id.tv_destination)
         val tvStatus: TextView = itemView.findViewById(R.id.tv_status)
+        val tvFromLabel: TextView = itemView.findViewById(R.id.tv_from_label)
+        val tvToLabel: TextView = itemView.findViewById(R.id.tv_to_label)
         val btnMore: ImageButton = itemView.findViewById(R.id.btn_more) // The three dots button
+    }
+
+    // Method to update translated labels
+    fun updateTranslatedLabels(labels: Map<String, String>) {
+        translatedLabels = labels
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LoadingListViewHolder {
@@ -43,8 +52,15 @@ class LoadingListAdapter(
 
     override fun onBindViewHolder(holder: LoadingListViewHolder, position: Int) {
         val loadingList = loadingLists[position]
+
+        // Use translated labels if available
+        val fromLabel = translatedLabels["from"] ?: "From: "
+        val toLabel = translatedLabels["to"] ?: "To: "
+
         holder.tvLoadingListName.text = loadingList.name
+        holder.tvFromLabel.text = fromLabel
         holder.tvOrigin.text = loadingList.origin
+        holder.tvToLabel.text = toLabel
         holder.tvDestination.text = loadingList.destination
         holder.tvStatus.text = loadingList.status
 

@@ -11,94 +11,96 @@
     android:layout_marginHorizontal="16dp">
 
     <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="16dp">
-
-    <ImageView
-        android:id="@+id/iv_shipment_icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="16dp"
-        android:contentDescription="Package"
-        android:src="@drawable/ic_loading_list_color" />
-
-    <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tv_shipment_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SHP12345678"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="?attr/listItemTitleColor"
-            android:layout_marginBottom="4dp" />
+        <ImageView
+            android:id="@+id/iv_shipment_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="Package"
+            android:src="@drawable/ic_loading_list_color" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
+            android:layout_weight="1"
+            android:orientation="vertical">
+
             <TextView
+                android:id="@+id/tv_shipment_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="From: "
-                android:textSize="14sp"
-                android:textColor="?attr/listItemLabelColor" />
+                android:text="SHP12345678"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/listItemTitleColor"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp">
+                <TextView
+                    android:id="@+id/tv_from_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="From: "
+                    android:textSize="14sp"
+                    android:textColor="?attr/listItemLabelColor" />
+                <TextView
+                    android:id="@+id/tv_origin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="New York"
+                    android:textSize="14sp"
+                    android:textColor="?attr/listItemValueColor" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp">
+                <TextView
+                    android:id="@+id/tv_to_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="To: "
+                    android:textSize="14sp"
+                    android:textColor="?attr/listItemLabelColor" />
+                <TextView
+                    android:id="@+id/tv_destination"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Los Angeles"
+                    android:textSize="14sp"
+                    android:textColor="?attr/listItemValueColor" />
+            </LinearLayout>
+
             <TextView
-                android:id="@+id/tv_origin"
+                android:id="@+id/tv_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="New York"
+                android:text="In Transit"
                 android:textSize="14sp"
-                android:textColor="?attr/listItemValueColor" /> <!-- Use theme attribute -->
+                android:textColor="?attr/listItemStatusColor"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="To: "
-                android:textSize="14sp"
-                android:textColor="?attr/listItemLabelColor" /> <!-- Use theme attribute -->
-            <TextView
-                android:id="@+id/tv_destination"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Los Angeles"
-                android:textSize="14sp"
-                android:textColor="?attr/listItemValueColor" /> <!-- Use theme attribute -->
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tv_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="In Transit"
-            android:textSize="14sp"
-            android:textColor="?attr/listItemStatusColor"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="2dp" />
+        <ImageButton
+            android:id="@+id/btn_more"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_more_vert"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="More Options"
+            android:padding="12dp"
+            app:tint="?attr/buttonBackgroundTint" /> <!-- Use theme attribute -->
     </LinearLayout>
-
-    <ImageButton
-        android:id="@+id/btn_more"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/ic_more_vert"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="More Options"
-        android:padding="12dp"
-        app:tint="?attr/buttonBackgroundTint" /> <!-- Use theme attribute -->
-    </LinearLayout>
-    </androidx.cardview.widget.CardView>
+</androidx.cardview.widget.CardView>

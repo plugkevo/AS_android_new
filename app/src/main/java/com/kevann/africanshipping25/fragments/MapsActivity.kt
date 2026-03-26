@@ -1,6 +1,8 @@
 package com.kevann.africanshipping25.fragments
 
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
@@ -26,6 +28,8 @@ import com.google.firebase.firestore.Query
 import com.kevann.africanshipping25.R
 import com.kevann.africanshipping25.ShipmentTrackingInfo
 import com.kevann.africanshipping25.ShipmentTrackingService
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,6 +49,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var tvDestination: TextView
     private lateinit var progressTrack: ProgressBar
     private lateinit var tvProgressPercent: TextView
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     private val firestore = FirebaseFirestore.getInstance()
     private val trackingService = ShipmentTrackingService()
@@ -52,6 +59,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
+        // Initialize translation components
+        sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(this)
+        translationHelper = GoogleTranslationHelper(translationManager)
 
         initViews()
 
@@ -64,7 +76,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (shipmentName.isNotEmpty()) {
                 fetchShipmentTracking(shipmentName)
             } else {
-                Toast.makeText(this, "Please enter a shipment name", Toast.LENGTH_SHORT).show()
+                val emptyMsg = "Please enter a shipment name"
+                showTranslatedToast(emptyMsg)
             }
         }
 
@@ -78,6 +91,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             etTrackingNumber.setText(shipmentName)
             fetchShipmentTracking(shipmentName)
         }
+
+        // Translate UI elements
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
     }
 
     private fun initViews() {
@@ -120,12 +137,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     loadTrackingData(shipmentId, shipmentName)
                 } else {
                     hideLoading()
-                    Toast.makeText(this, "Shipment '$shipmentName' not found", Toast.LENGTH_SHORT).show()
+                    val notFoundMsg = "Shipment '$shipmentName' not found"
+                    showTranslatedToast(notFoundMsg)
                 }
             }
             .addOnFailureListener { e ->
                 hideLoading()
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                val errorMsg = "Error: ${e.message}"
+                showTranslatedToast(errorMsg)
             }
     }
 
@@ -140,12 +159,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     loadTrackingData(shipmentId, shipmentName)
                 } else {
                     hideLoading()
-                    Toast.makeText(this, "Shipment not found", Toast.LENGTH_SHORT).show()
+                    val notFoundMsg = "Shipment not found"
+                    showTranslatedToast(notFoundMsg)
                 }
             }
             .addOnFailureListener { e ->
                 hideLoading()
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                val errorMsg = "Error: ${e.message}"
+                showTranslatedToast(errorMsg)
             }
     }
 
@@ -214,8 +235,50 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             .addOnFailureListener { e ->
                 hideLoading()
-                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                val errorMsg = "Error: ${e.message}"
+                showTranslatedToast(errorMsg)
             }
+    }
+
+    // Translation method
+    private fun translateUIElements(targetLanguage: String) {
+        // Translate button text
+        btnTrack.text = when (targetLanguage.lowercase()) {
+            "english" -> "Track"
+            else -> btnTrack.text.toString()
+        }
+        translationHelper.translateText("Track", targetLanguage) { translated ->
+            btnTrack.text = translated
+        }
+
+        // Translate edit text hint
+        translationHelper.translateText("Enter shipment name or ID", targetLanguage) { translated ->
+            etTrackingNumber.hint = translated
+        }
+    }
+
+    // Helper method to translate toast messages
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(this, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun formatTimestamp(date: Date?): String {
+        if (date == null) return "N/A"
+        val formatter = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+        return formatter.format(date)
+    }
+
+    private fun showLoading() {
+        progressBar.visibility = View.VISIBLE
+        btnTrack.isEnabled = false
+    }
+
+    private fun hideLoading() {
+        progressBar.visibility = View.GONE
+        btnTrack.isEnabled = true
     }
 
     private fun displayTrackingOnMap(trackingInfo: ShipmentTrackingInfo, shipmentName: String) {
@@ -348,21 +411,5 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             "delayed" -> tvCurrentStatus.setTextColor(Color.parseColor("#F44336"))
             else -> tvCurrentStatus.setTextColor(Color.parseColor("#757575"))
         }
-    }
-
-    private fun formatTimestamp(date: Date?): String {
-        if (date == null) return "N/A"
-        val formatter = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-        return formatter.format(date)
-    }
-
-    private fun showLoading() {
-        progressBar.visibility = View.VISIBLE
-        btnTrack.isEnabled = false
-    }
-
-    private fun hideLoading() {
-        progressBar.visibility = View.GONE
-        btnTrack.isEnabled = true
     }
 }

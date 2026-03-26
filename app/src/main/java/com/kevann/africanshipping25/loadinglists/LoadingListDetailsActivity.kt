@@ -1,13 +1,18 @@
 package com.kevann.africanshipping25.loadinglists
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.kevann.africanshipping25.ViewPagerAdapter
-import com.kevann.africanshipping25.R  // Add this import
+import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 
 
 class LoadingListDetailsActivity : AppCompatActivity() {
@@ -15,17 +20,25 @@ class LoadingListDetailsActivity : AppCompatActivity() {
     // Declare your UI elements
     private lateinit var viewPager: ViewPager
     private lateinit var tabLayout: TabLayout
+    private lateinit var headerTitle: TextView
+
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading_list_details)
 
+        // Initialize translation
+        translationManager = GoogleTranslationManager(this)
+        translationHelper = GoogleTranslationHelper(translationManager)
+        sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+
         // Initialize UI elements using findViewById
         viewPager = findViewById(R.id.viewPager)
         tabLayout = findViewById(R.id.tbLayout)
-
-        //window.statusBarColor = ContextCompat.getColor(this, R.color.dark_blue)
-
+        headerTitle = findViewById(R.id.tv_header_title)
 
         // Retrieve the ID from the Intent FIRST
         val loadingListId = intent.getStringExtra("loadingListId")
@@ -33,23 +46,37 @@ class LoadingListDetailsActivity : AppCompatActivity() {
         if (loadingListId != null) {
             Log.d("LoadingListDetail", "Received Loading List ID: $loadingListId")
 
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+
+            // Translate tab titles FIRST, then add fragments, then set adapter
             val adapter = ViewPagerAdapter(supportFragmentManager)
+            translateUIElements(currentLanguage)
 
-            // Pass the loadingListId to the EnterWarehouseGoods fragment using its newInstance method
-            adapter.addFragment(EnterWarehouseGoods.Companion.newInstance(loadingListId), "Enter Goods")
-            adapter.addFragment(ViewWarehouseGoods.Companion.newInstance(loadingListId), "View Goods") // Pass ID to ViewWarehouseGoods if needed too
-            //adapter.addFragment(ThirdFragment(), "My Tenders")
+            translationHelper.translateText("Enter Goods", currentLanguage) { enterGoodsTitle ->
+                translationHelper.translateText("View Goods", currentLanguage) { viewGoodsTitle ->
+                    // Add fragments to adapter
+                    adapter.addFragment(EnterWarehouseGoods.Companion.newInstance(loadingListId), enterGoodsTitle)
+                    adapter.addFragment(ViewWarehouseGoods.Companion.newInstance(loadingListId), viewGoodsTitle)
 
-            // Set the adapter to the ViewPager
-            viewPager.adapter = adapter
-            // Link the TabLayout with the ViewPager
-            tabLayout.setupWithViewPager(viewPager)
+                    // NOW set the adapter to the ViewPager (after fragments are added)
+                    viewPager.adapter = adapter
+                    // Link the TabLayout with the ViewPager
+                    tabLayout.setupWithViewPager(viewPager)
+                }
+            }
 
         } else {
             Log.e("LoadingListDetail", "No Loading List ID received!")
-            // Handle the case where no ID is passed, e.g., show an error message or finish the activity
-            Toast.makeText(this, "Error: Loading List ID missing.", Toast.LENGTH_SHORT).show()
+            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+            var errorMsg = "Error: Loading List ID missing."
+            translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                Toast.makeText(this, translated, Toast.LENGTH_SHORT).show()
+            }
             finish() // Close this activity
         }
+    }
+
+    private fun translateUIElements(targetLanguage: String) {
+        translationHelper.translateAndSetText(headerTitle, "Loading List", targetLanguage)
     }
 }

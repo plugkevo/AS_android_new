@@ -1,5 +1,7 @@
 package com.kevann.africanshipping25.fragments
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
@@ -8,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import okhttp3.Call
@@ -22,7 +25,9 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.kevann.africanshipping25.R  // Add this import
+import com.kevann.africanshipping25.R
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 
 
 class PaymentFragment : Fragment() {
@@ -30,6 +35,9 @@ class PaymentFragment : Fragment() {
     // Declare EditText fields at class level so they can be accessed after the click
     private lateinit var etPhoneNumber: EditText
     private lateinit var etAmount: EditText
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,23 +51,38 @@ class PaymentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize SharedPreferences with Context.MODE_PRIVATE (matching ShipmentsFragment pattern)
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+        Log.d("PaymentFragment", "[v0] Translation components initialized")
+
         // Find views using findViewById
         etPhoneNumber = view.findViewById(R.id.et_phone_number)
         etAmount = view.findViewById(R.id.et_amount) // Find the new amount EditText
         val btnPrompt = view.findViewById<Button>(R.id.btn_track)
+        Log.d("PaymentFragment", "[v0] Button found: ${btnPrompt != null}")
+        Log.d("PaymentFragment", "[v0] Phone EditText found: ${etPhoneNumber != null}")
+        Log.d("PaymentFragment", "[v0] Amount EditText found: ${etAmount != null}")
 
         // Set up the click listener for the Prompt button
         btnPrompt.setOnClickListener {
+            Log.d("PaymentFragment", "[v0] Button clicked")
             val phoneNumber = etPhoneNumber.text.toString().trim()
             val amountString = etAmount.text.toString().trim()
+            Log.d("PaymentFragment", "[v0] Phone: $phoneNumber, Amount: $amountString")
 
             if (phoneNumber.isEmpty() || phoneNumber.length != 10 || !phoneNumber.startsWith("07")) {
-                Toast.makeText(requireContext(), "Please enter a valid Safaricom phone number (e.g., 07XXXXXXXX)", Toast.LENGTH_LONG).show()
+                Log.d("PaymentFragment", "[v0] Phone validation failed")
+                val validationMsg = "Please enter a valid Safaricom phone number (e.g., 07XXXXXXXX)"
+                showTranslatedToast(validationMsg)
                 return@setOnClickListener // Stop execution if phone number is invalid
             }
 
             if (amountString.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter the amount to pay.", Toast.LENGTH_LONG).show()
+                Log.d("PaymentFragment", "[v0] Amount is empty")
+                val emptyAmountMsg = "Please enter the amount to pay."
+                showTranslatedToast(emptyAmountMsg)
                 return@setOnClickListener // Stop execution if amount is empty
             }
 
@@ -67,11 +90,15 @@ class PaymentFragment : Fragment() {
             try {
                 amount = amountString.toInt()
                 if (amount <= 0) {
-                    Toast.makeText(requireContext(), "Amount must be a positive number.", Toast.LENGTH_LONG).show()
+                    Log.d("PaymentFragment", "[v0] Amount is negative or zero")
+                    val negativeMsg = "Amount must be a positive number."
+                    showTranslatedToast(negativeMsg)
                     return@setOnClickListener
                 }
             } catch (e: NumberFormatException) {
-                Toast.makeText(requireContext(), "Please enter a valid numeric amount.", Toast.LENGTH_LONG).show()
+                Log.d("PaymentFragment", "[v0] Invalid numeric amount")
+                val invalidMsg = "Please enter a valid numeric amount."
+                showTranslatedToast(invalidMsg)
                 return@setOnClickListener // Stop execution if amount is not a valid number
             }
 
@@ -81,6 +108,10 @@ class PaymentFragment : Fragment() {
             // Initiate STK Push with the dynamic amount
             initiateMpesaSTKPush(formattedPhoneNumber, amount.toString()) // Pass amount as String
         }
+
+        // Translate UI elements based on current language - exactly like HomeFragment
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(currentLanguage)
     }
 
     /**
@@ -117,7 +148,8 @@ class PaymentFragment : Fragment() {
         // Validate CallBackURL before proceeding
         if (callBackUrl.isBlank() || !callBackUrl.startsWith("http")) {
             Log.e("MpesaAPI", "Invalid CallBackURL: '$callBackUrl'. It must be a valid public URL starting with http or https.")
-            Toast.makeText(requireContext(), "Payment failed: Invalid Callback URL. Please configure it correctly.", Toast.LENGTH_LONG).show()
+            val invalidUrlMsg = "Payment failed: Invalid Callback URL. Please configure it correctly."
+            showTranslatedToast(invalidUrlMsg)
             return // Stop execution if URL is invalid
         }
 
@@ -131,7 +163,8 @@ class PaymentFragment : Fragment() {
             Base64.encodeToString(dataToEncode.toByteArray(), Base64.NO_WRAP)
         } catch (e: Exception) {
             Log.e("MpesaAPI", "Error encoding password: ${e.message}")
-            Toast.makeText(requireContext(), "Error preparing payment. Please try again.", Toast.LENGTH_SHORT).show()
+            val errorMsg = "Error preparing payment. Please try again."
+            showTranslatedToast(errorMsg)
             return
         }
 
@@ -148,7 +181,8 @@ class PaymentFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("MpesaAPI", "Failed to get access token (network error): ${e.message}")
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                    val networkErrorMsg = "Network error. Please try again."
+                    showTranslatedToast(networkErrorMsg)
                     clearInputFields() // Clear fields on network error
                 }
             }
@@ -169,14 +203,16 @@ class PaymentFragment : Fragment() {
                     } else {
                         Log.e("MpesaAPI", "Access token not found or is blank in response: $responseBody")
                         activity?.runOnUiThread {
-                            Toast.makeText(requireContext(), "Failed to get M-Pesa access token. Check credentials.", Toast.LENGTH_SHORT).show()
+                            val tokenErrorMsg = "Failed to get M-Pesa access token. Check credentials."
+                            showTranslatedToast(tokenErrorMsg)
                             clearInputFields() // Clear fields on access token failure
                         }
                     }
                 } else {
                     Log.e("MpesaAPI", "Failed to get access token. Code: ${response.code}, Message: ${response.message}. Body: $responseBody")
                     activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "Failed to get M-Pesa access token. Check credentials or network.", Toast.LENGTH_LONG).show()
+                        val credentialErrorMsg = "Failed to get M-Pesa access token. Check credentials or network."
+                        showTranslatedToast(credentialErrorMsg)
                         clearInputFields() // Clear fields on access token failure
                     }
                 }
@@ -228,7 +264,8 @@ class PaymentFragment : Fragment() {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("MpesaAPI", "STK Push request failed (network error): ${e.message}")
                 activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "STK Push failed. Check network connection.", Toast.LENGTH_LONG).show()
+                    val networkErrorMsg = "STK Push failed. Check network connection."
+                    showTranslatedToast(networkErrorMsg)
                     clearInputFields() // Clear fields on network error
                 }
             }
@@ -246,26 +283,54 @@ class PaymentFragment : Fragment() {
                             val errorMessage = jsonResponse.optString("errorMessage", "No specific error message.") // For error responses
 
                             if (responseCode == "0") {
-                                Toast.makeText(requireContext(), "STK Push initiated successfully! Check your phone for a prompt.", Toast.LENGTH_LONG).show()
+                                val successMsg = "STK Push initiated successfully! Check your phone for a prompt."
+                                showTranslatedToast(successMsg)
                                 Log.d("MpesaAPI", "STK Push successful: $customerMessage")
                             } else {
                                 // Log the full error message from M-Pesa
                                 Log.e("MpesaAPI", "STK Push failed. ResponseCode: $responseCode, CustomerMessage: $customerMessage, ErrorMessage: $errorMessage, Raw: $responseBody")
-                                Toast.makeText(requireContext(), "STK Push failed: $customerMessage. Check logs for details.", Toast.LENGTH_LONG).show()
+                                val failureMsg = "STK Push failed: $customerMessage. Check logs for details."
+                                showTranslatedToast(failureMsg)
                             }
                         } catch (e: Exception) {
                             Log.e("MpesaAPI", "Error parsing STK Push response JSON: ${e.message}. Raw Response: $responseBody", e)
-                            Toast.makeText(requireContext(), "Error processing M-Pesa response. Check logs.", Toast.LENGTH_LONG).show()
+                            val parseErrorMsg = "Error processing M-Pesa response. Check logs."
+                            showTranslatedToast(parseErrorMsg)
                         }
                     } else {
                         // Log the full error response from the server
                         Log.e("MpesaAPI", "STK Push request failed. Server returned non-2xx code: ${response.code}. Message: ${response.message}. Body: $responseBody")
-                        Toast.makeText(requireContext(), "STK Push request failed. Server error. Check logs.", Toast.LENGTH_LONG).show()
+                        val serverErrorMsg = "STK Push request failed. Server error. Check logs."
+                        showTranslatedToast(serverErrorMsg)
                     }
                     clearInputFields() // Clear fields after any STK Push response (success or failure)
                 }
             }
         })
+    }
+
+    // Translation method - exactly like HomeFragment
+    private fun translateUIElements(targetLanguage: String) {
+        view?.let { v ->
+            // Translate title
+            v.findViewById<TextView>(R.id.tv_title)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "MPESA Payment", targetLanguage)
+            }
+
+            // Translate labels
+            v.findViewById<TextView>(R.id.tv_phone_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Enter Phone Number", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.tv_amount_label)?.let { textView ->
+                translationHelper.translateAndSetText(textView, "Enter Amount", targetLanguage)
+            }
+
+            // Translate button
+            v.findViewById<Button>(R.id.btn_track)?.let { button ->
+                translationHelper.translateAndSetText(button, "Prompt", targetLanguage)
+            }
+        }
     }
 
     /**
@@ -274,6 +339,14 @@ class PaymentFragment : Fragment() {
     private fun clearInputFields() {
         etPhoneNumber.text.clear()
         etAmount.text.clear()
+    }
+
+    // Helper method to translate toast messages (following ProfileFragment pattern)
+    private fun showTranslatedToast(message: String) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translationHelper.translateText(message, currentLanguage) { translatedMessage ->
+            Toast.makeText(context, translatedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroyView() {
