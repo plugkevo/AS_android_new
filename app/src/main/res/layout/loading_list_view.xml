@@ -46,6 +46,7 @@
             android:orientation="horizontal"
             android:layout_marginBottom="4dp">
             <TextView
+                android:id="@+id/tv_from_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="From: "
@@ -57,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:text="New York"
                 android:textSize="14sp"
-                android:textColor="?attr/listItemValueColor" /> <!-- Use theme attribute -->
+                android:textColor="?attr/listItemValueColor" />
         </LinearLayout>
 
         <LinearLayout
@@ -66,18 +67,19 @@
             android:orientation="horizontal"
             android:layout_marginBottom="4dp">
             <TextView
+                android:id="@+id/tv_to_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="To: "
                 android:textSize="14sp"
-                android:textColor="?attr/listItemLabelColor" /> <!-- Use theme attribute -->
+                android:textColor="?attr/listItemLabelColor" />
             <TextView
                 android:id="@+id/tv_destination"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Los Angeles"
                 android:textSize="14sp"
-                android:textColor="?attr/listItemValueColor" /> <!-- Use theme attribute -->
+                android:textColor="?attr/listItemValueColor" />
         </LinearLayout>
 
         <TextView

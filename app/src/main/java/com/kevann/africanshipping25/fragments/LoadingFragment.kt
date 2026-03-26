@@ -3,6 +3,7 @@ package com.kevann.africanshipping25.loadinglists
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -18,6 +19,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,6 +31,8 @@ import com.kevann.africanshipping25.R
 import com.kevann.africanshipping25.database.OfflineDatabase
 import com.kevann.africanshipping25.database.LoadingListEntity
 import com.kevann.africanshipping25.search.GlobalSearchFragment
+import com.kevann.africanshipping25.translation.GoogleTranslationManager
+import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -46,7 +50,11 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
     private val firestore = FirebaseFirestore.getInstance()
 
     private lateinit var loadingAnimationView: LottieAnimationView
-    private lateinit var contentLayout: LinearLayout // Declare contentLayout
+    private lateinit var contentLayout: LinearLayout
+    
+    private lateinit var translationManager: GoogleTranslationManager
+    private lateinit var translationHelper: GoogleTranslationHelper
+    private lateinit var sharedPreferences: SharedPreferences
 
     // Define status options for the Spinner in the update dialog
     private val loadingListStatusOptions = arrayOf("New", "Open", "Closed")
@@ -61,6 +69,11 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Initialize translation
+        translationManager = GoogleTranslationManager(requireContext())
+        translationHelper = GoogleTranslationHelper(translationManager)
+        sharedPreferences = requireContext().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
 
         // Initialize views FIRST
         rvAllLoadingLists = view.findViewById(R.id.rv_all_loading_lists)
@@ -83,6 +96,11 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         fabCreateLoadingList.setOnClickListener {
             showCreateLoadingListDialog()
         }
+
+        // Translate UI elements and list labels
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        translateUIElements(view, currentLanguage)
+        translateListLabels(currentLanguage)
     }
 
     private fun showLoading() {
@@ -119,7 +137,11 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
             }
             .addOnFailureListener { e ->
                 Log.e("LoadingFragment", "Error fetching loading lists: ", e)
-                Toast.makeText(requireContext(), "Error loading lists: ${e.message}", Toast.LENGTH_SHORT).show()
+                val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+                var errorMsg = "Error loading lists: ${e.message}"
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                }
                 hideLoading() // Hide loading animation on failure
             }
     }
@@ -155,7 +177,11 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
     // --- Implementation of OnLoadingListItemClickListener methods ---
     override fun onLoadingListItemClick(loadingList: LoadingListItem) {
         // Handle full item click, e.g., open a detailed view
-        Toast.makeText(requireContext(), "Clicked Loading List: ${loadingList.name}", Toast.LENGTH_SHORT).show()
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        var toastMsg = "Clicked Loading List: ${loadingList.name}"
+        translationHelper.translateText("Opening loading list details...", currentLanguage) { translated ->
+            Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+        }
         // Example: Intent to a detail activity
         val intent = Intent(requireContext(), LoadingListDetailsActivity::class.java)
         intent.putExtra("loadingListId", loadingList.id)
@@ -185,8 +211,9 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
     }
 
 
-    // --- showUpdateLoadingListDialog FUNCTION (remains the same) ---
     private fun showUpdateLoadingListDialog(loadingList: LoadingListItem) {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        
         val builder = AlertDialog.Builder(requireContext())
         val dialogView = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_update_loading_list, null) // Inflate your new dialog XML
@@ -203,13 +230,34 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         val updateButton = dialogView.findViewById<Button>(R.id.btn_update)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
-        // Populate the Spinner with status options
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            loadingListStatusOptions
-        )
-        statusSpinner.adapter = adapter
+        // Translate status options
+        val translatedStatusOptions = mutableListOf<String>()
+        loadingListStatusOptions.forEachIndexed { index, status ->
+            translationHelper.translateText(status, currentLanguage) { translated ->
+                translatedStatusOptions.add(translated)
+                if (translatedStatusOptions.size == loadingListStatusOptions.size) {
+                    // All translations done, set up spinner with translated options
+                    val adapter = ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        translatedStatusOptions
+                    )
+                    statusSpinner.adapter = adapter
+
+                    // Set the initial selection of the status spinner
+                    loadingList.status.let { status ->
+                        val index = loadingListStatusOptions.indexOf(status)
+                        if (index != -1) {
+                            statusSpinner.setSelection(index)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Translate button text
+        translationHelper.translateAndSetText(updateButton, "Update", currentLanguage)
+        translationHelper.translateAndSetText(cancelButton, "Cancel", currentLanguage)
 
         // Set initial values from the passed loadingList object
         nameEditText.setText(loadingList.name)
@@ -217,25 +265,27 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         destinationEditText.setText(loadingList.destination)
         detailsEditText.setText(loadingList.extraDetails)
 
-        // Set the initial selection of the status spinner
-        loadingList.status.let { status ->
-            val index = loadingListStatusOptions.indexOf(status)
-            if (index != -1) {
-                statusSpinner.setSelection(index)
-            }
-        }
-
         // Set click listener for the Update button
         updateButton.setOnClickListener {
             val updatedName = nameEditText.text.toString().trim()
             val updatedOrigin = originEditText.text.toString().trim()
             val updatedDestination = destinationEditText.text.toString().trim()
             val updatedDetails = detailsEditText.text.toString().trim()
-            val updatedStatus = statusSpinner.selectedItem.toString()
+            
+            // Get the original status value (not translated)
+            val selectedIndex = statusSpinner.selectedItemPosition
+            val updatedStatus = if (selectedIndex >= 0 && selectedIndex < loadingListStatusOptions.size) {
+                loadingListStatusOptions[selectedIndex]
+            } else {
+                loadingList.status
+            }
 
             // Basic validation
             if (updatedName.isEmpty() || updatedOrigin.isEmpty() || updatedDestination.isEmpty()) {
-                Toast.makeText(requireContext(), "Name, Origin, and Destination are required.", Toast.LENGTH_SHORT).show()
+                var errorMsg = "Name, Origin, and Destination are required."
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                }
                 return@setOnClickListener
             }
 
@@ -252,12 +302,18 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
             firestore.collection("loading_lists").document(loadingList.id)
                 .update(updatedLoadingListData as Map<String, Any>)
                 .addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Loading List updated successfully!", Toast.LENGTH_SHORT).show()
+                    var successMsg = "Loading List updated successfully!"
+                    translationHelper.translateText(successMsg, currentLanguage) { translated ->
+                        Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                    }
                     dialog.dismiss()
                     fetchLoadingLists() // Refresh the list to show updated data
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Error updating loading list: ${e.message}", Toast.LENGTH_SHORT).show()
+                    var errorMsg = "Error updating loading list: ${e.message}"
+                    translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                        Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                    }
                     Log.e("LoadingFragment", "Error updating loading list document", e)
                 }
         }
@@ -265,11 +321,16 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         // Set click listener for the Cancel button
         cancelButton.setOnClickListener {
             dialog.dismiss()
-            Toast.makeText(requireContext(), "Update cancelled.", Toast.LENGTH_SHORT).show()
+            var cancelMsg = "Update cancelled."
+            translationHelper.translateText(cancelMsg, currentLanguage) { translated ->
+                Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     private fun showCreateLoadingListDialog() {
+        val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
+        
         val builder = AlertDialog.Builder(requireContext())
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_loading, null)
         builder.setView(dialogView)
@@ -283,6 +344,10 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         val createButton = dialogView.findViewById<Button>(R.id.btn_create)
         val cancelButton = dialogView.findViewById<Button>(R.id.btn_cancel)
 
+        // Translate button text
+        translationHelper.translateAndSetText(createButton, "Create", currentLanguage)
+        translationHelper.translateAndSetText(cancelButton, "Cancel", currentLanguage)
+
         createButton.setOnClickListener {
             val name = nameEditText.text.toString().trim()
             val origin = originEditText.text.toString().trim()
@@ -290,25 +355,31 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
             val extraDetails = extraDetailsEditText.text.toString().trim()
 
             if (name.isEmpty() || origin.isEmpty() || destination.isEmpty()) {
-                Toast.makeText(requireContext(), "Name, Origin, and Destination are required.", Toast.LENGTH_SHORT).show()
+                var errorMsg = "Name, Origin, and Destination are required."
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                }
                 return@setOnClickListener
             }
 
             // Check network connectivity
             if (isNetworkAvailable()) {
-                saveLoadingListToFirestore(name, origin, destination, extraDetails, dialog)
+                saveLoadingListToFirestore(name, origin, destination, extraDetails, dialog, currentLanguage)
             } else {
-                saveLoadingListLocally(name, origin, destination, extraDetails, dialog)
+                saveLoadingListLocally(name, origin, destination, extraDetails, dialog, currentLanguage)
             }
         }
 
         cancelButton.setOnClickListener {
             dialog.dismiss()
-            Toast.makeText(requireContext(), "Loading list creation cancelled.", Toast.LENGTH_SHORT).show()
+            var cancelMsg = "Loading list creation cancelled."
+            translationHelper.translateText(cancelMsg, currentLanguage) { translated ->
+                Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-    private fun saveLoadingListToFirestore(name: String, origin: String, destination: String, extraDetails: String, dialog: AlertDialog) {
+    private fun saveLoadingListToFirestore(name: String, origin: String, destination: String, extraDetails: String, dialog: AlertDialog, currentLanguage: String) {
         val loadingList = hashMapOf(
             "name" to name,
             "origin" to origin,
@@ -321,18 +392,24 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         firestore.collection("loading_lists")
             .add(loadingList)
             .addOnSuccessListener { documentReference ->
-                Toast.makeText(requireContext(), "Loading List created successfully (synced to cloud)!", Toast.LENGTH_SHORT).show()
+                var successMsg = "Loading List created successfully (synced to cloud)!"
+                translationHelper.translateText(successMsg, currentLanguage) { translated ->
+                    Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                }
                 Log.d("LoadingFragment", "Loading List Document added with ID: ${documentReference.id}")
                 dialog.dismiss()
                 fetchLoadingLists()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Error creating loading list: ${e.message}", Toast.LENGTH_SHORT).show()
+                var errorMsg = "Error creating loading list: ${e.message}"
+                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
+                    Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                }
                 Log.e("LoadingFragment", "Error adding loading list document", e)
             }
     }
 
-    private fun saveLoadingListLocally(name: String, origin: String, destination: String, extraDetails: String, dialog: AlertDialog) {
+    private fun saveLoadingListLocally(name: String, origin: String, destination: String, extraDetails: String, dialog: AlertDialog, currentLanguage: String) {
         val db = OfflineDatabase.getDatabase(requireContext())
         val loadingListEntity = LoadingListEntity(
             name = name,
@@ -346,13 +423,25 @@ class LoadingFragment : Fragment(), OnLoadingListItemClickListener {
         GlobalScope.launch(Dispatchers.IO) {
             db.loadingListDao().insert(loadingListEntity)
             GlobalScope.launch(Dispatchers.Main) {
-                Toast.makeText(
-                    requireContext(),
-                    "Loading List saved locally (will sync when online)!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                var successMsg = "Loading List saved locally (will sync when online)!"
+                translationHelper.translateText(successMsg, currentLanguage) { translated ->
+                    Toast.makeText(requireContext(), translated, Toast.LENGTH_SHORT).show()
+                }
                 dialog.dismiss()
                 fetchLoadingLists()
+            }
+        }
+    }
+
+    // Translate list item labels and update adapter
+    private fun translateListLabels(targetLanguage: String) {
+        translationHelper.translateText("From: ", targetLanguage) { from ->
+            translationHelper.translateText("To: ", targetLanguage) { to ->
+                val translatedLabels = mapOf(
+                    "from" to from,
+                    "to" to to
+                )
+                loadingListAdapter.updateTranslatedLabels(translatedLabels)
             }
         }
     }
