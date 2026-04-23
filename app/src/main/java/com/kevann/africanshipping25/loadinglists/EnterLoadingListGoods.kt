@@ -17,6 +17,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -204,19 +205,12 @@ class EnterWarehouseGoods : Fragment() {
 
         for (i in goodsNumberEditTexts.indices) {
             val goodNo = goodsNumberEditTexts[i].text.toString().trim()
-            val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
             
             if (goodNo.isEmpty()) {
-                val errorMsg = "Good Number cannot be empty"
-                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    goodsNumberInputLayouts[i].error = translated
-                }
+                goodsNumberInputLayouts[i].error = "Good Number cannot be empty"
                 hasValidationErrors = true
             } else if (goodNo.length != 4) {
-                val errorMsg = "Good Number must be 4 characters"
-                translationHelper.translateText(errorMsg, currentLanguage) { translated ->
-                    goodsNumberInputLayouts[i].error = translated
-                }
+                goodsNumberInputLayouts[i].error = "Good Number must be 4 characters"
                 hasValidationErrors = true
             } else {
                 goodsNumbersToSave.add(goodNo)
@@ -244,6 +238,8 @@ class EnterWarehouseGoods : Fragment() {
     }
 
     private fun saveToFirestore(senderName: String, phoneNumber: String, date: String, goodsNumbersToSave: MutableList<String>) {
+        Log.d("EnterWarehouseGoods", "[v0] Starting saveToFirestore with ${goodsNumbersToSave.size} items and loadingListId: $loadingListId")
+        
         var successCount = 0
         var failureCount = 0
         val totalItems = goodsNumbersToSave.size
@@ -258,6 +254,8 @@ class EnterWarehouseGoods : Fragment() {
                 "timestamp" to FieldValue.serverTimestamp()
             )
 
+            Log.d("EnterWarehouseGoods", "[v0] Attempting to save goodNo: $goodNo to collection: loading_lists/$loadingListId/$WAREHOUSE_ITEMS_COLLECTION")
+
             // Reference to the subcollection
             // loading_lists/{loadingListId}/warehouseItems/{documentId}
             firestore.collection("loading_lists")
@@ -265,7 +263,7 @@ class EnterWarehouseGoods : Fragment() {
                 .collection(WAREHOUSE_ITEMS_COLLECTION)
                 .add(warehouseItem)
                 .addOnSuccessListener { documentReference ->
-                    Log.d("EnterWarehouseGoods", "DocumentSnapshot added with ID: ${documentReference.id} for Good No: $goodNo")
+                    Log.d("EnterWarehouseGoods", "[v0] DocumentSnapshot added with ID: ${documentReference.id} for Good No: $goodNo")
                     successCount++
                     if (successCount + failureCount == totalItems) {
                         // All items processed
@@ -280,7 +278,8 @@ class EnterWarehouseGoods : Fragment() {
                     }
                 }
                 .addOnFailureListener { e ->
-                    Log.w("EnterWarehouseGoods", "Error adding document for Good No: $goodNo", e)
+                    Log.w("EnterWarehouseGoods", "[v0] Error adding document for Good No: $goodNo", e)
+                    Log.e("EnterWarehouseGoods", "[v0] Exception message: ${e.message}")
                     failureCount++
                     if (successCount + failureCount == totalItems) {
                         // All items processed
