@@ -131,19 +131,33 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun saveToFirestore(shipmentId: String, good: TruckGoodInput) {
+        Log.d("enter_truck_goods", "[v0] Starting saveToFirestore with shipmentId: $shipmentId, goodsName: ${good.name}, goodsNumber: ${good.goodsNumber}")
+        
+        // Create a map to properly serialize data for Firestore
+        val goodsMap = hashMapOf(
+            "name" to (good.name ?: ""),
+            "goodsNumber" to (good.goodsNumber ?: ""),
+            "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+        )
+        
+        Log.d("enter_truck_goods", "[v0] Attempting to add to firestore at path: shipments/$shipmentId/truck_inventory")
+        
         firestore.collection("shipments")
             .document(shipmentId)
             .collection("truck_inventory")
-            .add(good)
+            .add(goodsMap)
             .addOnSuccessListener { documentReference ->
+                Log.d("enter_truck_goods", "[v0] Successfully added document with ID: ${documentReference.id}")
                 val successMsg = "Item added to truck inventory (synced to cloud)"
                 showTranslatedToast(successMsg)
                 clearFields()
             }
             .addOnFailureListener { e ->
+                Log.e("enter_truck_goods", "[v0] Error adding item to Firestore", e)
+                Log.e("enter_truck_goods", "[v0] Exception message: ${e.message}")
+                Log.e("enter_truck_goods", "[v0] Exception cause: ${e.cause}")
                 val errorMsg = "Error adding item: ${e.message}"
                 showTranslatedToast(errorMsg)
-                Log.e("FirestoreError", "Error adding truck goods", e)
             }
     }
 
