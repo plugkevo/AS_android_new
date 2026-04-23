@@ -131,19 +131,50 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun saveToFirestore(shipmentId: String, good: TruckGoodInput) {
-        firestore.collection("shipments")
-            .document(shipmentId)
-            .collection("truck_inventory")
-            .add(good)
-            .addOnSuccessListener { documentReference ->
-                val successMsg = "Item added to truck inventory (synced to cloud)"
-                showTranslatedToast(successMsg)
-                clearFields()
+        Log.d("enter_truck_goods", "[v0] Starting saveToFirestore with shipmentId: $shipmentId, goodsName: ${good.name}, goodsNumber: ${good.goodsNumber}")
+
+        // First, verify the shipment document exists
+        firestore.collection("shipments").document(shipmentId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    Log.d("enter_truck_goods", "[v0] Shipment document exists, proceeding with save")
+                    // Create a map to properly serialize data for Firestore
+                    val goodsMap = hashMapOf(
+                        "name" to (good.name ?: ""),
+                        "goodsNumber" to (good.goodsNumber ?: ""),
+                        "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+                    )
+
+                    Log.d("enter_truck_goods", "[v0] Attempting to add to firestore at path: shipments/$shipmentId/offloaded goods")
+                    Log.d("enter_truck_goods", "[v0] Data being saved: $goodsMap")
+
+                    firestore.collection("shipments")
+                        .document(shipmentId)
+                        .collection("offloaded goods")
+                        .add(goodsMap)
+                        .addOnSuccessListener { documentReference ->
+                            Log.d("enter_truck_goods", "[v0] Successfully added document with ID: ${documentReference.id}")
+                            val successMsg = "Item added to truck inventory (synced to cloud)"
+                            showTranslatedToast(successMsg)
+                            clearFields()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("enter_truck_goods", "[v0] Error adding item to Firestore", e)
+                            Log.e("enter_truck_goods", "[v0] Exception message: ${e.message}")
+                            Log.e("enter_truck_goods", "[v0] Full stack trace:", e)
+                            val errorMsg = "Error adding item: ${e.message}"
+                            showTranslatedToast(errorMsg)
+                        }
+                } else {
+                    Log.e("enter_truck_goods", "[v0] Shipment document does not exist with ID: $shipmentId")
+                    val errorMsg = "Error: Shipment not found. Cannot save goods."
+                    showTranslatedToast(errorMsg)
+                }
             }
             .addOnFailureListener { e ->
-                val errorMsg = "Error adding item: ${e.message}"
+                Log.e("enter_truck_goods", "[v0] Error checking if shipment exists", e)
+                val errorMsg = "Error verifying shipment: ${e.message}"
                 showTranslatedToast(errorMsg)
-                Log.e("FirestoreError", "Error adding truck goods", e)
             }
     }
 
