@@ -19,17 +19,28 @@
             android:text="Search Across All Shipments"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_primary"
             android:layout_marginBottom="8dp" />
 
-        <EditText
-            android:id="@+id/search_edit_text"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/searchLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
             android:hint="Search by goods name, number, or location..."
-            android:padding="12dp"
-            android:background="@drawable/rounded_edittext_background"
-            android:inputType="text" />
+            android:layout_marginTop="8dp"
+            app:boxStrokeColor="?attr/inputBoxStrokeColor"
+            app:hintTextColor="?attr/inputHintColor">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/search_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:padding="12dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
     </LinearLayout>
 
     <!-- Filters Section -->
@@ -100,7 +111,7 @@
         android:text="Search Results"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black"
+        android:textColor="@color/text_primary"
         android:layout_marginBottom="8dp" />
 
     <!-- Results RecyclerView -->
