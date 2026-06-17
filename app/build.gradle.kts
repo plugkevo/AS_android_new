@@ -14,8 +14,8 @@ android {
         applicationId = "com.kevann.africanshipping25"
         minSdk = 24
         targetSdk = 35 // Use stable API level
-        versionCode = 4 //next 2
-        versionName = "2.0.0"
+        versionCode = 7 //next 2
+        versionName = "2.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
