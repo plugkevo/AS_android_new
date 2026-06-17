@@ -36,11 +36,11 @@ class SyncManager(private val context: Context) {
                 Log.d(tag, "[v0] Syncing truck good: ID=${good.id}, shipmentId=${good.shipmentId}, name=${good.name}")
                 firestore.collection("shipments")
                     .document(good.shipmentId)
-                    .collection("truck_inventory")
+                    .collection("offloaded goods")
                     .add(mapOf(
                         "name" to good.name,
                         "goodsNumber" to good.goodsNumber,
-                        "createdAt" to System.currentTimeMillis()
+                        "timestamp" to FieldValue.serverTimestamp()
                     ))
                     .addOnSuccessListener {
                         OfflineDataStore.markTruckGoodAsSynced(good.id, context)
