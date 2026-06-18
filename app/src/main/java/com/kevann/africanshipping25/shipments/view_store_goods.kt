@@ -40,7 +40,7 @@ import com.kevann.africanshipping25.translation.GoogleTranslationManager
 import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 
 
-data class StoreGood(var goodsNumber: String? = null, var name: String? = null, var storeLocation: String? = null)
+data class StoreGood(var goodsNumber: Any? = null, var name: String? = null, var storeLocation: String? = null)
 
 class view_store_goods : Fragment() {
 
@@ -518,7 +518,10 @@ class view_store_goods : Fragment() {
         var selectedGoodsName = storeGood.name
         var selectedLocation = storeGood.storeLocation
 
-        goodsNumberEditText.setText(storeGood.goodsNumber?.toString())
+        // Safely stringify the old goods number to avoid any ClassCastExceptions
+        val oldGoodsNumberString = storeGood.goodsNumber?.toString()
+
+        goodsNumberEditText.setText(oldGoodsNumberString)
         goodsNameTextView.text = "Name: ${selectedGoodsName ?: "N/A"}"
         storeLocationTextView.text = "Location: ${selectedLocation ?: "N/A"}"
 
@@ -567,20 +570,20 @@ class view_store_goods : Fragment() {
                 return@setOnClickListener
             }
 
-            val newNumber = newNumberString.toLongOrNull()
-            if (newNumber == null) {
+            // We only check if it's numeric, but we don't save it as a Long anymore
+            if (newNumberString.toLongOrNull() == null) {
                 Toast.makeText(requireContext(), "Invalid goods number (must be numeric).", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            Log.d("ViewStoreGoodsFragment", "Update: Name=$selectedGoodsName, Number=$newNumber, Location=$selectedLocation")
+            Log.d("ViewStoreGoodsFragment", "Update: Name=$selectedGoodsName, Number=$newNumberString, Location=$selectedLocation")
 
             if (currentShipmentId != null) {
                 updateStoreGoodInFirestore(
                     currentShipmentId!!,
-                    storeGood.goodsNumber as Long?,
+                    oldGoodsNumberString, // Pass verified String representation
                     selectedGoodsName,
-                    newNumber,
+                    newNumberString,
                     selectedLocation
                 )
             }
@@ -596,43 +599,61 @@ class view_store_goods : Fragment() {
 
     private fun updateStoreGoodInFirestore(
         shipmentId: String,
-        oldGoodsNumber: Long?,
+        oldGoodsNumber: Any?,
         newName: String?,
-        newNumber: Long,
+        newNumber: String,
         newLocation: String?
     ) {
-        db.collection("shipments")
+        val inventoryRef = db.collection("shipments")
             .document(shipmentId)
             .collection("store_inventory")
-            .whereEqualTo("goodsNumber", oldGoodsNumber)
+
+        val oldGoodsNumberString = oldGoodsNumber?.toString()
+        val performUpdate = { querySnapshot: QuerySnapshot ->
+            for (document in querySnapshot) {
+                inventoryRef.document(document.id)
+                    .update(
+                        mapOf(
+                            "name" to newName,
+                            "goodsNumber" to newNumber, // Strictly keeping it as a String
+                            "storeLocation" to newLocation
+                        )
+                    )
+                    .addOnSuccessListener {
+                        Log.d("Firestore", "Document updated successfully")
+                        Toast.makeText(requireContext(), "Goods updated successfully.", Toast.LENGTH_SHORT).show()
+                        loadStoreInventory()
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firestore", "Error updating document", e)
+                        Toast.makeText(requireContext(), "Error updating goods: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        }
+
+        // Try querying by String representation
+        inventoryRef.whereEqualTo("goodsNumber", oldGoodsNumberString)
             .get()
             .addOnSuccessListener { querySnapshot ->
-                if (querySnapshot.isEmpty) {
-                    Log.d("Firestore", "No matching documents found to update")
-                    Toast.makeText(requireContext(), "No matching goods found to update.", Toast.LENGTH_SHORT).show()
+                if (!querySnapshot.isEmpty) {
+                    performUpdate(querySnapshot)
                 } else {
-                    for (document in querySnapshot) {
-                        val documentId = document.id
-                        db.collection("shipments")
-                            .document(shipmentId)
-                            .collection("store_inventory")
-                            .document(documentId)
-                            .update(
-                                mapOf(
-                                    "name" to newName,
-                                    "goodsNumber" to newNumber,
-                                    "storeLocation" to newLocation
-                                )
-                            )
-                            .addOnSuccessListener {
-                                Log.d("Firestore", "Document updated successfully")
-                                Toast.makeText(requireContext(), "Goods updated successfully.", Toast.LENGTH_SHORT).show()
-                                loadStoreInventory()
+                    // Try querying by Long if the old value was numeric
+                    val oldNumberLong = oldGoodsNumberString?.toLongOrNull()
+                    if (oldNumberLong != null) {
+                        inventoryRef.whereEqualTo("goodsNumber", oldNumberLong)
+                            .get()
+                            .addOnSuccessListener { querySnapshotLong ->
+                                if (!querySnapshotLong.isEmpty) {
+                                    performUpdate(querySnapshotLong)
+                                } else {
+                                    Log.d("Firestore", "No matching documents found to update (checked String and Long)")
+                                    Toast.makeText(requireContext(), "No matching goods found to update.", Toast.LENGTH_SHORT).show()
+                                }
                             }
-                            .addOnFailureListener { e ->
-                                Log.e("Firestore", "Error updating document", e)
-                                Toast.makeText(requireContext(), "Error updating goods: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
+                    } else {
+                        Log.d("Firestore", "No matching documents found to update")
+                        Toast.makeText(requireContext(), "No matching goods found to update.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
