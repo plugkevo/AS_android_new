@@ -29,13 +29,15 @@ import kotlinx.coroutines.launch
 
 data class TruckGoodInput(
     var name: String? = null,
-    var goodsNumber: String? = null
+    var goodsNumber: String? = null,
+    var goodsNumber2: String? = null
 )
 
 class enter_truck_goods : Fragment() {
 
     private lateinit var goodsNameSpinner: Spinner
     private lateinit var goodsNumber: TextInputEditText
+    private lateinit var goodsNumber2: TextInputEditText
     private lateinit var addButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
@@ -68,6 +70,7 @@ class enter_truck_goods : Fragment() {
 
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
         goodsNumber = view.findViewById(R.id.etgoodsNumber)
+        goodsNumber2 = view.findViewById(R.id.etgoodsNumber2)
         addButton = view.findViewById(R.id.saveButton)
 
         addButton.setOnClickListener {
@@ -97,6 +100,7 @@ class enter_truck_goods : Fragment() {
 
     private fun addGoodsToShipment() {
         goodsNumber.error = null
+        goodsNumber2.error = null
 
         if (currentShipmentId == null) {
             val errorMsg = "Error: Shipment ID not available."
@@ -107,7 +111,9 @@ class enter_truck_goods : Fragment() {
 
         val goodsName = goodsNameSpinner.selectedItem.toString()
         val goodsNumberString = goodsNumber.text.toString().trim()
+        val goodsNumber2String = goodsNumber2.text.toString().trim()
 
+        // Validate first goods number (required)
         if (goodsNumberString.isEmpty()) {
             goodsNumber.error = "Please enter the goods number"
             return
@@ -118,7 +124,17 @@ class enter_truck_goods : Fragment() {
             return
         }
 
-        val newTruckGood = TruckGoodInput(name = goodsName, goodsNumber = goodsNumberString)
+        // Validate second goods number (optional but must be 4 chars if provided)
+        if (goodsNumber2String.isNotEmpty() && goodsNumber2String.length != 4) {
+            goodsNumber2.error = "Goods number must be 4 characters"
+            return
+        }
+
+        val newTruckGood = TruckGoodInput(
+            name = goodsName, 
+            goodsNumber = goodsNumberString,
+            goodsNumber2 = if (goodsNumber2String.isEmpty()) null else goodsNumber2String
+        )
 
         // Check if online
         if (isNetworkAvailable()) {
@@ -142,6 +158,7 @@ class enter_truck_goods : Fragment() {
                     val goodsMap = hashMapOf(
                         "name" to (good.name ?: ""),
                         "goodsNumber" to (good.goodsNumber ?: ""),
+                        "goodsNumber2" to (good.goodsNumber2 ?: ""),
                         "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp()
                     )
                     
@@ -194,6 +211,7 @@ class enter_truck_goods : Fragment() {
 
     private fun clearFields() {
         goodsNumber.text = null
+        goodsNumber2.text = null
         goodsNameSpinner.setSelection(0)
     }
 
@@ -212,6 +230,10 @@ class enter_truck_goods : Fragment() {
 
             v.findViewById<TextView>(R.id.goodsNumberLabel)?.let { tv ->
                 translationHelper.translateAndSetText(tv, "Goods Number:", targetLanguage)
+            }
+
+            v.findViewById<TextView>(R.id.goodsNumber2Label)?.let { tv ->
+                translationHelper.translateAndSetText(tv, "Goods Number 2 (Optional):", targetLanguage)
             }
 
             // Translate button
