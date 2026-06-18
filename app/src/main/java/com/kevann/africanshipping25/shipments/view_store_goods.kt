@@ -596,11 +596,18 @@ class view_store_goods : Fragment() {
 
     private fun updateStoreGoodInFirestore(
         shipmentId: String,
-        oldGoodsNumber: Long?,
+        oldGoodsNumber: String?,
         newName: String?,
-        newNumber: Long,
+        newNumber: String,
         newLocation: String?
     ) {
+        // Convert newNumber to Long if possible, otherwise keep as String
+        val numberValue: Any = try {
+            newNumber.toLong()
+        } catch (e: NumberFormatException) {
+            newNumber
+        }
+        
         db.collection("shipments")
             .document(shipmentId)
             .collection("store_inventory")
@@ -620,7 +627,7 @@ class view_store_goods : Fragment() {
                             .update(
                                 mapOf(
                                     "name" to newName,
-                                    "goodsNumber" to newNumber,
+                                    "goodsNumber" to numberValue,
                                     "storeLocation" to newLocation
                                 )
                             )
