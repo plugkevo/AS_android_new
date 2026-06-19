@@ -44,6 +44,7 @@ class enter_truck_goods : Fragment() {
     private lateinit var goodsNumberFieldsContainer: LinearLayout
     private lateinit var buttonAddGoodNo: ImageButton
     private lateinit var addButton: Button
+    private lateinit var shipmentNameTextView: TextView
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
     private val goodsOptions = arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
@@ -83,6 +84,12 @@ class enter_truck_goods : Fragment() {
         goodsNumberFieldsContainer = view.findViewById(R.id.goodsNumberFieldsContainer)
         buttonAddGoodNo = view.findViewById(R.id.buttonAddGoodNo)
         addButton = view.findViewById(R.id.saveButton)
+        shipmentNameTextView = view.findViewById(R.id.shipmentNameTextView)
+
+        // Fetch and display shipment name
+        if (currentShipmentId != null) {
+            fetchAndDisplayShipmentName(currentShipmentId!!)
+        }
 
         // Setup Add Good Number Button Click Listener
         buttonAddGoodNo.setOnClickListener {
@@ -282,6 +289,22 @@ class enter_truck_goods : Fragment() {
         
         // Reset spinner
         goodsNameSpinner.setSelection(0)
+    }
+
+    private fun fetchAndDisplayShipmentName(shipmentId: String) {
+        firestore.collection("shipments").document(shipmentId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val shipmentName = document.getString("shipmentName") ?: "Unknown"
+                    shipmentNameTextView.text = "Shipment: $shipmentName"
+                } else {
+                    shipmentNameTextView.text = "Shipment: Not found"
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("enter_truck_goods", "Error fetching shipment name", e)
+                shipmentNameTextView.text = "Shipment: Error loading"
+            }
     }
 
     // Translation method
