@@ -46,7 +46,26 @@ data class TruckGood(
     var goodsNumber: String? = null  // For backward compatibility, also support single number
 ) {
     // Get display text for goods numbers
-    fun getDisplayNumbers(): String = goodsNumbers.joinToString(", ")
+    fun getDisplayNumbers(): String {
+        return if (goodsNumbers.isNotEmpty()) {
+            goodsNumbers.joinToString(", ")
+        } else if (!goodsNumber.isNullOrEmpty()) {
+            goodsNumber!!
+        } else {
+            ""
+        }
+    }
+    
+    // Get all numbers as a list (for filtering and operations)
+    fun getAllNumbers(): List<String> {
+        return if (goodsNumbers.isNotEmpty()) {
+            goodsNumbers
+        } else if (!goodsNumber.isNullOrEmpty()) {
+            listOf(goodsNumber!!)
+        } else {
+            emptyList()
+        }
+    }
 }
 
 class view_truck_goods : Fragment() {
@@ -492,7 +511,7 @@ class view_truck_goods : Fragment() {
             val lowerCaseQuery = query.lowercase(Locale.getDefault())
             allTruckGoods.filter { truckGood ->
                 val nameMatches = truckGood.name?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
-                val numberMatches = truckGood.goodsNumbers.any { number ->
+                val numberMatches = truckGood.getAllNumbers().any { number ->
                     number.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
                 }
                 nameMatches || numberMatches
@@ -581,17 +600,26 @@ class view_truck_goods : Fragment() {
     }
 
     private fun updateTruckGoodInFirestore(shipmentId: String, firstGoodsNumber: String?, newName: String?, newNumbers: List<String>) {
+        // Search for both old format (goodsNumber as string) and new format (goodsNumbers as array)
         db.collection("shipments")
             .document(shipmentId)
             .collection("offloaded goods")
-            .whereEqualTo("goodsNumbers", listOf(firstGoodsNumber))
             .get()
             .addOnSuccessListener { querySnapshot ->
-                if (querySnapshot.isEmpty) {
-                    Log.d("Firestore", "No matching documents found to update")
-                    Toast.makeText(requireContext(), "No matching goods found to update.", Toast.LENGTH_SHORT).show()
-                } else {
-                    for (document in querySnapshot) {
+                var foundDocument = false
+                for (document in querySnapshot) {
+                    val goodsNumbersField = document.get("goodsNumbers")
+                    val goodsNumberField = document.get("goodsNumber")
+                    
+                    // Check if this is the document we're looking for (match either array or string format)
+                    val isMatch = when {
+                        goodsNumbersField is List<*> && goodsNumbersField.contains(firstGoodsNumber) -> true
+                        goodsNumberField is String && goodsNumberField == firstGoodsNumber -> true
+                        else -> false
+                    }
+                    
+                    if (isMatch) {
+                        foundDocument = true
                         val documentId = document.id
                         db.collection("shipments")
                             .document(shipmentId)
@@ -604,10 +632,20 @@ class view_truck_goods : Fragment() {
                                 )
                             )
                             .addOnSuccessListener {
-                                Log.d("Firestore", "Document updated successfully")
                                 Toast.makeText(requireContext(), "Goods updated successfully.", Toast.LENGTH_SHORT).show()
                                 loadTruckInventory()
                             }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(requireContext(), "Error updating goods: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                }
+                
+                if (!foundDocument) {
+                    Log.d("Firestore", "No matching documents found to update")
+                    Toast.makeText(requireContext(), "No matching goods found to update.", Toast.LENGTH_SHORT).show()
+                }
+            }
                             .addOnFailureListener { e ->
                                 Log.e("Firestore", "Error updating document", e)
                                 Toast.makeText(
