@@ -646,17 +646,6 @@ class view_truck_goods : Fragment() {
                     Toast.makeText(requireContext(), "No matching goods found to update.", Toast.LENGTH_SHORT).show()
                 }
             }
-                            .addOnFailureListener { e ->
-                                Log.e("Firestore", "Error updating document", e)
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Error updating goods: ${e.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                    }
-                }
-            }
             .addOnFailureListener { e ->
                 Log.e("Firestore", "Error getting document to update", e)
                 Toast.makeText(
