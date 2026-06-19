@@ -6,17 +6,21 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kevann.africanshipping25.R
 import com.kevann.africanshipping25.database.OfflineDataStore
@@ -29,15 +33,14 @@ import kotlinx.coroutines.launch
 
 data class TruckGoodInput(
     var name: String? = null,
-    var goodsNumber: String? = null,
-    var goodsNumber2: String? = null
+    var goodsNumbers: List<String> = emptyList()
 )
 
 class enter_truck_goods : Fragment() {
 
     private lateinit var goodsNameSpinner: Spinner
-    private lateinit var goodsNumber: TextInputEditText
-    private lateinit var goodsNumber2: TextInputEditText
+    private lateinit var goodsNumberFieldsContainer: LinearLayout
+    private lateinit var buttonAddGoodNo: ImageButton
     private lateinit var addButton: Button
     private val firestore = FirebaseFirestore.getInstance()
     private var currentShipmentId: String? = null
@@ -45,6 +48,10 @@ class enter_truck_goods : Fragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var translationManager: GoogleTranslationManager
     private lateinit var translationHelper: GoogleTranslationHelper
+
+    // List to hold references to all dynamically added goods number input fields and their parent TextInputLayouts
+    private val goodsNumberInputLayouts: MutableList<TextInputLayout> = mutableListOf()
+    private val goodsNumberEditTexts: MutableList<TextInputEditText> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,9 +76,17 @@ class enter_truck_goods : Fragment() {
         translationHelper = GoogleTranslationHelper(translationManager)
 
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
-        goodsNumber = view.findViewById(R.id.etgoodsNumber)
-        goodsNumber2 = view.findViewById(R.id.etgoodsNumber2)
+        goodsNumberFieldsContainer = view.findViewById(R.id.goodsNumberFieldsContainer)
+        buttonAddGoodNo = view.findViewById(R.id.buttonAddGoodNo)
         addButton = view.findViewById(R.id.saveButton)
+
+        // Add the initial goods number input field
+        addGoodsNumberInputField()
+
+        // Setup Add Good Number Button Click Listener
+        buttonAddGoodNo.setOnClickListener {
+            addGoodsNumberInputField()
+        }
 
         addButton.setOnClickListener {
             addGoodsToShipment()
@@ -81,6 +96,38 @@ class enter_truck_goods : Fragment() {
         val currentLanguage = sharedPreferences.getString("language", "English") ?: "English"
         translateUIElements(currentLanguage)
         translateSpinnerItems(currentLanguage)
+    }
+
+    /**
+     * Dynamically adds a new TextInputEditText for a goods number.
+     */
+    private fun addGoodsNumberInputField() {
+        // Create TextInputLayout with the OutlinedBox style
+        val textInputLayout = TextInputLayout(
+            requireContext(),
+            null,
+            com.google.android.material.R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox
+        ).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 0, 0, resources.getDimensionPixelSize(com.kevann.africanshipping25.R.dimen.margin_small))
+            }
+        }
+
+        val textInputEditText = TextInputEditText(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            inputType = InputType.TYPE_CLASS_NUMBER
+        }
+
+        textInputLayout.addView(textInputEditText)
+        goodsNumberFieldsContainer.addView(textInputLayout)
+        goodsNumberInputLayouts.add(textInputLayout)
+        goodsNumberEditTexts.add(textInputEditText)
     }
 
     private fun isNetworkAvailable(): Boolean {
@@ -99,9 +146,6 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun addGoodsToShipment() {
-        goodsNumber.error = null
-        goodsNumber2.error = null
-
         if (currentShipmentId == null) {
             val errorMsg = "Error: Shipment ID not available."
             showTranslatedToast(errorMsg)
@@ -110,30 +154,39 @@ class enter_truck_goods : Fragment() {
         }
 
         val goodsName = goodsNameSpinner.selectedItem.toString()
-        val goodsNumberString = goodsNumber.text.toString().trim()
-        val goodsNumber2String = goodsNumber2.text.toString().trim()
+        val goodsNumbersList = mutableListOf<String>()
+        var hasValidationErrors = false
 
-        // Validate first goods number (required)
-        if (goodsNumberString.isEmpty()) {
-            goodsNumber.error = "Please enter the goods number"
+        // Collect and validate all goods numbers
+        for (i in goodsNumberEditTexts.indices) {
+            val goodNo = goodsNumberEditTexts[i].text.toString().trim()
+            
+            if (goodNo.isEmpty()) {
+                goodsNumberInputLayouts[i].error = "Good Number cannot be empty"
+                hasValidationErrors = true
+            } else if (goodNo.length != 4) {
+                goodsNumberInputLayouts[i].error = "Good Number must be 4 characters"
+                hasValidationErrors = true
+            } else {
+                goodsNumbersList.add(goodNo)
+            }
+        }
+
+        if (hasValidationErrors) {
+            val errorMsg = "Please correct the errors in the Good Numbers"
+            showTranslatedToast(errorMsg)
             return
         }
 
-        if (goodsNumberString.length != 4) {
-            goodsNumber.error = "Goods number must be 4 characters"
-            return
-        }
-
-        // Validate second goods number (optional but must be 4 chars if provided)
-        if (goodsNumber2String.isNotEmpty() && goodsNumber2String.length != 4) {
-            goodsNumber2.error = "Goods number must be 4 characters"
+        if (goodsNumbersList.isEmpty()) {
+            val errorMsg = "Please enter at least one goods number"
+            showTranslatedToast(errorMsg)
             return
         }
 
         val newTruckGood = TruckGoodInput(
             name = goodsName, 
-            goodsNumber = goodsNumberString,
-            goodsNumber2 = if (goodsNumber2String.isEmpty()) null else goodsNumber2String
+            goodsNumbers = goodsNumbersList
         )
 
         // Check if online
@@ -147,7 +200,7 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun saveToFirestore(shipmentId: String, good: TruckGoodInput) {
-        Log.d("enter_truck_goods", "[v0] Starting saveToFirestore with shipmentId: $shipmentId, goodsName: ${good.name}, goodsNumber: ${good.goodsNumber}")
+        Log.d("enter_truck_goods", "[v0] Starting saveToFirestore with shipmentId: $shipmentId, goodsName: ${good.name}, goodsNumbers: ${good.goodsNumbers}")
         
         // First, verify the shipment document exists
         firestore.collection("shipments").document(shipmentId).get()
@@ -157,8 +210,7 @@ class enter_truck_goods : Fragment() {
                     // Create a map to properly serialize data for Firestore
                     val goodsMap = hashMapOf(
                         "name" to (good.name ?: ""),
-                        "goodsNumber" to (good.goodsNumber ?: ""),
-                        "goodsNumber2" to (good.goodsNumber2 ?: ""),
+                        "goodsNumbers" to good.goodsNumbers,
                         "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp()
                     )
                     
@@ -196,10 +248,13 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun saveToLocalDatabase(good: TruckGoodInput) {
+        // Save each good number as a separate entity or combined
+        val goodsNumbersCombined = good.goodsNumbers.joinToString(",")
+        
         val truckGoodsEntity = TruckGoodsEntity(
             shipmentId = currentShipmentId!!,
             name = good.name ?: "",
-            goodsNumber = good.goodsNumber ?: "",
+            goodsNumber = goodsNumbersCombined,
             isSynced = false
         )
 
@@ -210,8 +265,15 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun clearFields() {
-        goodsNumber.text = null
-        goodsNumber2.text = null
+        // Clear all goods number fields
+        goodsNumberFieldsContainer.removeAllViews()
+        goodsNumberInputLayouts.clear()
+        goodsNumberEditTexts.clear()
+        
+        // Add initial empty field
+        addGoodsNumberInputField()
+        
+        // Reset spinner
         goodsNameSpinner.setSelection(0)
     }
 
@@ -230,10 +292,6 @@ class enter_truck_goods : Fragment() {
 
             v.findViewById<TextView>(R.id.goodsNumberLabel)?.let { tv ->
                 translationHelper.translateAndSetText(tv, "Goods Number:", targetLanguage)
-            }
-
-            v.findViewById<TextView>(R.id.goodsNumber2Label)?.let { tv ->
-                translationHelper.translateAndSetText(tv, "Goods Number 2 (Optional):", targetLanguage)
             }
 
             // Translate button
