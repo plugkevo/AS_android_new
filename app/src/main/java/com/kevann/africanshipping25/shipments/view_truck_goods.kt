@@ -40,7 +40,14 @@ import com.kevann.africanshipping25.translation.GoogleTranslationHelper
 
 
 // Data class to represent a truck good item
-data class TruckGood(var goodsNumber: String? = null, var name: String? = null)
+data class TruckGood(
+    var goodsNumbers: List<String> = emptyList(),
+    var name: String? = null,
+    var goodsNumber: String? = null  // For backward compatibility, also support single number
+) {
+    // Get display text for goods numbers
+    fun getDisplayNumbers(): String = goodsNumbers.joinToString(", ")
+}
 
 class view_truck_goods : Fragment() {
 
@@ -204,7 +211,7 @@ class view_truck_goods : Fragment() {
                 val currentDate = dateFormat.format(Date())
 
                 allTruckGoods.forEach { truckGood ->
-                    val goodsNumber = truckGood.goodsNumber?.replace(",", ";") ?: ""
+                    val goodsNumber = truckGood.getDisplayNumbers().replace(",", ";")
                     val goodsName = truckGood.name?.replace(",", ";") ?: ""
                     appendLine("$goodsNumber,$goodsName,$currentDate,${currentShipmentId ?: ""}")
                 }
@@ -244,7 +251,7 @@ class view_truck_goods : Fragment() {
 
                 // Data rows
                 allTruckGoods.forEach { truckGood ->
-                    append("\"${escapeCsvField(truckGood.goodsNumber ?: "")}\",")
+                    append("\"${escapeCsvField(truckGood.getDisplayNumbers())}\",")
                     append("\"${escapeCsvField(truckGood.name ?: "")}\",")
                     append("\"$currentDate\",")
                     append("\"${escapeCsvField(currentShipmentId ?: "")}\"\n")
@@ -484,8 +491,11 @@ class view_truck_goods : Fragment() {
         } else {
             val lowerCaseQuery = query.lowercase(Locale.getDefault())
             allTruckGoods.filter { truckGood ->
-                truckGood.name?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true ||
-                        truckGood.goodsNumber?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
+                val nameMatches = truckGood.name?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
+                val numberMatches = truckGood.goodsNumbers.any { number ->
+                    number.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
+                }
+                nameMatches || numberMatches
             }
         }
         truckGoodsAdapter.updateData(filteredList.toMutableList())
@@ -519,7 +529,7 @@ class view_truck_goods : Fragment() {
         val updateButton = dialogView.findViewById<Button>(R.id.detailUpdateButton)
         val closeButton = dialogView.findViewById<Button>(R.id.detailCloseButton)
 
-        goodsNumberEditText.setText(truckGood.goodsNumber)
+        goodsNumberEditText.setText(truckGood.getDisplayNumbers())
         val goodsNameOptions = arrayOf("Box","Furniture","Electronics", "Toiletries","Tote/Barrel", "Machinery","Other")
         var selectedGoodsName = truckGood.name
 
@@ -541,21 +551,25 @@ class view_truck_goods : Fragment() {
         goodsNameTextView.text = "Name: ${truckGood.name}"
 
         updateButton.setOnClickListener {
-            val newNumber = goodsNumberEditText.text.toString().trim()
+            val inputText = goodsNumberEditText.text.toString().trim()
 
-            if (newNumber.isEmpty()) {
-                Toast.makeText(requireContext(), "Goods number cannot be empty.", Toast.LENGTH_SHORT).show()
+            if (inputText.isEmpty()) {
+                Toast.makeText(requireContext(), "Goods number(s) cannot be empty.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (newNumber.length != 4) {
-                Toast.makeText(requireContext(), "Goods number must be 4 characters.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            // Split numbers by comma and validate each one
+            val numbers = inputText.split(",").map { it.trim() }
+            for (number in numbers) {
+                if (number.length != 4) {
+                    Toast.makeText(requireContext(), "Each goods number must be 4 characters. Found: $number", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
             }
 
-            Log.d("ViewTruckGoodsFragment", "Update button clicked for Name: $selectedGoodsName, Number: $newNumber")
-            if (currentShipmentId != null) {
-                updateTruckGoodInFirestore(currentShipmentId!!, truckGood.goodsNumber, selectedGoodsName, newNumber)
+            Log.d("ViewTruckGoodsFragment", "Update button clicked for Name: $selectedGoodsName, Numbers: ${numbers.joinToString(", ")}")
+            if (currentShipmentId != null && truckGood.goodsNumbers.isNotEmpty()) {
+                updateTruckGoodInFirestore(currentShipmentId!!, truckGood.goodsNumbers[0], selectedGoodsName, numbers)
             }
             dialog.dismiss()
         }
@@ -566,11 +580,11 @@ class view_truck_goods : Fragment() {
         dialog.show()
     }
 
-    private fun updateTruckGoodInFirestore(shipmentId: String, oldGoodsNumber: String?, newName: String?, newNumber: String) {
+    private fun updateTruckGoodInFirestore(shipmentId: String, firstGoodsNumber: String?, newName: String?, newNumbers: List<String>) {
         db.collection("shipments")
             .document(shipmentId)
             .collection("offloaded goods")
-            .whereEqualTo("goodsNumber", oldGoodsNumber)
+            .whereEqualTo("goodsNumbers", listOf(firstGoodsNumber))
             .get()
             .addOnSuccessListener { querySnapshot ->
                 if (querySnapshot.isEmpty) {
@@ -586,7 +600,7 @@ class view_truck_goods : Fragment() {
                             .update(
                                 mapOf(
                                     "name" to newName,
-                                    "goodsNumber" to newNumber
+                                    "goodsNumbers" to newNumbers
                                 )
                             )
                             .addOnSuccessListener {

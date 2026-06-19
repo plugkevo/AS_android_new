@@ -32,7 +32,7 @@ class TruckGoodsAdapter(
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(holder: TruckGoodsViewHolder, position: Int) {
         val currentItem = truckGoodsList[position]
-        holder.goodsNumberTextView.text = currentItem.goodsNumber
+        holder.goodsNumberTextView.text = currentItem.getDisplayNumbers()
         holder.moreOptionsImageView.setOnClickListener {
             onItemClick(currentItem) // Pass the clicked item to the listener
         }
