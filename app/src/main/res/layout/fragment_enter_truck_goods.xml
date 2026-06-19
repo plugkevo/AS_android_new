@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        tools:context=".enter_truck_goods">
+        tools:context=".shipments.enter_truck_goods">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/headerCard"
@@ -65,6 +65,18 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
+                    android:id="@+id/shipmentNameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Shipment: Loading..."
+                    android:textSize="14sp"
+                    android:textColor="?attr/inputHintColor"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+
+                <TextView
                     android:id="@+id/goodsNameLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -73,7 +85,7 @@
                     android:textSize="16sp"
                     android:textColor="@color/text_primary"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+                    app:layout_constraintTop_toBottomOf="@+id/shipmentNameTextView" />
 
                 <Spinner
                     android:id="@+id/goodsNameSpinner"
@@ -97,8 +109,9 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/goodsNameSpinner" />
 
+                <!-- First Goods Number Input with TextInputLayout -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/quantityLayout"
+                    android:id="@+id/firstGoodsNumberLayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -106,46 +119,43 @@
                     android:hint="Goods Number 1"
                     app:boxStrokeColor="?attr/inputBoxStrokeColor"
                     app:hintTextColor="?attr/inputHintColor"
-                    app:layout_constraintTop_toBottomOf="@+id/goodsNumberLabel">
+                    app:layout_constraintTop_toBottomOf="@+id/goodsNumberLabel"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etgoodsNumber"
+                        android:id="@+id/etFirstGoodsNumber"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
                         android:textColor="@color/text_primary" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <TextView
-                    android:id="@+id/goodsNumber2Label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Goods Number 2 (Optional):"
-                    android:textSize="16sp"
-                    android:textColor="@color/text_primary"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/quantityLayout" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/quantityLayout2"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                <!-- Container for additional goods numbers -->
+                <LinearLayout
+                    android:id="@+id/goodsNumberFieldsContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:layout_marginTop="8dp"
-                    android:hint="Goods Number 2"
-                    app:boxStrokeColor="?attr/inputBoxStrokeColor"
-                    app:hintTextColor="?attr/inputHintColor"
-                    app:layout_constraintTop_toBottomOf="@+id/goodsNumber2Label">
+                    app:layout_constraintTop_toBottomOf="@+id/firstGoodsNumberLayout"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etgoodsNumber2"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="number"
-                        android:textColor="@color/text_primary" />
-                </com.google.android.material.textfield.TextInputLayout>
+                <!-- Add another number button -->
+                <ImageButton
+                    android:id="@+id/buttonAddGoodNo"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="16dp"
+                    android:src="@drawable/ic_add"
+                    android:contentDescription="Add another goods number"
+                    android:scaleType="centerInside"
+                    android:background="?attr/selectableItemBackground"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/goodsNumberFieldsContainer" />
 
+                <!-- Save button -->
                 <Button
                     android:id="@+id/saveButton"
                     android:layout_width="match_parent"
@@ -155,7 +165,7 @@
                     android:text="Save to Truck Inventory"
                     android:backgroundTint="?attr/buttonBackgroundTint"
                     android:textColor="?attr/buttonTextColor"
-                    app:layout_constraintTop_toBottomOf="@+id/quantityLayout2"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonAddGoodNo"
                     app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

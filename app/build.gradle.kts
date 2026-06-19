@@ -42,27 +42,34 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packagingOptions {
+        jniLibs {
+            excludes += setOf("META-INF/native-image/**")
+        }
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module",
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties",
+                "META-INF/native-image/**",
+                "mozilla/public-suffix-list.txt"
+            )
+        }
+    }
     kapt {
         arguments {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
     }
     // Add packaging options to handle conflicts
-    packagingOptions {
-        exclude("META-INF/DEPENDENCIES")
-        exclude("META-INF/LICENSE")
-        exclude("META-INF/LICENSE.txt")
-        exclude("META-INF/license.txt")
-        exclude("META-INF/NOTICE")
-        exclude("META-INF/NOTICE.txt")
-        exclude("META-INF/notice.txt")
-        exclude("META-INF/ASL2.0")
-        exclude("META-INF/*.kotlin_module")
-        exclude("META-INF/INDEX.LIST")
-        exclude("META-INF/io.netty.versions.properties")
-        exclude("META-INF/native-image/**")
-        exclude("mozilla/public-suffix-list.txt")
-    }
 }
 
 dependencies {
