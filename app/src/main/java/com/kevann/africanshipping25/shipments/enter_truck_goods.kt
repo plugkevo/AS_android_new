@@ -39,6 +39,8 @@ data class TruckGoodInput(
 class enter_truck_goods : Fragment() {
 
     private lateinit var goodsNameSpinner: Spinner
+    private lateinit var firstGoodsNumberLayout: TextInputLayout
+    private lateinit var firstGoodsNumberEditText: TextInputEditText
     private lateinit var goodsNumberFieldsContainer: LinearLayout
     private lateinit var buttonAddGoodNo: ImageButton
     private lateinit var addButton: Button
@@ -49,7 +51,7 @@ class enter_truck_goods : Fragment() {
     private lateinit var translationManager: GoogleTranslationManager
     private lateinit var translationHelper: GoogleTranslationHelper
 
-    // List to hold references to all dynamically added goods number input fields and their parent TextInputLayouts
+    // List to hold references to all dynamically added goods number input fields (only additional numbers)
     private val goodsNumberInputLayouts: MutableList<TextInputLayout> = mutableListOf()
     private val goodsNumberEditTexts: MutableList<TextInputEditText> = mutableListOf()
 
@@ -76,12 +78,11 @@ class enter_truck_goods : Fragment() {
         translationHelper = GoogleTranslationHelper(translationManager)
 
         goodsNameSpinner = view.findViewById(R.id.goodsNameSpinner)
+        firstGoodsNumberLayout = view.findViewById(R.id.firstGoodsNumberLayout)
+        firstGoodsNumberEditText = view.findViewById(R.id.etFirstGoodsNumber)
         goodsNumberFieldsContainer = view.findViewById(R.id.goodsNumberFieldsContainer)
         buttonAddGoodNo = view.findViewById(R.id.buttonAddGoodNo)
         addButton = view.findViewById(R.id.saveButton)
-
-        // Add the initial goods number input field
-        addGoodsNumberInputField()
 
         // Setup Add Good Number Button Click Listener
         buttonAddGoodNo.setOnClickListener {
@@ -157,29 +158,34 @@ class enter_truck_goods : Fragment() {
         val goodsNumbersList = mutableListOf<String>()
         var hasValidationErrors = false
 
-        // Collect and validate all goods numbers
+        // Validate and collect first goods number
+        val firstGoodNo = firstGoodsNumberEditText.text.toString().trim()
+        if (firstGoodNo.isEmpty()) {
+            firstGoodsNumberLayout.error = "Good Number cannot be empty"
+            hasValidationErrors = true
+        } else if (firstGoodNo.length != 4) {
+            firstGoodsNumberLayout.error = "Good Number must be 4 characters"
+            hasValidationErrors = true
+        } else {
+            goodsNumbersList.add(firstGoodNo)
+        }
+
+        // Collect and validate all additional goods numbers
         for (i in goodsNumberEditTexts.indices) {
             val goodNo = goodsNumberEditTexts[i].text.toString().trim()
             
-            if (goodNo.isEmpty()) {
-                goodsNumberInputLayouts[i].error = "Good Number cannot be empty"
-                hasValidationErrors = true
-            } else if (goodNo.length != 4) {
-                goodsNumberInputLayouts[i].error = "Good Number must be 4 characters"
-                hasValidationErrors = true
-            } else {
-                goodsNumbersList.add(goodNo)
+            if (goodNo.isNotEmpty()) {
+                if (goodNo.length != 4) {
+                    goodsNumberInputLayouts[i].error = "Good Number must be 4 characters"
+                    hasValidationErrors = true
+                } else {
+                    goodsNumbersList.add(goodNo)
+                }
             }
         }
 
         if (hasValidationErrors) {
             val errorMsg = "Please correct the errors in the Good Numbers"
-            showTranslatedToast(errorMsg)
-            return
-        }
-
-        if (goodsNumbersList.isEmpty()) {
-            val errorMsg = "Please enter at least one goods number"
             showTranslatedToast(errorMsg)
             return
         }
@@ -265,13 +271,14 @@ class enter_truck_goods : Fragment() {
     }
 
     private fun clearFields() {
-        // Clear all goods number fields
+        // Clear first goods number field
+        firstGoodsNumberEditText.text = null
+        firstGoodsNumberLayout.error = null
+        
+        // Clear all dynamic goods number fields
         goodsNumberFieldsContainer.removeAllViews()
         goodsNumberInputLayouts.clear()
         goodsNumberEditTexts.clear()
-        
-        // Add initial empty field
-        addGoodsNumberInputField()
         
         // Reset spinner
         goodsNameSpinner.setSelection(0)
