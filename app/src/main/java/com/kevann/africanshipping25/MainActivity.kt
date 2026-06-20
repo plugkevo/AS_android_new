@@ -29,6 +29,7 @@ import com.kevann.africanshipping25.fragments.ProfileFragment
 import com.kevann.africanshipping25.fragments.ShipmentsFragment
 import com.kevann.africanshipping25.loadinglists.LoadingFragment
 import com.kevann.africanshipping25.notifications.ViewNotificationsFragment
+import com.kevann.africanshipping25.profile.WhatsAppSupportDialogFragment
 import com.kevann.africanshipping25.shipments.NewShipmentDialogFragment
 import com.kevann.africanshipping25.sync.SyncManager
 import com.kevann.africanshipping25.translation.GoogleTranslationHelper
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
     // FAB
     private lateinit var fabNewShipment: FloatingActionButton
+    private lateinit var fabWhatsappSupport: FloatingActionButton
 
     // More Options Button
     private lateinit var btnMoreOptions: ImageButton
@@ -151,6 +153,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         // Initialize other UI components
         bottomNavigation = findViewById(R.id.bottom_navigation)
         fabNewShipment = findViewById(R.id.fab_new_shipment)
+        fabWhatsappSupport = findViewById(R.id.fab_whatsapp_support)
         btnMoreOptions = findViewById(R.id.btn_more_options)
     }
 
@@ -211,6 +214,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         fabNewShipment.setOnClickListener {
             openNewShipmentForm()
+        }
+
+        fabWhatsappSupport.setOnClickListener {
+            openWhatsAppSupportDialog()
         }
     }
 
@@ -458,6 +465,11 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private fun openNewShipmentForm() {
         val dialog = NewShipmentDialogFragment()
         dialog.show(supportFragmentManager, "NewShipmentDialog")
+    }
+
+    private fun openWhatsAppSupportDialog() {
+        val dialog = WhatsAppSupportDialogFragment()
+        dialog.show(supportFragmentManager, "WhatsAppSupportDialog")
     }
 
     private fun handleNotificationIntent(intent: Intent?) {

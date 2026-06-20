@@ -145,4 +145,19 @@
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_whatsapp_support"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:contentDescription="Contact support via WhatsApp"
+        app:srcCompat="@drawable/ic_whatsapp"
+        app:backgroundTint="#25D366"
+        app:tint="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/fab_new_shipment"
+        app:layout_constraintTop_toTopOf="@+id/fab_new_shipment"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
